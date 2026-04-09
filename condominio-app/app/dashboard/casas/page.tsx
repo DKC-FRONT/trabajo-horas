@@ -31,7 +31,9 @@ export default function CasasPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/casas');
-      setCasas(await res.json());
+      if (!res.ok) throw new Error('Error al cargar las casas.');
+      const data = await res.json();
+      setCasas(Array.isArray(data) ? data : []);
     } catch {
       setError('Error al cargar las casas.');
     } finally {

@@ -54,8 +54,10 @@ export default function UsuariosPage() {
       setLoading(true);
       const [ru, rc] = await Promise.all([fetch('/api/usuarios'), fetch('/api/casas')]);
       if (!ru.ok || !rc.ok) throw new Error('Error al cargar datos');
-      setUsuarios(await ru.json());
-      setCasas(await rc.json());
+      const usuarios = await ru.json();
+      const casas    = await rc.json();
+      setUsuarios(Array.isArray(usuarios) ? usuarios : []);
+      setCasas(Array.isArray(casas) ? casas : []);
     } catch (err: any) {
       notify(err.message, true);
     } finally {

@@ -80,7 +80,10 @@ export default function ReservasPage() {
   const fetchCasas = async () => {
     try {
       const res = await fetch('/api/casas');
-      if (res.ok) setCasas(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setCasas(Array.isArray(data) ? data : []);
+      }
     } catch {}
   };
 
@@ -92,7 +95,8 @@ export default function ReservasPage() {
         : '/api/reservas';
       const res = await fetch(url);
       if (!res.ok) throw new Error('Error al obtener reservas');
-      setReservas(await res.json());
+      const data = await res.json();
+      setReservas(Array.isArray(data) ? data : []);
     } catch (err: any) {
       notify(err.message, true);
     } finally {

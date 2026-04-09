@@ -12,11 +12,14 @@ export const pool =
     password: process.env.DB_PASSWORD ?? '',
     database: process.env.DB_NAME     ?? 'condominio_florida',
     waitForConnections: true,
-    connectionLimit:    3,
+    connectionLimit:    5,
     queueLimit:         0,
+    connectTimeout:     10000,
     idleTimeout:        60000,
     enableKeepAlive:    true,
     keepAliveInitialDelay: 0,
+    // Clever Cloud requiere SSL — rejectUnauthorized:false acepta su certificado autofirmado
+    ssl: process.env.DB_SSL === 'false' ? undefined : { rejectUnauthorized: false },
   });
 
 if (process.env.NODE_ENV !== 'production') globalForDb.pool = pool;

@@ -54,14 +54,16 @@ export default function LecturasPage() {
 
   const fetchCasas = async () => {
     const res = await fetch('/api/casas');
+    if (!res.ok) throw new Error(`API casas: ${res.status}`);
     const data = await res.json();
-    setCasas(data);
+    setCasas(Array.isArray(data) ? data : []);
   };
 
   const fetchLecturas = async () => {
     const res = await fetch('/api/lecturas');
+    if (!res.ok) throw new Error(`API lecturas: ${res.status}`);
     const data = await res.json();
-    setLecturas(data);
+    setLecturas(Array.isArray(data) ? data : []);
   };
 
   const validateForm = () => {
