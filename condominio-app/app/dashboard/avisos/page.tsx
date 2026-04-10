@@ -35,6 +35,7 @@ export default function AvisosPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     try {
@@ -68,21 +69,33 @@ export default function AvisosPage() {
     if (!titulo.trim() || !mensaje.trim()) return;
     try {
       setFormLoading(true);
-      const res = await fetch('/api/avisos', {
-        method: 'POST',
+      const url = '/api/avisos';
+      const payload = editingId ? { id: editingId, titulo, mensaje, tipo } : { titulo, mensaje, tipo };
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo, mensaje, tipo }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al crear aviso');
-      notify('Aviso publicado correctamente');
-      setTitulo(''); setMensaje(''); setTipo('general');
+      if (!res.ok) throw new Error(data.error || `Error al ${editingId ? 'actualizar' : 'crear'} aviso`);
+      notify(editingId ? 'Aviso actualizado correctamente' : 'Aviso publicado correctamente');
+      setTitulo(''); setMensaje(''); setTipo('general'); setEditingId(null);
       fetchAvisos();
     } catch (err: any) {
       notify(err.message, true);
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const handleEditClick = (aviso: Aviso) => {
+    setEditingId(aviso.id);
+    setTitulo(aviso.titulo);
+    setMensaje(aviso.mensaje);
+    setTipo(aviso.tipo);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleEliminar = async (id: number) => {
@@ -165,9 +178,18 @@ export default function AvisosPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
             <div>
               <p style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.9rem' }}>Formulario</p>
-              <h2 style={{ fontSize: '0.9rem', color: '#ffffff', margin: 0, letterSpacing: '0.05em', fontWeight: 700 }}>PUBLICAR NUEVO AVISO</h2>
+              <h2 style={{ fontSize: '0.9rem', color: '#ffffff', margin: 0, letterSpacing: '0.05em', fontWeight: 700 }}>
+                {editingId ? 'ACTUALIZAR AVISO' : 'PUBLICAR NUEVO AVISO'}
+              </h2>
             </div>
-            <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em', textTransform: 'capitalize' }}>{user?.rol}</span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {editingId && (
+                <button type="button" onClick={() => { setEditingId(null); setTitulo(''); setMensaje(''); setTipo('general'); }} style={{ background: 'transparent', border: `1px solid rgba(255,255,255,0.2)`, color: 'rgba(255,255,255,0.7)', padding: '0.2rem 0.6rem', fontSize: '0.6rem', letterSpacing: '0.1em', cursor: 'pointer' }}>
+                  Cancelar Edición
+                </button>
+              )}
+              <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em', textTransform: 'capitalize' }}>{user?.rol}</span>
+            </div>
           </div>
 
           <form onSubmit={handleCrear} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -209,7 +231,7 @@ export default function AvisosPage() {
                 onMouseEnter={e => { if (!formLoading) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}35, ${ACCENT}20)` }}
                 onMouseLeave={e => { if (!formLoading) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}10)` }}
               >
-                {formLoading ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Publicando...</> : <>→ Publicar aviso</>}
+                {formLoading ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Guardando...</> : <>→ {editingId ? 'Actualizar aviso' : 'Publicar aviso'}</>}
               </button>
             </div>
           </form>
@@ -276,15 +298,27 @@ export default function AvisosPage() {
                         {new Date(aviso.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: '2-digit' })}
                       </span>
                       {(user?.rol === 'admin' || user?.rol === 'trabajador') && (
-                        <button
-                          onClick={() => handleEliminar(aviso.id)}
-                          disabled={deletingId === aviso.id}
-                          style={{ background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.35)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.2rem', transition: 'color 0.2s, transform 0.15s', lineHeight: 1 }}
-                          onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.transform = 'scale(1.2)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.35)'; e.currentTarget.style.transform = 'scale(1)'; }}
-                        >
-                          {deletingId === aviso.id ? '◌' : '✕'}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleEditClick(aviso)}
+                            style={{ background: 'transparent', border: 'none', color: 'rgba(96,165,250,0.7)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.2rem', transition: 'color 0.2s, transform 0.15s', lineHeight: 1 }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#60a5fa'; e.currentTarget.style.transform = 'scale(1.2)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(96,165,250,0.7)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                            title="Editar aviso"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => handleEliminar(aviso.id)}
+                            disabled={deletingId === aviso.id}
+                            style={{ background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.35)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.2rem', transition: 'color 0.2s, transform 0.15s', lineHeight: 1 }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.transform = 'scale(1.2)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.35)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                            title="Eliminar aviso"
+                          >
+                            {deletingId === aviso.id ? '◌' : '✕'}
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

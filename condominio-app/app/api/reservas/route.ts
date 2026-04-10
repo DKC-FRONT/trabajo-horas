@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     let query = `
       SELECT r.id, r.casa_id, r.area,
-             r.${COL_FECHA} AS fecha_reserva,
+             DATE_FORMAT(r.${COL_FECHA}, '%Y-%m-%d') AS fecha_reserva,
              r.hora_inicio, r.hora_fin, r.estado, r.valor,
              c.numero_casa
       FROM reservas r

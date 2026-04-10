@@ -133,8 +133,14 @@ export default function ReservasPage() {
   const [horaInicio, setHoraInicio] = useState(10);
   const [horaFin, setHoraFin]     = useState(12);
   const [casaSeleccionada, setCasaSeleccionada] = useState('');
+  const [filtroTablaCasa, setFiltroTablaCasa] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const reservasFiltradas = reservas.filter(r => {
+    if (!filtroTablaCasa) return true;
+    return String(r.casa_id) === filtroTablaCasa;
+  });
 
   useEffect(() => {
     try {
@@ -144,7 +150,7 @@ export default function ReservasPage() {
         setUser(u);
         if (u.casa_id) setCasaSeleccionada(String(u.casa_id));
         fetchReservas(u);
-        if (u.rol === 'admin') fetchCasas();
+        if (u.rol === 'admin' || u.rol === 'trabajador') fetchCasas();
       } else {
         setLoading(false);
       }
@@ -281,9 +287,9 @@ export default function ReservasPage() {
   });
 
   const counts = {
-    pendiente: reservas.filter(r => r.estado === 'pendiente').length,
-    aprobada:  reservas.filter(r => r.estado === 'aprobada').length,
-    rechazada: reservas.filter(r => r.estado === 'rechazada').length,
+    pendiente: reservasFiltradas.filter(r => r.estado === 'pendiente').length,
+    aprobada:  reservasFiltradas.filter(r => r.estado === 'aprobada').length,
+    rechazada: reservasFiltradas.filter(r => r.estado === 'rechazada').length,
   };
 
   // Solo Admin y Residente (con casa) pueden CREAR reservas
@@ -469,7 +475,23 @@ export default function ReservasPage() {
               TODAS LAS RESERVAS
             </h2>
           </div>
-          <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{reservas.length} registros</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {(user?.rol === 'admin' || user?.rol === 'trabajador') && (
+              <select 
+                value={filtroTablaCasa} 
+                onChange={e => setFiltroTablaCasa(e.target.value)}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.65rem', padding: '0.25rem 0.5rem', outline: 'none', fontFamily: 'inherit' }}
+              >
+                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todas las casas</option>
+                {casas.map(c => (
+                  <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fff' }}>
+                    Casa {c.numero_casa}
+                  </option>
+                ))}
+              </select>
+            )}
+            <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{reservasFiltradas.length} registros</span>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -486,7 +508,7 @@ export default function ReservasPage() {
                 <tr><td colSpan={7} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>
                   <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
                 </td></tr>
-              ) : reservas.length === 0 ? (
+              ) : reservasFiltradas.length === 0 ? (
                 <tr><td colSpan={7} style={{ padding: '3.5rem', textAlign: 'center' }}>
                   <div style={{ fontSize: '2rem', marginBottom: '0.75rem', opacity: 0.25 }}>📅</div>
                   <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.82rem', letterSpacing: '0.05em' }}>No hay reservas agendadas</div>
@@ -495,7 +517,7 @@ export default function ReservasPage() {
                   )}
                 </td></tr>
               ) : (
-                reservas.map((r, i) => {
+                reservasFiltradas.map((r, i) => {
                   const meta = ESTADO_META[r.estado];
                   const isHov = hoveredRow === r.id;
                   const fechaFmt = new Date(r.fecha_reserva + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });

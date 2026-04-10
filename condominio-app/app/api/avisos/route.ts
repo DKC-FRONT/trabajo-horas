@@ -61,3 +61,30 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Error al eliminar el aviso.' }, { status: 500 });
   }
 }
+
+// ── PUT — Actualizar aviso ───────────────────────────────────────────────────
+export async function PUT(req: NextRequest) {
+  try {
+    const { id, titulo, mensaje, tipo } = await req.json();
+
+    if (!id || !titulo || !mensaje) {
+      return NextResponse.json({ error: 'ID, Título y mensaje son requeridos.' }, { status: 400 });
+    }
+
+    const t = tipo || 'general';
+
+    const [result]: any = await pool.query(
+      'UPDATE avisos SET titulo = ?, mensaje = ?, tipo = ? WHERE id = ?',
+      [titulo.trim(), mensaje.trim(), t, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return NextResponse.json({ error: 'Aviso no encontrado.' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Aviso actualizado correctamente.' }, { status: 200 });
+  } catch (error) {
+    console.error('[PUT /api/avisos]', error);
+    return NextResponse.json({ error: 'Error al actualizar aviso.' }, { status: 500 });
+  }
+}
