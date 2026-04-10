@@ -156,8 +156,8 @@ export default function AvisosPage() {
         </div>
       )}
 
-      {/* ── Formulario admin ── */}
-      {user?.rol === 'admin' && (
+      {/* ── Formulario admin/trabajador ── */}
+      {(user?.rol === 'admin' || user?.rol === 'trabajador') && (
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', padding: '1.5rem', marginBottom: '2rem', position: 'relative', overflow: 'hidden' }}>
           {/* Accent line top */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}60, transparent)` }} />
@@ -167,7 +167,7 @@ export default function AvisosPage() {
               <p style={{ fontSize: '0.8rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.9rem' }}>Formulario</p>
               <h2 style={{ fontSize: '0.9rem', color: '#ffffff', margin: 0, letterSpacing: '0.05em', fontWeight: 700 }}>PUBLICAR NUEVO AVISO</h2>
             </div>
-            <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em' }}>Admin</span>
+            <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em', textTransform: 'capitalize' }}>{user?.rol}</span>
           </div>
 
           <form onSubmit={handleCrear} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -275,7 +275,7 @@ export default function AvisosPage() {
                       <span style={{ fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)' }}>
                         {new Date(aviso.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: '2-digit' })}
                       </span>
-                      {user?.rol === 'admin' && (
+                      {(user?.rol === 'admin' || user?.rol === 'trabajador') && (
                         <button
                           onClick={() => handleEliminar(aviso.id)}
                           disabled={deletingId === aviso.id}

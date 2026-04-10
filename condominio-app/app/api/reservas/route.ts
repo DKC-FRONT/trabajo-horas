@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     let query = `
       SELECT r.id, r.casa_id, r.area,
              r.${COL_FECHA} AS fecha_reserva,
-             r.hora_inicio, r.hora_fin, r.estado,
+             r.hora_inicio, r.hora_fin, r.estado, r.valor,
              c.numero_casa
       FROM reservas r
       JOIN casas c ON r.casa_id = c.id
@@ -37,9 +37,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { casa_id, area, fecha_reserva, hora_inicio, hora_fin } = await req.json();
+    const { casa_id, area, fecha_reserva, hora_inicio, hora_fin, valor } = await req.json();
 
-    if (!casa_id || !area || !fecha_reserva || !hora_inicio || !hora_fin) {
+    if (!casa_id || !area || !fecha_reserva || !hora_inicio || !hora_fin || valor === undefined) {
       return NextResponse.json({ error: 'Todos los campos son requeridos.' }, { status: 400 });
     }
 
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
     }
 
     await pool.query(
-      `INSERT INTO reservas (casa_id, area, ${COL_FECHA}, hora_inicio, hora_fin, estado)
-       VALUES (?, ?, ?, ?, ?, 'pendiente')`,
-      [casa_id, area, fecha_reserva, hora_inicio, hora_fin]
+      `INSERT INTO reservas (casa_id, area, ${COL_FECHA}, hora_inicio, hora_fin, estado, valor)
+       VALUES (?, ?, ?, ?, ?, 'pendiente', ?)`,
+      [casa_id, area, fecha_reserva, hora_inicio, hora_fin, valor]
     );
 
     return NextResponse.json({ message: 'Reserva solicitada correctamente.' }, { status: 201 });
