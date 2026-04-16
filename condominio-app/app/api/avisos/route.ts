@@ -1,34 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { createClient } from '@/lib/server';
 
 // ── GET — Obtener todos los avisos ──────────────────────────────────────────
 export async function GET() {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, titulo, mensaje, tipo, fecha FROM avisos ORDER BY fecha DESC'
-    );
-    return NextResponse.json(rows, { status: 200 });
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('avisos')
+      .select('id, titulo, mensaje, tipo, fecha')
+      .order('fecha', { ascending: false });
+
+    if (error) throw error;
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('[GET /api/avisos]', error);
     return NextResponse.json({ error: 'Error al obtener avisos.' }, { status: 500 });
   }
 }
 
-// ── POST — Publicar nuevo aviso (Solo admin idealmente) ────────────────────
+// ── POST — Publicar nuevo aviso ────────────────────
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { titulo, mensaje, tipo } = await req.json();
 
     if (!titulo || !mensaje) {
       return NextResponse.json({ error: 'Título y mensaje son requeridos.' }, { status: 400 });
     }
 
-    const t = tipo || 'general';
+    const { error: insertError } = await supabase
+      .from('avisos')
+      .insert([{ titulo: titulo.trim(), mensaje: mensaje.trim(), tipo: tipo || 'general' }]);
 
-    await pool.query(
-      'INSERT INTO avisos (titulo, mensaje, tipo) VALUES (?, ?, ?)',
-      [titulo.trim(), mensaje.trim(), t]
-    );
+    if (insertError) throw insertError;
 
     return NextResponse.json({ message: 'Aviso publicado correctamente.' }, { status: 201 });
   } catch (error) {
@@ -40,20 +45,19 @@ export async function POST(req: NextRequest) {
 // ── DELETE — Eliminar aviso ────────────────────────────────────────────────
 export async function DELETE(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { id } = await req.json();
 
     if (!id || isNaN(Number(id))) {
       return NextResponse.json({ error: 'ID inválido.' }, { status: 400 });
     }
 
-    const [result]: any = await pool.query(
-      'DELETE FROM avisos WHERE id = ?',
-      [id]
-    );
+    const { error: deleteError } = await supabase
+      .from('avisos')
+      .delete()
+      .eq('id', id);
 
-    if (result.affectedRows === 0) {
-      return NextResponse.json({ error: 'Aviso no encontrado.' }, { status: 404 });
-    }
+    if (deleteError) throw deleteError;
 
     return NextResponse.json({ message: 'Aviso eliminado correctamente.' }, { status: 200 });
   } catch (error) {
@@ -65,22 +69,19 @@ export async function DELETE(req: NextRequest) {
 // ── PUT — Actualizar aviso ───────────────────────────────────────────────────
 export async function PUT(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { id, titulo, mensaje, tipo } = await req.json();
 
     if (!id || !titulo || !mensaje) {
       return NextResponse.json({ error: 'ID, Título y mensaje son requeridos.' }, { status: 400 });
     }
 
-    const t = tipo || 'general';
+    const { error: updateError } = await supabase
+      .from('avisos')
+      .update({ titulo: titulo.trim(), mensaje: mensaje.trim(), tipo: tipo || 'general' })
+      .eq('id', id);
 
-    const [result]: any = await pool.query(
-      'UPDATE avisos SET titulo = ?, mensaje = ?, tipo = ? WHERE id = ?',
-      [titulo.trim(), mensaje.trim(), t, id]
-    );
-
-    if (result.affectedRows === 0) {
-      return NextResponse.json({ error: 'Aviso no encontrado.' }, { status: 404 });
-    }
+    if (updateError) throw updateError;
 
     return NextResponse.json({ message: 'Aviso actualizado correctamente.' }, { status: 200 });
   } catch (error) {

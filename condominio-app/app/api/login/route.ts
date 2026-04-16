@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
-
-type Usuario = {
-  id: number;
-  nombre: string;
-  correo: string;
-  password: string;
-  rol: string;
-  casa_id?: number | null;
-};
+import { createClient } from '@/lib/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { correo, password } = body;
+    const supabase = await createClient();
+    const { correo, password } = await req.json();
 
     if (!correo || !password) {
       return NextResponse.json(
@@ -22,45 +13,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const [rows] = await pool.query<any[]>(
-      'SELECT id, nombre, correo, password, rol, casa_id FROM usuarios WHERE correo = ?',
-      [correo]
-    );
+    // 1. Iniciar sesión con Supabase Auth
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: correo,
+      password: password,
+    });
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: 'Credenciales incorrectas.' }, { status: 401 });
+    if (authError) {
+      return NextResponse.json({ error: 'Credenciales incorrectas: ' + authError.message }, { status: 401 });
     }
 
-    const user: Usuario = rows[0];
+    // 2. Obtener el perfil extendido del usuario
+    const { data: profile, error: profileError } = await supabase
+      .from('usuarios')
+      .select('id, nombre_completo, rol, casa_id, casas(numero_casa)')
+      .eq('id', data.user.id)
+      .single();
 
-    // ⚠️ Reemplazar por bcrypt cuando estés listo
-    if (user.password !== password) {
-      return NextResponse.json({ error: 'Credenciales incorrectas.' }, { status: 401 });
+    if (profileError) {
+       console.error('[Login] Profile error:', profileError);
     }
 
     const userData = {
-      id:      user.id,
-      nombre:  user.nombre,
-      correo:  user.correo,
-      rol:     user.rol,
-      casa_id: user.casa_id || null,
+      id:      data.user.id,
+      nombre:  profile?.nombre_completo || data.user.email,
+      correo:  data.user.email,
+      rol:     profile?.rol || 'residente',
+      casa_id: profile?.casa_id || null,
+      numero_casa: (profile as any)?.casas?.numero_casa || null
     };
 
-    const res = NextResponse.json(
+    // La cookie de autenticación de Supabase se maneja automáticamente por createServerClient
+    // Pero devolvemos los datos del usuario para el estado local del frontend
+    return NextResponse.json(
       { message: 'Login exitoso.', user: userData },
       { status: 200 }
     );
-
-    // ── Cookie de sesión para el middleware ──────────────────────────────
-    res.cookies.set('session', JSON.stringify(userData), {
-      httpOnly: true,        // no accesible desde JS del navegador
-      secure: false,         // true en producción (HTTPS)
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 8,  // 8 horas
-      path: '/',
-    });
-
-    return res;
 
   } catch (error) {
     console.error('[POST /api/login]', error);
@@ -70,7 +58,7 @@ export async function POST(req: NextRequest) {
 
 // ── Logout ───────────────────────────────────────────────────────────────────
 export async function DELETE() {
-  const res = NextResponse.json({ message: 'Sesión cerrada.' });
-  res.cookies.delete('session');
-  return res;
-}
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return NextResponse.json({ message: 'Sesión cerrada.' });
+}

@@ -41,6 +41,8 @@ type ReporteData = {
 };
 
 export default function ReportesPage() {
+  const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
+  const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [data, setData]       = useState<ReporteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
@@ -48,32 +50,155 @@ export default function ReportesPage() {
   const [tab, setTab]         = useState<'resumen' | 'detalle' | 'comparativo'>('resumen');
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
-  const now  = new Date();
-  const mes  = now.getMonth() + 1;
-  const anio = now.getFullYear();
-
+  /**
+   * Hook inicial para cargar el reporte al montar el componente o cuando cambian los filtros.
+   */
   useEffect(() => {
     fetchReporte();
     setTimeout(() => setVisible(true), 50);
-  }, []);
+  }, [mesSeleccionado, anioSeleccionado]);
 
+  /**
+   * Genera el reporte completo consultando Supabase y procesando los datos localmente.
+   */
   const fetchReporte = async () => {
     setLoading(true);
     setError('');
     try {
-      const res  = await fetch(`/api/reportes?mes=${mes}&anio=${anio}`);
-      const json = await res.json();
-      if (json.error) { setError(json.error); return; }
-      setData(json);
-    } catch {
-      setError('Error al cargar el reporte.');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      // 1. Obtener todas las casas
+      const { data: casasData, error: casasErr } = await supabase.from('casas').select('*');
+      if (casasErr) throw casasErr;
+
+      // 2. Obtener lecturas del mes actual seleccionado
+      const inicioMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01`;
+      
+      // Cálculo dinámico del último día del mes
+      const ultimoDia = new Date(anioSeleccionado, mesSeleccionado, 0).getDate();
+      const finMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-${ultimoDia}`;
+      
+      const { data: lecturasMes, error: lecturasErr } = await supabase
+        .from('lecturas_agua')
+        .select('*, casas(numero_casa)')
+        .gte('fecha_lectura', inicioMes)
+        .lte('fecha_lectura', finMes);
+      if (lecturasErr) throw lecturasErr;
+
+      // 3. Procesar datos del mes
+      const porCasa: LecturaRow[] = (lecturasMes || []).map(l => ({
+        numero_casa: l.casas?.numero_casa || '?',
+        lectura_anterior: Number(l.lectura_anterior) || 0,
+        lectura_actual: Number(l.lectura_actual) || 0,
+        consumo: Number(l.consumo) || 0,
+        consumo_cobrar: Number(l.consumo_exceso) || 0,
+        valor: Number(l.valor_total) || 0,
+        fecha: l.fecha_lectura
+      }));
+
+      const excedidas = porCasa.filter(c => c.consumo_cobrar > 0);
+
+      const resumen = {
+        total_casas: casasData?.length || 0,
+        casas_excedidas: excedidas.length,
+        consumo_total: porCasa.reduce((s, c) => s + c.consumo, 0),
+        valor_total: porCasa.reduce((s, c) => s + c.valor, 0)
+      };
+
+      // 4. Obtener comparativo de los últimos 6 meses
+      const fechaLimite = new Date(anioSeleccionado, mesSeleccionado - 1, 1);
+      fechaLimite.setMonth(fechaLimite.getMonth() - 5);
+      
+      const { data: lecturasHistorico } = await supabase
+        .from('lecturas_agua')
+        .select('*')
+        .gte('fecha_lectura', `${fechaLimite.getFullYear()}-${String(fechaLimite.getMonth() + 1).padStart(2, '0')}-01`)
+        .order('fecha_lectura', { ascending: true });
+
+      // Agrupar por mes/año para el comparativo
+      const historicoMap: Record<string, Comparativo> = {};
+      (lecturasHistorico || []).forEach(l => {
+        const d = new Date(l.fecha_lectura + 'T00:00:00');
+        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+        if (!historicoMap[key]) {
+          historicoMap[key] = {
+            mes: d.getMonth() + 1,
+            anio: d.getFullYear(),
+            total_casas: resumen.total_casas,
+            consumo_total: 0,
+            valor_total: 0,
+            casas_excedidas: 0
+          };
+        }
+        historicoMap[key].consumo_total += Number(l.consumo) || 0;
+        historicoMap[key].valor_total += Number(l.valor_total) || 0;
+        if ((Number(l.consumo_exceso) || 0) > 0) historicoMap[key].casas_excedidas++;
+      });
+
+      // Ordenar cronológicamente antes de mostrar
+      const sortedComp = Object.values(historicoMap).sort((a, b) => 
+        (a.anio * 100 + a.mes) - (b.anio * 100 + b.mes)
+      ).slice(-6);
+
+      setData({
+        mes: mesSeleccionado, anio: anioSeleccionado,
+        porCasa, excedidas, resumen,
+        comparativo: sortedComp
+      });
+
+    } catch (err: any) {
+      setError('Error al generar el reporte: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const exportarExcel = () =>
-    window.open(`/api/reportes/excel?mes=${mes}&anio=${anio}`, '_blank');
+  /**
+   * Genera y descarga el reporte en formato Excel (Client-side)
+   */
+  const exportarExcel = async () => {
+    if (!data) return;
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const fileSaver = await import('file-saver');
+      const saveAs = fileSaver.saveAs || (fileSaver as any).default?.saveAs;
+      
+      const workbook = new ExcelJS.Workbook();
+      const ws = workbook.addWorksheet(`Reporte_${MESES[mesSeleccionado-1]}`);
+
+      ws.columns = [
+        { header: 'Casa', key: 'casa', width: 10 },
+        { header: 'Ant.', key: 'ant', width: 10 },
+        { header: 'Act.', key: 'act', width: 10 },
+        { header: 'Consumo', key: 'con', width: 12 },
+        { header: 'Exceso', key: 'exc', width: 12 },
+        { header: 'Valor ($)', key: 'val', width: 15 },
+        { header: 'Fecha', key: 'fec', width: 15 },
+      ];
+
+      data.porCasa.forEach(row => {
+        ws.addRow({
+          casa: row.numero_casa,
+          ant: row.lectura_anterior,
+          act: row.lectura_actual,
+          con: row.consumo,
+          exc: row.consumo_cobrar,
+          val: row.valor,
+          fec: row.fecha
+        });
+      });
+
+      ws.getRow(1).font = { bold: true };
+      
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `Reporte_Agua_${MESES[mesSeleccionado-1]}_${anioSeleccionado}.xlsx`);
+    } catch (err) {
+      console.error('Error Excel:', err);
+      alert('Error al generar el Excel');
+    }
+  };
 
   const maxConsumo = data
     ? Math.max(...data.comparativo.map((c) => Number(c.consumo_total)), 1)
@@ -96,27 +221,60 @@ export default function ReportesPage() {
 
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
-          <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
-            Reporte — <span style={{ color: ACCENT }}>{MESES[mes - 1]} {anio}</span>
-          </h1>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
-            Análisis de consumo y facturación del mes en curso
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <button onClick={exportarExcel}
+            style={{
+              background: '#16a34a', border: 'none',
+              color: '#ffffff', padding: '0.8rem 1.5rem', fontSize: '0.8rem',
+              letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+              fontFamily: 'inherit', fontWeight: 700, transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
+              display: 'flex', alignItems: 'center', gap: '0.6rem'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#15803d'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#16a34a'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <span style={{ fontSize: '1.1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
+          </button>
+
+          <div>
+            <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+              Reporte — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]} {anioSeleccionado}</span>
+            </h1>
+            <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
+              Análisis de consumo y facturación del período seleccionado
+            </p>
+          </div>
         </div>
-        <button onClick={exportarExcel}
-          style={{
-            background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.35)',
-            color: '#fbbf24', padding: '0.55rem 1.1rem', fontSize: '0.72rem',
-            letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-            fontFamily: 'inherit', transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.2)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.55)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.1)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; }}
-        >
-          ↓ Exportar Excel
-        </button>
+
+        {/* ── Selectores de Fecha ── */}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
+            <select 
+              value={mesSeleccionado} 
+              onChange={(e) => setMesSeleccionado(Number(e.target.value))}
+              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+            >
+              {MESES.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
+            <select 
+              value={anioSeleccionado} 
+              onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
+              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+            >
+              {[2024, 2025, 2026].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* ── Error ── */}
@@ -247,7 +405,7 @@ export default function ReportesPage() {
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', position: 'relative', overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
-                  TODAS LAS CASAS — <span style={{ color: ACCENT }}>{MESES[mes - 1]}</span>
+                  TODAS LAS CASAS — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]}</span>
                 </h2>
                 <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{data.porCasa.length} registros</span>
               </div>
@@ -318,7 +476,7 @@ export default function ReportesPage() {
               <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 {data.comparativo.map((c, i) => {
                   const pct = Math.round((Number(c.consumo_total) / maxConsumo) * 100);
-                  const isCurrent = c.mes === mes && c.anio === anio;
+                  const isCurrent = c.mes === mesSeleccionado && c.anio === anioSeleccionado;
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', animation: `fadeSlideIn 0.3s ease ${i * 0.06}s both` }}>
                       <div style={{ width: '80px', flexShrink: 0, textAlign: 'right', fontSize: '0.72rem', fontWeight: isCurrent ? 700 : 400, color: isCurrent ? ACCENT : 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>
@@ -363,7 +521,7 @@ export default function ReportesPage() {
                   </thead>
                   <tbody>
                     {data.comparativo.map((c, i) => {
-                      const isCurrent = c.mes === mes && c.anio === anio;
+                      const isCurrent = c.mes === mesSeleccionado && c.anio === anioSeleccionado;
                       return (
                         <tr key={i}
                           style={{

@@ -40,33 +40,100 @@ export default function MisLecturasPage() {
   const [mes, setMes]   = useState('');
   const [anio, setAnio] = useState(String(new Date().getFullYear()));
 
+  /**
+   * Hook inicial: Carga la sesión del usuario para obtener su casa_id.
+   */
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) setUser(JSON.parse(stored));
-      else { setErrorMsg('No has iniciado sesión.'); setLoading(false); }
-    } catch { setLoading(false); }
+    const init = async () => {
+      try {
+        const { createClient } = await import('@/lib/client');
+        const supabase = createClient();
+        
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: profile } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+
+          if (profile) {
+            setUser({
+              id: profile.id,
+              nombre: profile.nombre_completo,
+              correo: authUser.email || '',
+              rol: profile.rol as Rol,
+              casa_id: profile.casa_id
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error cargando perfil:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
     setTimeout(() => setVisible(true), 50);
   }, []);
 
+  /**
+   * Hook que re-carga las lecturas cuando cambia el usuario o los filtros.
+   */
   useEffect(() => {
-    if (!user) return;
-    if (!user.casa_id) { setErrorMsg('Tu cuenta no está vinculada a ninguna casa.'); setLoading(false); return; }
-    fetchLecturas();
+    if (user && user.casa_id) {
+      fetchLecturas();
+    }
   }, [user, mes, anio]);
 
+  /**
+   * Consulta las lecturas filtradas por casa y fecha en Supabase.
+   */
   const fetchLecturas = async () => {
     if (!user?.casa_id) return;
     try {
       setLoading(true);
-      let url = `/api/lecturas?casa_id=${user.casa_id}`;
-      if (mes) url += `&mes=${mes}`;
-      if (anio) url += `&anio=${anio}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Error al obtener lecturas');
-      setLecturas(await res.json());
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      let query = supabase
+        .from('lecturas_agua')
+        .select('*, casas(numero_casa)')
+        .eq('casa_id', user.casa_id)
+        .order('fecha_lectura', { ascending: false });
+
+      // Aplicar filtros de fecha si existen
+      if (anio) {
+        query = query.gte('fecha_lectura', `${anio}-01-01`).lte('fecha_lectura', `${anio}-12-31`);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Mapeamos los datos al formato del estado, extrayendo mes y año de la fecha
+      const mapped: Lectura[] = (data || []).map(l => {
+        const d = new Date(l.fecha_lectura + 'T00:00:00');
+        return {
+          id: l.id,
+          lectura_anterior: l.lectura_anterior,
+          lectura_actual: l.lectura_actual,
+          consumo: l.consumo,
+          consumo_cobrar: l.consumo_exceso,
+          valor: l.valor_total,
+          fecha: l.fecha_lectura,
+          mes: d.getMonth() + 1,
+          anio: d.getFullYear(),
+          numero_casa: l.casas?.numero_casa || 'N/A'
+        };
+      });
+
+      // Filtro manual por mes (ya que Supabase no tiene extract month directo en cliente simple)
+      const filtered = mes ? mapped.filter(l => l.mes === Number(mes)) : mapped;
+      setLecturas(filtered);
+
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setErrorMsg('Error al recuperar lecturas: ' + err.message);
     } finally {
       setLoading(false);
     }

@@ -18,7 +18,7 @@ const ACCENT = '#fbbf24';
 const TIPO_META: Record<TipoAviso, { color: string; icon: string; label: string }> = {
   general: { color: '#60a5fa', icon: '◈', label: 'General' },
   urgente: { color: '#f87171', icon: '⚠', label: 'Urgente' },
-  recordatorio: { color: '#fbbf24', icon: '◎', label: 'Recordatorio' },
+  recordatorio: { color: '#fbbf24', icon: '◎', label: 'Evento' }, // Cambiado para coincidir con el CHECK de la DB
 };
 
 export default function AvisosPage() {
@@ -37,59 +37,100 @@ export default function AvisosPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  /**
+   * Hook inicial para cargar los avisos al montar el componente.
+   */
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) setUser(JSON.parse(stored));
-    } catch { }
     fetchAvisos();
     setTimeout(() => setVisible(true), 50);
   }, []);
 
+  /**
+   * Obtiene la lista de avisos desde la tabla 'notices' de Supabase.
+   * Ordenados por fecha de creación descendente.
+   */
   const fetchAvisos = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/avisos');
-      if (!res.ok) throw new Error('Error al cargar avisos');
-      setAvisos(await res.json());
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { data, error } = await supabase
+        .from('avisos')
+        .select('*')
+        .order('creado_el', { ascending: false });
+
+      if (error) throw error;
+      
+      setAvisos(data || []);
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setErrorMsg('Error al cargar avisos: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Notificaciones temporales
+   */
   const notify = (msg: string, isErr = false) => {
     isErr ? setErrorMsg(msg) : setSuccessMsg(msg);
     setTimeout(() => isErr ? setErrorMsg('') : setSuccessMsg(''), isErr ? 5000 : 3000);
   };
 
+  /**
+   * Crea o actualiza un aviso directamente en Supabase.
+   */
   const handleCrear = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titulo.trim() || !mensaje.trim()) return;
+    
     try {
       setFormLoading(true);
-      const url = '/api/avisos';
-      const payload = editingId ? { id: editingId, titulo, mensaje, tipo } : { titulo, mensaje, tipo };
-      const method = editingId ? 'PUT' : 'POST';
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
 
-      const res = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `Error al ${editingId ? 'actualizar' : 'crear'} aviso`);
-      notify(editingId ? 'Aviso actualizado correctamente' : 'Aviso publicado correctamente');
+      if (editingId) {
+        // Actualización
+        const { error } = await supabase
+          .from('avisos')
+          .update({
+            titulo: titulo.trim(),
+            mensaje: mensaje.trim(),
+            tipo: tipo,
+            fecha: new Date().toISOString().split('T')[0]
+          })
+          .eq('id', editingId);
+        
+        if (error) throw error;
+        notify('Aviso actualizado correctamente en Supabase.');
+      } else {
+        // Creación
+        const { error } = await supabase
+          .from('avisos')
+          .insert([{
+            titulo: titulo.trim(),
+            mensaje: mensaje.trim(),
+            tipo: tipo,
+            fecha: new Date().toISOString().split('T')[0]
+          }]);
+        
+        if (error) throw error;
+        notify('Nuevo aviso publicado con éxito.');
+      }
+
       setTitulo(''); setMensaje(''); setTipo('general'); setEditingId(null);
-      fetchAvisos();
+      await fetchAvisos();
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Fallo en la operación: ' + err.message, true);
     } finally {
       setFormLoading(false);
     }
   };
 
+  /**
+   * Carga los datos de un aviso en el formulario para editar.
+   */
   const handleEditClick = (aviso: Aviso) => {
     setEditingId(aviso.id);
     setTitulo(aviso.titulo);
@@ -98,21 +139,27 @@ export default function AvisosPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  /**
+   * Elimina un aviso permanentemente.
+   */
   const handleEliminar = async (id: number) => {
-    if (!confirm('¿Seguro que deseas eliminar este aviso?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este aviso de Supabase?')) return;
     setDeletingId(id);
     try {
-      const res = await fetch('/api/avisos', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      notify('Aviso eliminado');
-      fetchAvisos();
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('avisos')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      notify('Aviso eliminado correctamente.');
+      await fetchAvisos();
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Error al eliminar: ' + err.message, true);
     } finally {
       setDeletingId(null);
     }

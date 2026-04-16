@@ -44,27 +44,60 @@ export default function UsuariosPage() {
   const [rol,      setRol]      = useState<Rol>('residente');
   const [casaId,   setCasaId]   = useState('');
 
+  /**
+   * Hook inicial para cargar la lista de usuarios y casas.
+   */
   useEffect(() => {
     fetchData();
-    setTimeout(() => setVisible(true), 50);
+    setTimeout(() => setVisible(true), 500);
   }, []);
 
+  /**
+   * Obtiene todos los perfiles de Supabase con sus casas vinculadas.
+   */
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [ru, rc] = await Promise.all([fetch('/api/usuarios'), fetch('/api/casas')]);
-      if (!ru.ok || !rc.ok) throw new Error('Error al cargar datos');
-      const usuarios = await ru.json();
-      const casas    = await rc.json();
-      setUsuarios(Array.isArray(usuarios) ? usuarios : []);
-      setCasas(Array.isArray(casas) ? casas : []);
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      // Consultamos usuarios y casas en paralelo
+      const [uRes, hRes] = await Promise.all([
+        supabase.from('usuarios').select('*, casas(numero_casa)').order('nombre_completo'),
+        supabase.from('casas').select('*').order('numero_casa')
+      ]);
+
+      if (uRes.error) throw uRes.error;
+      if (hRes.error) throw hRes.error;
+
+      // Adaptamos los usuarios
+      const adaptedUsers: Usuario[] = (uRes.data || []).map(u => ({
+        id: u.id, // UUID
+        nombre: u.nombre_completo,
+        correo: u.email || '—',
+        rol: u.rol as Rol,
+        casa_id: u.casa_id,
+        numero_casa: u.casas?.numero_casa
+      }));
+
+      // Ordenar casas numéricamente
+      const sortedCasas = (hRes.data || []).sort((a, b) => {
+        const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
+        return numA - numB;
+      });
+
+      setUsuarios(adaptedUsers);
+      setCasas(sortedCasas);
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Error de carga: ' + err.message, true);
     } finally {
       setLoading(false);
     }
   };
-
+  /**
+   * Notificaciones
+   */
   const notify = (msg: string, isErr = false) => {
     isErr ? setErrorMsg(msg) : setSuccessMsg(msg);
     setTimeout(() => isErr ? setErrorMsg('') : setSuccessMsg(''), isErr ? 5000 : 3000);
@@ -75,47 +108,78 @@ export default function UsuariosPage() {
     setNombre(''); setCorreo(''); setPassword(''); setRol('residente'); setCasaId('');
   };
 
+  /**
+   * Prepara el formulario para editar un perfil existente.
+   */
   const handleEdit = (u: Usuario) => {
-    setIsEditing(true); setCurrentId(u.id);
-    setNombre(u.nombre); setCorreo(u.correo); setRol(u.rol);
-    setCasaId(u.casa_id ? String(u.casa_id) : ''); setPassword('');
+    setIsEditing(true); 
+    setCurrentId(u.id); 
+    setNombre(u.nombre || ''); 
+    setCorreo(u.correo || ''); 
+    setRol(u.rol || 'residente');
+    setCasaId(u.casa_id ? String(u.casa_id) : ''); 
+    setPassword(''); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  /**
+   * Crea o actualiza un perfil utilizando la API de administración.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setFormLoading(true);
-      const payload = { id: currentId, nombre, correo, rol, casa_id: casaId ? Number(casaId) : null, password };
-      const res = await fetch('/api/usuarios', {
-        method: isEditing ? 'PUT' : 'POST',
+      
+      const endpoint = '/api/admin/usuarios';
+      const method = isEditing ? 'PUT' : 'POST';
+      const body = {
+        id: currentId,
+        nombre,
+        correo,
+        password,
+        rol,
+        casa_id: casaId ? Number(casaId) : null
+      };
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body)
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      notify(`Usuario ${isEditing ? 'actualizado' : 'creado'} correctamente`);
-      resetForm(); fetchData();
+      if (!res.ok) throw new Error(data.error || 'Error en la operación');
+
+      notify(isEditing ? 'Usuario actualizado correctamente.' : 'Usuario creado y confirmado.');
+      resetForm(); 
+      await fetchData();
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Fallo en la operación: ' + err.message, true);
     } finally {
       setFormLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Eliminar este usuario?')) return;
+  /**
+   * Borra el usuario por completo mediante la API de administración.
+   */
+  const handleDelete = async (id: any) => {
+    if (!confirm('¿Eliminar usuario y acceso por completo? Esta acción es irreversible.')) return;
     setDeletingId(id);
     try {
-      const res = await fetch('/api/usuarios', {
+      const res = await fetch('/api/admin/usuarios', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id })
       });
-      if (!res.ok) throw new Error((await res.json()).error);
-      notify('Usuario eliminado'); fetchData();
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al eliminar');
+
+      notify('Usuario eliminado definitivamente.'); 
+      await fetchData();
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Error al borrar: ' + err.message, true);
     } finally {
       setDeletingId(null);
     }

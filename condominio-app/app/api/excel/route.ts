@@ -1,25 +1,30 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { createClient } from '@/lib/server';
 import ExcelJS from 'exceljs';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const [rows] = await pool.query<any[]>(`
-      SELECT 
-        l.id,
-        c.numero_casa,
-        l.lectura_anterior,
-        l.lectura_actual,
-        l.consumo,
-        l.consumo_cobrar,
-        l.valor,
-        l.fecha
-      FROM lecturas_agua l
-      JOIN casas c ON l.casa_id = c.id
-      ORDER BY l.fecha DESC
-    `);
+    const supabase = await createClient();
+    
+    // Obtener lecturas con join a casas en español
+    const { data: rows, error: dbError } = await supabase
+      .from('lecturas_agua')
+      .select(`
+        id,
+        casa_id,
+        lectura_anterior,
+        lectura_actual,
+        consumo,
+        consumo_cobrar,
+        valor,
+        fecha,
+        casas (numero_casa)
+      `)
+      .order('fecha', { ascending: false });
+
+    if (dbError) throw dbError;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Reporte de Lecturas', {
@@ -83,7 +88,7 @@ export async function GET() {
     let currentRowNumber = 4;
 
     // Filas de datos
-    (rows as any[]).forEach((row) => {
+    (rows || []).forEach((row: any) => {
       const consumoVal = Number(row.consumo) || 0;
       const excesoVal = Number(row.consumo_cobrar) || 0;
       const valorNum = Number(row.valor) || 0;
@@ -94,7 +99,7 @@ export async function GET() {
 
       const dataRow = worksheet.getRow(currentRowNumber);
       dataRow.values = [
-        `Casa ${row.numero_casa}`,
+        `Casa ${row.casas?.numero_casa || 'N/A'}`,
         row.lectura_anterior,
         row.lectura_actual,
         consumoVal,

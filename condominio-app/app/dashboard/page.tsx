@@ -4,18 +4,18 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
   Droplets, Home, FileBarChart2, Megaphone, CalendarCheck,
-  Gauge, Users, Settings, Activity, LucideIcon
+  Gauge, Users, Settings, Activity, Clock, FileText, LucideIcon
 } from 'lucide-react';
-
+ 
 type Rol = 'admin' | 'trabajador' | 'residente';
-
+ 
 type UserSession = {
   nombre?: string;
   correo?: string;
   rol?: Rol;
   casa_id?: number | null;
 };
-
+ 
 type NavModule = {
   icon: LucideIcon;
   label: string;
@@ -24,13 +24,15 @@ type NavModule = {
   accent: string;
   roles: Rol[];
 };
-
+ 
 const NAV_MODULES: NavModule[] = [
   { icon: Droplets,      label: 'Lecturas de Agua', desc: 'Registro y seguimiento de consumo',      route: '/dashboard/lecturas',      accent: '#60a5fa', roles: ['admin','trabajador'] as Rol[] },
   { icon: Home,          label: 'Casas',            desc: 'Directorio de unidades residenciales',  route: '/dashboard/casas',         accent: '#f472b6', roles: ['admin','trabajador'] as Rol[] },
   { icon: FileBarChart2, label: 'Reportes',         desc: 'Análisis histórico y exportación',   route: '/dashboard/reportes',      accent: '#fb923c', roles: ['admin','trabajador'] as Rol[] },
-  { icon: Megaphone,     label: 'Avisos',           desc: 'Cartelera y notificaciones',             route: '/dashboard/avisos',        accent: '#fbbf24', roles: ['admin','residente'] as Rol[] },
-  { icon: CalendarCheck, label: 'Reservas',         desc: 'Gestión de áreas comunes',            route: '/dashboard/reservas',      accent: '#4ade80', roles: ['admin','residente'] as Rol[] },
+  { icon: Clock,         label: 'Asistencia',       desc: 'Registro de entrada y salida',           route: '/dashboard/asistencia',    accent: '#60a5fa', roles: ['admin','trabajador'] as Rol[] },
+  { icon: FileText,      label: 'Permisos',         desc: 'Gestión de inasistencias y permisos',    route: '/dashboard/permisos',      accent: '#a78bfa', roles: ['admin','trabajador'] as Rol[] },
+  { icon: Megaphone,     label: 'Avisos',           desc: 'Cartelera y notificaciones',             route: '/dashboard/avisos',        accent: '#fbbf24', roles: ['admin', 'residente', 'trabajador'] as Rol[] },
+  { icon: CalendarCheck, label: 'Reservas',         desc: 'Gestión de áreas comunes',            route: '/dashboard/reservas',      accent: '#4ade80', roles: ['admin', 'residente', 'trabajador'] as Rol[] },
   { icon: Gauge,         label: 'Mis Lecturas',     desc: 'Historial de consumo personal',          route: '/dashboard/mis-lecturas',  accent: '#60a5fa', roles: ['residente'] as Rol[] },
   { icon: Users,         label: 'Usuarios',         desc: 'Administración de cuentas y accesos',  route: '/dashboard/usuarios',      accent: '#a78bfa', roles: ['admin'] as Rol[] },
   { icon: Settings,      label: 'Configuración',    desc: 'Ajustes y parámetros del sistema',     route: '/dashboard/configuracion', accent: '#94a3b8', roles: ['admin'] as Rol[] },
@@ -51,31 +53,59 @@ export default function DashboardHomePage() {
   const [statsLoaded, setStatsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) setUser(JSON.parse(stored));
-    } catch {}
+    async function getUser() {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (authUser) {
+        const { data: profile } = await supabase
+          .from('usuarios')
+          .select('*, casas(numero_casa)')
+          .eq('id', authUser.id)
+          .single();
+        
+        setUser({
+          nombre: profile?.nombre_completo,
+          correo: authUser.email,
+          rol: profile?.rol as Rol,
+          casa_id: profile?.casa_id
+        });
+      }
+    }
+    getUser();
     setTimeout(() => setVisible(true), 50);
     loadStats();
   }, []);
 
   const loadStats = async () => {
     try {
-      const [rc, rl, ra, rr] = await Promise.all([
-        fetch('/api/casas'),
-        fetch('/api/lecturas'),
-        fetch('/api/avisos'),
-        fetch('/api/reservas'),
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      const [
+        { count: cCasas },
+        { count: cLecturas },
+        { count: cAvisos },
+        { count: cReservas }
+      ] = await Promise.all([
+        supabase.from('casas').select('*', { count: 'exact', head: true }),
+        supabase.from('lecturas_agua').select('*', { count: 'exact', head: true }),
+        supabase.from('avisos').select('*', { count: 'exact', head: true }),
+        supabase.from('reservas').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
       ]);
-      const [casas, lecturas, avisos, reservas] = await Promise.all([rc.json(), rl.json(), ra.json(), rr.json()]);
+
       setStats({
-        casas:    Array.isArray(casas) ? casas.length : 0,
-        lecturas: Array.isArray(lecturas) ? lecturas.length : 0,
-        avisos:   Array.isArray(avisos) ? avisos.length : 0,
-        reservas: Array.isArray(reservas) ? reservas.filter((r: any) => r.estado === 'pendiente').length : 0,
+        casas: cCasas || 0,
+        lecturas: cLecturas || 0,
+        avisos: cAvisos || 0,
+        reservas: cReservas || 0,
       });
-    } catch {}
-    finally { setStatsLoaded(true); }
+    } catch (err) {
+      console.error('Error loading stats:', err);
+    } finally {
+      setStatsLoaded(true);
+    }
   };
 
   const rol = user?.rol ?? 'residente';

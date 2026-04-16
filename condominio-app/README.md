@@ -1,55 +1,84 @@
-# Condominio Campestre La Florida 🏙️
+# 🔳 Condominio Campestre La Florida
 
-Aplicación web integral para la gestión y administración del **Condominio Campestre La Florida**. Diseñada con un enfoque moderno, minimalista y completamente oscuro (Dark Theme), evita el uso de librerías UI pesadas en favor de estilos en línea optimizados para mantener un control absoluto sobre el diseño.
-
-## 🚀 Tecnologías Utilizadas
-
-Este proyecto está construido sobre un stack robusto y moderno:
-
-- **[Next.js 14](https://nextjs.org/) (App Router):** Framework principal para React. Se usa tanto para el frontend (páginas dinámicas del dashboard) como para el backend (rutas API REST bajo `/app/api`).
-- **[TypeScript](https://www.typescriptlang.org/):** Tipado estricto en todo el flujo de datos para garantizar la seguridad de la información (sesiones de usuario, tipado de tablas de la BD, interfaces).
-- **[MySQL (mysql2/promise)](https://www.npmjs.com/package/mysql2):** Motor de base de datos relacional. Utilizamos un patrón Singleton (`lib/db.ts`) con un `createPool` que maneja límites estrictos de conexiones concurrentes para asegurar la estabilidad del entorno.
-- **[Lucide React](https://lucide.dev/):** Set de iconos profesionales en formato SVG ligero, para una apariencia limpia que complemente el tema oscuro.
-- **[ExcelJS](https://github.com/exceljs/exceljs):** Librería utilizada para la generación de reportes financieros y de consumo directamente en el servidor (exportaciones nativas descargables).
-
-## 🗄️ Base de Datos
-
-La base de datos MySQL está alojada y administrada remotamente a través de **Clever Cloud**.
-- **Instancia/Addon:** `addon_72dbe3aa-afc9-46a5-9315-fa4032f3227d`
-
-Debido a las políticas del entorno en la nube, la conexión está cuidadosamente optimizada asegurando un límite máximo de conexiones activas (usualmente 3 max) para evitar bloqueos por límite de capacidad.
-
-## ⚙️ Módulos del Sistema
-
-La estructura del sistema está controlada por tres roles jerárquicos: `admin`, `trabajador` y `residente`.
-
-1. **Lecturas de Agua 💧:** Registro mensual de contadores. Cálculo automático de excesos (base de 60m³) y cobro por tarifa.
-2. **Casas 🏠:** Gestión de las propiedades que componen el condominio.
-3. **Reportes 📊:** Cuadro de mando comparativo de los consumos globales del condominio de los últimos meses, e identificación de casas excedidas, con posibilidad de exportar a Excel.
-4. **Avisos 📢:** Cartelera virtual gestionada por la administración para anuncios generales, recordatorios y alertas urgentes para los residentes.
-5. **Reservas 🏊:** Sistema de apartado para áreas comunes (Piscina, Salón Social, Cancha Múltiple, Zona BBQ).
-6. **Usuarios 👥:** Gestión de credenciales, roles y asignación de propiedades.
-
-## 🌍 Despliegue
-
-La aplicación está completamente diseñada para integrarse y desplegarse en **[Vercel](https://vercel.com)**.
-
-El despliegue en Vercel ofrece beneficios cruciales en nuestro caso:
-- **Serverless API Routes:** Las rutas dentro de `app/api/...` se transforman automáticamente en Node.js Serverless Functions escalables.
-- **Optimizaciones automáticas:** Carga de fuentes por el compilador, minificación y caché nativa de Next.js.
-- Se debe asegurar que las variables de entorno de la base de datos de Clever Cloud (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`) estén correctamente agregadas en la configuración del proyecto dentro del panel de Vercel para garantizar la conexión en producción.
+> **Sistema Integral de Gestión Administrativa y Operativa**
+> Una plataforma premium construida con un diseño minimalista oscuro, optimizada para la gestión eficiente de personal, servicios y convivencia.
 
 ---
 
-### Scripts de Desarrollo Locales
+## 💎 Características Principales
 
-\`\`\`bash
-# 1. Instalar dependencias
-npm install
+### ⏱️ Control de Asistencia Inteligente
+Sistema de marcado de tiempo real para el personal (Entrada/Salida) con cálculo automático de horas laboradas.
+- **Vista de Administrador:** Panel de búsqueda y filtrado histórico global por empleado.
+- **Validación:** Registros protegidos mediante sesiones activas.
 
-# 2. Iniciar el servidor local
-npm run dev
+### 💧 Automatización de Lecturas de Agua
+Módulo optimizado para la lectura mensual de contadores con lógica de autocompletado inteligente.
+- **Arrastre de Lectura:** El sistema consulta automáticamente la última lectura registrada para precargarla.
+- **Cálculo Financiero:** Gestión de tarifas por excedentes (base 60m³) y generación de cálculos de cobro al instante.
 
-# 3. Compilar para producción (para comprobar antes de hacer push)
-npm run build
-\`\`\`
+### 👥 Gestión Documental y Usuarios
+Control absoluto sobre las credenciales y roles del condominio.
+- **Roles Dinámicos:** Administrador, Trabajador y Residente.
+- **Admin API:** Creación y edición de usuarios sin necesidad de confirmación por correo, permitiendo gestión directa de contraseñas por la administración.
+
+### 📅 Reservas y Comunicación
+- **Áreas Comunes:** Sistema de apartado para Capilla, Salón de Eventos, Restaurante y Canchas.
+- **Cartelera Virtual:** Publicación de avisos y alertas generales para toda la comunidad.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+El proyecto está diseñado para ser extremadamente ligero y no depender de librerías de UI pesadas, utilizando estilos en línea optimizados para un control total del diseño.
+
+*   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
+*   **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+*   **Base de Datos & Auth:** [Supabase](https://supabase.com/) (PostgreSQL)
+*   **Iconografía:** [Lucide React](https://lucide.dev/)
+*   **Reportes:** [ExcelJS](https://github.com/exceljs/exceljs) para exportaciones nativas.
+
+---
+
+## 🔐 Seguridad y Configuración
+
+El proyecto utiliza variables de entorno para proteger las credenciales críticas. **IMPORTANTE:** Nunca subas el archivo `.env.local` al repositorio.
+
+### Variables Requeridas
+| Variable | Descripción |
+| :--- | :--- |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL de tu instancia en Supabase. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima para operaciones de cliente. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **(Secreto)** Requerido para operaciones administrativas de usuarios. |
+
+---
+
+## 🚀 Guía de Inicio Rápido
+
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/tu-usuario/condominio-app.git
+    cd condominio-app
+    ```
+
+2.  **Instalar dependencias:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configurar Entorno:**
+    Crea un archivo `.env.local` en la raíz y añade tus claves de Supabase.
+
+4.  **Ejecutar en desarrollo:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 📦 Despliegue en Vercel
+
+Este proyecto está 100% listo para ser desplegado en Vercel. Asegúrate de añadir las **Environment Variables** en el dashboard de Vercel antes del despliegue para que la conexión con el Backend funcione correctamente.
+
+---
+*Desarrollado con enfoque en alto rendimiento y estética premium para el Condominio Campestre La Florida.*

@@ -1,44 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { createClient } from '@/lib/server';
 
 export async function GET() {
   try {
-    const [rows] = await pool.query<any[]>(`
-      SELECT u.id, u.nombre, u.correo, u.rol, u.casa_id, c.numero_casa 
-      FROM usuarios u
-      LEFT JOIN casas c ON u.casa_id = c.id
-      ORDER BY u.created_at DESC
-    `);
-    return NextResponse.json(rows, { status: 200 });
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select(`
+        id, 
+        nombre_completo, 
+        email, 
+        rol, 
+        casa_id, 
+        casas (numero_casa)
+      `)
+      .order('creado_el', { ascending: false });
+
+    if (error) throw error;
+
+    // Aplanar el resultado para mantener compatibilidad con el frontend
+    const formattedData = data.map((item: any) => ({
+      ...item,
+      nombre: item.nombre_completo,
+      numero_casa: item.casas?.numero_casa
+    }));
+
+    return NextResponse.json(formattedData, { status: 200 });
   } catch (error) {
     console.error('[GET /api/usuarios]', error);
     return NextResponse.json({ error: 'Error al obtener usuarios.' }, { status: 500 });
   }
 }
 
+// Nota: El registro se recomienda hacer vía Supabase Auth (RegisterPage). 
+// Este POST es para crear perfiles manualmente o por admin.
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, correo, password, rol, casa_id } = await req.json();
+    const supabase = await createClient();
+    const { nombre, correo, rol, casa_id } = await req.json();
 
-    if (!nombre || !correo || !password || !rol) {
+    if (!nombre || !correo || !rol) {
       return NextResponse.json({ error: 'Todos los campos excepto la casa son requeridos.' }, { status: 400 });
     }
 
-    const [existing] = await pool.query<any[]>(
-      'SELECT id FROM usuarios WHERE correo = ?',
-      [correo]
-    );
+    const { data: profile, error: insertError } = await supabase
+      .from('usuarios')
+      .insert([{
+        nombre_completo: nombre.trim(),
+        email: correo.trim(),
+        rol: rol,
+        casa_id: casa_id ? Number(casa_id) : null
+      }]);
 
-    if (existing.length > 0) {
-      return NextResponse.json({ error: 'El correo ya está en uso.' }, { status: 409 });
-    }
-
-    const cid = casa_id ? Number(casa_id) : null;
-
-    await pool.query(
-      'INSERT INTO usuarios (nombre, correo, password, rol, casa_id) VALUES (?, ?, ?, ?, ?)',
-      [nombre.trim(), correo.trim(), password, rol, cid]
-    );
+    if (insertError) throw insertError;
 
     return NextResponse.json({ message: 'Usuario creado correctamente.' }, { status: 201 });
   } catch (error) {
@@ -49,34 +63,24 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const { id, nombre, correo, rol, casa_id, password } = await req.json();
+    const supabase = await createClient();
+    const { id, nombre, correo, rol, casa_id } = await req.json();
 
     if (!id || !nombre || !correo || !rol) {
       return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
     }
 
-    const [existing] = await pool.query<any[]>(
-      'SELECT id FROM usuarios WHERE correo = ? AND id != ?',
-      [correo, id]
-    );
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({
+        nombre_completo: nombre.trim(),
+        email: correo.trim(),
+        rol: rol,
+        casa_id: casa_id ? Number(casa_id) : null
+      })
+      .eq('id', id);
 
-    if (existing.length > 0) {
-      return NextResponse.json({ error: 'El correo ya está en uso por otro usuario.' }, { status: 409 });
-    }
-
-    const cid = casa_id ? Number(casa_id) : null;
-
-    if (password && password.trim() !== '') {
-      await pool.query(
-        'UPDATE usuarios SET nombre = ?, correo = ?, rol = ?, casa_id = ?, password = ? WHERE id = ?',
-        [nombre.trim(), correo.trim(), rol, cid, password, id]
-      );
-    } else {
-      await pool.query(
-        'UPDATE usuarios SET nombre = ?, correo = ?, rol = ?, casa_id = ? WHERE id = ?',
-        [nombre.trim(), correo.trim(), rol, cid, id]
-      );
-    }
+    if (updateError) throw updateError;
 
     return NextResponse.json({ message: 'Usuario actualizado correctamente.' }, { status: 200 });
   } catch (error) {
@@ -87,13 +91,20 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { id } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: 'ID inválido.' }, { status: 400 });
     }
 
-    await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
+    const { error: deleteError } = await supabase
+      .from('usuarios')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) throw deleteError;
+
     return NextResponse.json({ message: 'Usuario eliminado.' }, { status: 200 });
   } catch (error) {
     console.error('[DELETE /api/usuarios]', error);

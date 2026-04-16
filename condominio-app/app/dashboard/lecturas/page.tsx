@@ -35,35 +35,102 @@ export default function LecturasPage() {
     fecha: new Date().toISOString().split('T')[0],
   });
 
+  // Hook inicial para preparar el componente
   useEffect(() => {
     setMounted(true);
     loadData();
   }, []);
 
+  /**
+   * Automatización: Cargar lectura anterior al seleccionar una casa
+   */
+  useEffect(() => {
+    if (form.casa_id) {
+      fetchUltimaLectura(Number(form.casa_id));
+    } else {
+      setForm(prev => ({ ...prev, lectura_anterior: '' }));
+    }
+  }, [form.casa_id]);
+
+  const fetchUltimaLectura = async (id: number) => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('lecturas_agua')
+        .select('lectura_actual')
+        .eq('casa_id', id)
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (data) {
+        setForm(prev => ({ ...prev, lectura_anterior: String(data.lectura_actual) }));
+      } else {
+        // Si no hay lecturas previas, dejar en 0 o vacío
+        setForm(prev => ({ ...prev, lectura_anterior: '0' }));
+      }
+    } catch (err) {
+      console.log('Sin lectura previa para esta casa.');
+      setForm(prev => ({ ...prev, lectura_anterior: '0' }));
+    }
+  };
+
+  /**
+   * Carga inicial de datos: casas (para el select) y lecturas (para la tabla)
+   */
   const loadData = async () => {
     setError('');
     setLoading(true);
     try {
       await Promise.all([fetchCasas(), fetchLecturas()]);
-    } catch {
-      setError('No se pudieron cargar los datos.');
+    } catch (err: any) {
+      setError('Error al cargar datos desde Supabase: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Obtiene las casas disponibles para vincular lecturas
+   */
   const fetchCasas = async () => {
-    const res = await fetch('/api/casas');
-    if (!res.ok) throw new Error(`API casas: ${res.status}`);
-    const data = await res.json();
-    setCasas(Array.isArray(data) ? data : []);
+    const { createClient } = await import('@/lib/client');
+    const supabase = createClient();
+    const { data, error } = await supabase.from('casas').select('*');
+    if (error) throw error;
+    
+    // Ordenar numéricamente por numero_casa
+    const sorted = (data || []).sort((a, b) => {
+      const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
+      return numA - numB;
+    });
+    
+    setCasas(sorted);
   };
 
+  /**
+   * Obtiene el historial de lecturas con join a casas para mostrar el número de unidad
+   */
   const fetchLecturas = async () => {
-    const res = await fetch('/api/lecturas');
-    if (!res.ok) throw new Error(`API lecturas: ${res.status}`);
-    const data = await res.json();
-    setLecturas(Array.isArray(data) ? data : []);
+    const { createClient } = await import('@/lib/client');
+    const supabase = createClient();
+    
+    // Usamos join relacional de Supabase para traer el numero_casa
+    const { data, error } = await supabase
+      .from('lecturas_agua')
+      .select('*, casas(numero_casa)')
+      .order('fecha', { ascending: false });
+
+    if (error) throw error;
+
+    const adapted = (data || []).map(l => ({
+      ...l,
+      numero_casa: l.casas?.numero_casa || 'N/A'
+    }));
+    
+    setLecturas(adapted);
   };
 
   const validateForm = () => {
@@ -79,18 +146,45 @@ export default function LecturasPage() {
     return Object.keys(errs).length === 0;
   };
 
+  /**
+   * Procesa y guarda una nueva lectura calculando consumos y valores
+   */
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
     if (!validateForm()) return;
     setSaving(true);
     try {
-      await fetch('/api/lecturas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      setSuccess('Lectura guardada correctamente.');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      const anterior = Number(form.lectura_anterior || 0);
+      const actual = Number(form.lectura_actual || 0);
+      const consumo = actual - anterior;
+      
+      // La validación ya se hizo en validateForm(), pero reforzamos aquí
+      if (actual < anterior) {
+        throw new Error('La lectura actual no puede ser menor a la anterior');
+      }
+
+      const consumoCobrar = Math.max(0, consumo - 60); // 60m³ es el límite básico
+      const valor = consumoCobrar * 1605; // Tarifa fija por m³ excedente
+
+      const { error } = await supabase
+        .from('lecturas_agua')
+        .insert([{
+          casa_id: Number(form.casa_id),
+          lectura_anterior: anterior,
+          lectura_actual: actual,
+          consumo: consumo,
+          consumo_cobrar: consumoCobrar,
+          valor: valor,
+          fecha: form.fecha
+        }]);
+
+      if (error) throw error;
+
+      setSuccess('Lectura guardada en Supabase correctamente.');
       setForm({
         casa_id: '',
         lectura_anterior: '',
@@ -99,26 +193,76 @@ export default function LecturasPage() {
       });
       setFormErrors({});
       await fetchLecturas();
-    } catch {
-      setError('Error al guardar la lectura.');
+    } catch (err: any) {
+      setError('Error al guardar: ' + err.message);
     } finally {
       setSaving(false);
     }
   };
 
+  /**
+   * Elimina un registro de lectura
+   */
   const eliminar = async (id: number) => {
-    if (!confirm('¿Eliminar esta lectura?')) return;
+    if (!confirm('¿Eliminar esta lectura de forma permanente?')) return;
     setDeletingId(id);
-    await fetch('/api/lecturas', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    await fetchLecturas();
-    setDeletingId(null);
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.from('lecturas_agua').delete().eq('id', id);
+      if (error) throw error;
+      await fetchLecturas();
+    } catch (err: any) {
+      setError('Fallo al eliminar: ' + err.message);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
-  const exportarExcel = () => window.open('/api/excel', '_blank');
+  /**
+   * Genera y descarga un archivo Excel usando exceljs (Client-side)
+   */
+  const exportarExcel = async () => {
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const saveAs = (await import('file-saver')).saveAs;
+      
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Lecturas de Agua');
+
+      worksheet.columns = [
+        { header: 'Casa', key: 'casa', width: 15 },
+        { header: 'Anterior', key: 'ant', width: 15 },
+        { header: 'Actual', key: 'act', width: 15 },
+        { header: 'Consumo m³', key: 'con', width: 15 },
+        { header: 'Exceso m³', key: 'exc', width: 15 },
+        { header: 'Valor ($)', key: 'val', width: 15 },
+        { header: 'Fecha', key: 'fec', width: 20 },
+      ];
+
+      lecturas.forEach(l => {
+        worksheet.addRow({
+          casa: l.numero_casa,
+          ant: l.lectura_anterior,
+          act: l.lectura_actual,
+          con: l.consumo,
+          exc: l.consumo_cobrar,
+          val: l.valor,
+          fec: l.fecha
+        });
+      });
+
+      // Estilo de cabecera
+      worksheet.getRow(1).font = { bold: true };
+      
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `Reporte_Agua_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (err) {
+      console.error('Error al exportar:', err);
+      alert('Error al generar el Excel');
+    }
+  };
 
   const consumoTotal = Math.round(lecturas.reduce((s, l) => s + (Number(l.consumo) || 0), 0));
   const valorTotal = Math.round(lecturas.reduce((s, l) => s + (Number(l.valor) || 0), 0));

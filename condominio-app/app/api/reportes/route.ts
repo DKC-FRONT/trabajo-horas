@@ -1,52 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { createClient } from '@/lib/server';
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const now = new Date();
     const mes  = Number(searchParams.get('mes')  ?? now.getMonth() + 1);
     const anio = Number(searchParams.get('anio') ?? now.getFullYear());
 
-    // ── Consumo por casa en el mes ──────────────────────────────
-    const [porCasa] = await pool.query<any[]>(`
-      SELECT
-        c.numero_casa,
-        l.lectura_anterior,
-        l.lectura_actual,
-        l.consumo,
-        l.consumo_cobrar,
-        l.valor,
-        l.fecha
-      FROM lecturas_agua l
-      JOIN casas c ON l.casa_id = c.id
-      WHERE l.mes = ? AND l.anio = ?
-      ORDER BY CAST(c.numero_casa AS UNSIGNED) ASC
-    `, [mes, anio]);
+    // 1. Obtener consumos por casa en el mes
+    const { data: rawPorCasa, error: err1 } = await supabase
+      .from('lecturas_agua')
+      .select(`
+        id,
+        lectura_anterior,
+        lectura_actual,
+        consumo,
+        consumo_cobrar,
+        valor,
+        fecha,
+        casas (numero_casa)
+      `)
+      .eq('mes', mes)
+      .eq('anio', anio);
 
-    // ── Casas que superaron 60m³ ────────────────────────────────
+    if (err1) throw err1;
+
+    // Adaptar formato para compatibilidad con el frontend
+    const porCasa = (rawPorCasa || []).map((r: any) => ({
+      ...r,
+      numero_casa: r.casas?.numero_casa
+    })).sort((a, b) => parseInt(a.numero_casa) - parseInt(b.numero_casa));
+
+    // 2. Casas que superaron 60m³
     const excedidas = porCasa.filter((r) => Number(r.consumo_cobrar) > 0);
 
-    // ── Total recaudado ─────────────────────────────────────────
+    // 3. Totales
     const totalValor   = porCasa.reduce((s, r) => s + Number(r.valor), 0);
     const totalConsumo = porCasa.reduce((s, r) => s + Number(r.consumo), 0);
 
-    // ── Comparativo últimos 6 meses ─────────────────────────────
-    const [comparativo] = await pool.query<any[]>(`
-      SELECT
-        mes,
-        anio,
-        COUNT(*) as total_casas,
-        SUM(consumo) as consumo_total,
-        SUM(valor) as valor_total,
-        COUNT(CASE WHEN consumo_cobrar > 0 THEN 1 END) as casas_excedidas
-      FROM lecturas_agua
-      WHERE (anio = ? AND mes <= ?)
-         OR (anio = ? AND mes > ?)
-      GROUP BY anio, mes
-      ORDER BY anio DESC, mes DESC
-      LIMIT 6
-    `, [anio, mes, anio - 1, mes]);
+    // 4. Comparativo últimos 6 meses (Uso rpc o consulta agrupada si fuera posible, por ahora simple select)
+    // Para simplificar, obtenemos los datos de los últimos meses
+    const { data: rawComp, error: err2 } = await supabase
+      .from('lecturas_agua')
+      .select('mes, anio, consumo, consumo_cobrar, valor')
+      .or(`and(anio.eq.${anio},mes.lte.${mes}),and(anio.eq.${anio - 1},mes.gt.${mes})`)
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false });
+
+    if (err2) throw err2;
+
+    // Agrupar manualmente en JS para el comparativo (similar a GROUP BY)
+    const agrupado: Record<string, any> = {};
+    (rawComp || []).forEach(r => {
+      const key = `${r.anio}-${r.mes}`;
+      if (!agrupado[key]) {
+        agrupado[key] = { mes: r.mes, anio: r.anio, total_casas: 0, consumo_total: 0, valor_total: 0, casas_excedidas: 0 };
+      }
+      agrupado[key].total_casas += 1;
+      agrupado[key].consumo_total += Number(r.consumo);
+      agrupado[key].valor_total += Number(r.valor);
+      if (Number(r.consumo_cobrar) > 0) agrupado[key].casas_excedidas += 1;
+    });
+
+    const comparativo = Object.values(agrupado).slice(0, 6).reverse();
 
     return NextResponse.json({
       mes,
@@ -59,11 +77,11 @@ export async function GET(req: NextRequest) {
         consumo_total:   Math.round(totalConsumo),
         valor_total:     Math.round(totalValor),
       },
-      comparativo: comparativo.reverse(),
+      comparativo,
     }, { status: 200 });
 
   } catch (error) {
     console.error('[GET /api/reportes]', error);
     return NextResponse.json({ error: 'Error al generar el reporte.' }, { status: 500 });
   }
-}
+}

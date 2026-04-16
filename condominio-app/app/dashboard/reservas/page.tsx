@@ -107,7 +107,7 @@ function calcularValor(area: string, fecha: string, iniVal: number, finVal: numb
   return 0;
 }
 
-function parseHoraMySQL(hora: string) {
+function parseHora(hora: string) {
   const parts = hora.split(':');
   let h = Number(parts[0]);
   if (h >= 24) {
@@ -142,53 +142,114 @@ export default function ReservasPage() {
     return String(r.casa_id) === filtroTablaCasa;
   });
 
+  /**
+   * Hook inicial: Carga la sesión del usuario y los datos necesarios.
+   */
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        setUser(u);
-        if (u.casa_id) setCasaSeleccionada(String(u.casa_id));
-        fetchReservas(u);
-        if (u.rol === 'admin' || u.rol === 'trabajador') fetchCasas();
-      } else {
+    const init = async () => {
+      try {
+        const { createClient } = await import('@/lib/client');
+        const supabase = createClient();
+        
+        // 1. Obtener sesión de auth
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          // 2. Obtener perfil detallado (rol, casa_id)
+          const { data: profile } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+
+          if (profile) {
+            const sessionData: UserSession = {
+              id: profile.id,
+              nombre: profile.nombre_completo,
+              correo: authUser.email || '',
+              rol: profile.rol as Rol,
+              casa_id: profile.casa_id
+            };
+            setUser(sessionData);
+            if (sessionData.casa_id) setCasaSeleccionada(String(sessionData.casa_id));
+            
+            // 3. Cargar datos específicos del rol
+            await fetchReservas();
+            if (sessionData.rol === 'admin' || sessionData.rol === 'trabajador') {
+              await fetchCasas();
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error inicializando reservas:', err);
+      } finally {
         setLoading(false);
       }
-    } catch { setLoading(false); }
+    };
+
+    init();
     setTimeout(() => setVisible(true), 50);
   }, []);
 
+  /**
+   * Obtiene la lista de todas las casas (para admins).
+   */
   const fetchCasas = async () => {
-    try {
-      const res = await fetch('/api/casas');
-      if (res.ok) {
-        const data = await res.json();
-        setCasas(Array.isArray(data) ? data : []);
-      }
-    } catch {}
+    const { createClient } = await import('@/lib/client');
+    const supabase = createClient();
+    const { data } = await supabase.from('casas').select('*');
+    
+    // Ordenar numéricamente (1, 2, 3...)
+    const sorted = (data || []).sort((a, b) => {
+      const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
+      return numA - numB;
+    });
+
+    setCasas(sorted);
   };
 
-  const fetchReservas = async (usr: UserSession) => {
+  /**
+   * Obtiene el historial de reservas de Supabase.
+   */
+  const fetchReservas = async () => {
     try {
       setLoading(true);
-      // Todos pueden ver las reservas para mayor transparencia, 
-      // así saben qué áreas están ocupadas (eliminado el filtro casa_id en la petición)
-      const res = await fetch('/api/reservas');
-      if (!res.ok) throw new Error('Error al obtener reservas');
-      const data = await res.json();
-      setReservas(Array.isArray(data) ? data : []);
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      // Hacemos join con la tabla de casas para mostrar el número de unidad
+      const { data, error } = await supabase
+        .from('reservas')
+        .select('*, casas(numero_casa)')
+        .order('fecha', { ascending: false });
+
+      if (error) throw error;
+
+      const adapted: Reserva[] = (data || []).map(r => ({
+        ...r,
+        numero_casa: r.casas?.numero_casa || 'N/A',
+        fecha_reserva: r.fecha
+      }));
+
+      setReservas(adapted);
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Error al cargar reservas: ' + err.message, true);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Notificaciones
+   */
   const notify = (msg: string, err = false) => {
     err ? setErrorMsg(msg) : setSuccessMsg(msg);
     setTimeout(() => err ? setErrorMsg('') : setSuccessMsg(''), err ? 6000 : 3500);
   };
 
+  /**
+   * Determina qué casa_id usar para la reserva
+   */
   const getCasaId = (): number | null => {
     if (user?.rol === 'residente') return user.casa_id ?? null;
     if (casaSeleccionada) return Number(casaSeleccionada);
@@ -198,75 +259,82 @@ export default function ReservasPage() {
   const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
   const valorEstimado = calcularValor(area, fecha, horaInicio, horaFin);
 
+  /**
+   * Crea una nueva solicitud de reserva en la tabla 'reservations'
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const casaId = getCasaId();
     if (!casaId) {
       notify(user?.rol === 'residente'
-        ? 'Tu cuenta no tiene una casa vinculada. Contacta al administrador.'
-        : 'Selecciona una casa para la reserva.', true);
+        ? 'Cuenta sin casa vinculada. Avisa al administrador.'
+        : 'Debes seleccionar una casa.', true);
       return;
     }
-    if (!fecha) { notify('Selecciona una fecha para la reserva.', true); return; }
-    if (horaInicio >= horaFin) { notify('La hora de inicio debe ser anterior a la hora de fin.', true); return; }
+    if (!fecha) { notify('Elige una fecha.', true); return; }
+    if (horaInicio >= horaFin) { notify('Fin debe ser después de inicio.', true); return; }
 
     try {
       setFormLoading(true);
-      const payload = {
-        casa_id: casaId,
-        area,
-        fecha_reserva: fecha,
-        hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
-        hora_fin: horaFin.toString().padStart(2, '0') + ':00',
-        valor: valorEstimado
-      };
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('reservas')
+        .insert([{
+          casa_id: casaId,
+          area: area,
+          fecha: fecha,
+          hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
+          hora_fin: horaFin.toString().padStart(2, '0') + ':00',
+          valor: valorEstimado,
+          estado: 'pendiente'
+        }]);
+
+      if (error) throw error;
       
-      const res = await fetch('/api/reservas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al crear la reserva');
-      
-      notify('Reserva solicitada correctamente');
-      setFecha('');
-      setHoraInicio(10);
-      setHoraFin(12);
+      notify('Solicitud de reserva enviada a Supabase');
+      setFecha(''); setHoraInicio(10); setHoraFin(12);
       if (user?.rol === 'admin') setCasaSeleccionada('');
-      if (user) fetchReservas(user);
+      await fetchReservas();
     } catch (err: any) {
-      notify(err.message, true);
+      notify('Error al reservar: ' + err.message, true);
     } finally {
       setFormLoading(false);
     }
   };
 
+  /**
+   * Actualiza el estado (Pendiente/Aprobada/Rechazada) de una reserva
+   */
   const cambiarEstado = async (id: number, estado: EstadoReserva) => {
     try {
-      const res = await fetch('/api/reservas', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, estado }),
-      });
-      if (!res.ok) throw new Error('Error al cambiar el estado');
-      notify(`Reserva ${estado}`);
-      if (user) fetchReservas(user);
-    } catch (err: any) { notify(err.message, true); }
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('reservas')
+        .update({ estado: estado })
+        .eq('id', id);
+      
+      if (error) throw error;
+      notify(`La reserva ahora está ${estado}`);
+      await fetchReservas();
+    } catch (err: any) { notify('Fallo al cambiar estado: ' + err.message, true); }
   };
 
+  /**
+   * Borra un registro de reserva
+   */
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Cancelar esta reserva?')) return;
+    if (!confirm('¿Seguro quieres cancelar esta reserva en Supabase?')) return;
     try {
-      const res = await fetch('/api/reservas', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) throw new Error('Error al cancelar');
-      notify('Reserva cancelada');
-      if (user) fetchReservas(user);
-    } catch (err: any) { notify(err.message, true); }
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.from('reservas').delete().eq('id', id);
+      if (error) throw error;
+      notify('Reserva cancelada exitosamente');
+      await fetchReservas();
+    } catch (err: any) { notify('Error al borrar: ' + err.message, true); }
   };
 
   const fieldStyle = (field: string): React.CSSProperties => ({
@@ -544,7 +612,7 @@ export default function ReservasPage() {
                       <td style={{ padding: '0.9rem 1rem', fontSize: '0.77rem', color: 'rgba(255, 255, 255, 1)' }}>{fechaFmt}</td>
                       <td style={{ padding: '0.9rem 1rem', whiteSpace: 'nowrap' }}>
                         <span style={{ fontSize: '0.74rem', color: ACCENT, background: `${ACCENT}12`, padding: '0.22rem 0.6rem', border: `1px solid ${ACCENT}30`, fontWeight: 600 }}>
-                          {parseHoraMySQL(r.hora_inicio)} – {parseHoraMySQL(r.hora_fin)}
+                          {parseHora(r.hora_inicio)} – {parseHora(r.hora_fin)}
                         </span>
                       </td>
                       <td style={{ padding: '0.9rem 1rem', fontSize: '0.8rem', color: '#4ade80' }}>

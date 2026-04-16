@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { createClient } from '@/lib/server';
 import { calcularLectura } from '@/lib/calcularLectura';
 
 // ── POST — Guardar nueva lectura ────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await req.json();
     const { casa_id, lectura_anterior, lectura_actual, fecha } = body;
 
@@ -40,12 +41,18 @@ export async function POST(req: NextRequest) {
     const mes  = fechaDate.getMonth() + 1;
     const anio = fechaDate.getFullYear();
 
-    await pool.query(
-      `INSERT INTO lecturas_agua
-        (casa_id, lectura_anterior, lectura_actual, consumo, consumo_cobrar, valor, fecha, mes, anio)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [casa_id, anterior, actual, consumo, consumo_cobrar, valor, fecha, mes, anio]
-    );
+    const { error: insertError } = await supabase
+      .from('lecturas_agua')
+      .insert([{ 
+        casa_id, 
+        lectura_anterior: anterior, 
+        lectura_actual: actual, 
+        consumo_cobrar, 
+        valor, 
+        fecha
+      }]);
+
+    if (insertError) throw insertError;
 
     return NextResponse.json(
       { message: 'Lectura guardada correctamente.', consumo, consumo_cobrar, valor },
@@ -61,57 +68,45 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── GET — Listar lecturas (opcional: filtro por mes y/o año) ────────────────
+// ── GET — Listar lecturas ────────────────
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const mes  = searchParams.get('mes');
     const anio = searchParams.get('anio');
     const casa_id = searchParams.get('casa_id');
 
-    let query = `
-      SELECT
-        l.id,
-        l.lectura_anterior,
-        l.lectura_actual,
-        l.consumo,
-        l.consumo_cobrar,
-        l.valor,
-        l.fecha,
-        l.mes,
-        l.anio,
-        c.numero_casa
-      FROM lecturas_agua l
-      JOIN casas c ON l.casa_id = c.id
-    `;
+    let query = supabase
+      .from('lecturas_agua')
+      .select(`
+        id,
+        lectura_anterior,
+        lectura_actual,
+        consumo,
+        consumo_cobrar,
+        valor,
+        fecha,
+        mes,
+        anio,
+        casas (numero_casa)
+      `);
 
-    const conditions: string[] = [];
-    const params: (string | number)[] = [];
+    if (mes) query = query.eq('mes', Number(mes));
+    if (anio) query = query.eq('anio', Number(anio));
+    if (casa_id) query = query.eq('casa_id', Number(casa_id));
 
-    if (mes) {
-      conditions.push('l.mes = ?');
-      params.push(Number(mes));
-    }
+    const { data, error } = await query.order('fecha', { ascending: false });
 
-    if (anio) {
-      conditions.push('l.anio = ?');
-      params.push(Number(anio));
-    }
+    if (error) throw error;
 
-    if (casa_id) {
-      conditions.push('l.casa_id = ?');
-      params.push(Number(casa_id));
-    }
+    // Aplanar resultado
+    const formattedData = data.map((item: any) => ({
+      ...item,
+      numero_casa: item.casas?.numero_casa
+    }));
 
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    query += ' ORDER BY l.fecha DESC';
-
-    const [rows] = await pool.query(query, params);
-
-    return NextResponse.json(rows, { status: 200 });
+    return NextResponse.json(formattedData, { status: 200 });
 
   } catch (error) {
     console.error('[GET /api/lecturas]', error);
@@ -125,6 +120,7 @@ export async function GET(req: NextRequest) {
 // ── DELETE — Eliminar lectura por ID ────────────────────────────────────────
 export async function DELETE(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { id } = await req.json();
 
     if (!id || isNaN(Number(id))) {
@@ -134,17 +130,12 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const [result]: any = await pool.query(
-      'DELETE FROM lecturas_agua WHERE id = ?',
-      [id]
-    );
+    const { error: deleteError } = await supabase
+      .from('lecturas_agua')
+      .delete()
+      .eq('id', id);
 
-    if (result.affectedRows === 0) {
-      return NextResponse.json(
-        { error: 'Lectura no encontrada.' },
-        { status: 404 }
-      );
-    }
+    if (deleteError) throw deleteError;
 
     return NextResponse.json(
       { message: 'Lectura eliminada correctamente.' },

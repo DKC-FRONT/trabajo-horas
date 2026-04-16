@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
 
@@ -64,21 +65,37 @@ const ALL_NAV_ITEMS = [
 
 export default function Home() {
   const router = useRouter();
+  const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
-  const [user, setUser] = useState<{ nombre?: string; rol?: Rol } | null>(null);
+  const [user, setUser] = useState<{ id: string; nombre?: string; rol?: Rol } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) setUser(JSON.parse(stored));
-    } catch {}
-  }, []);
+    const getUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        // Obtenemos el perfil para el rol y nombre
+        const { data: profile } = await supabase
+          .from('usuarios')
+          .select('nombre_completo, rol')
+          .eq('id', authUser.id)
+          .single();
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
+        setUser({
+          id: authUser.id,
+          nombre: profile?.nombre_completo || authUser.email,
+          rol: (profile?.rol as Rol) || 'residente'
+        });
+      }
+    };
+    getUser();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    router.refresh();
   };
 
   const navItems = user

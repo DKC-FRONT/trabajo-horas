@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Droplets, Home, FileBarChart2, Megaphone, CalendarCheck,
-  Gauge, Users, Settings, ChevronLeft, LogOut, LucideIcon
+  Gauge, Users, Settings, ChevronLeft, LogOut, Clock, FileText, LucideIcon
 } from 'lucide-react';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
@@ -21,6 +21,8 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Droplets,      label: 'Lecturas',      route: '/dashboard/lecturas',      roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
   { icon: Home,          label: 'Casas',         route: '/dashboard/casas',         roles: ['admin', 'trabajador'],  accent: '#f472b6' },
   { icon: FileBarChart2, label: 'Reportes',      route: '/dashboard/reportes',      roles: ['admin', 'trabajador'],  accent: '#fb923c' },
+  { icon: Clock,         label: 'Asistencia',    route: '/dashboard/asistencia',    roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
+  { icon: FileText,      label: 'Permisos',      route: '/dashboard/permisos',      roles: ['admin', 'trabajador'],  accent: '#a78bfa' },
   { icon: Megaphone,     label: 'Avisos',        route: '/dashboard/avisos',        roles: ['admin', 'residente', 'trabajador'],   accent: '#fbbf24' },
   { icon: CalendarCheck, label: 'Reservas',      route: '/dashboard/reservas',      roles: ['admin', 'residente', 'trabajador'],   accent: '#4ade80' },
   { icon: Gauge,         label: 'Mis lecturas',  route: '/dashboard/mis-lecturas',  roles: ['residente'],            accent: '#60a5fa' },
@@ -52,25 +54,72 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted]     = useState(false);
   const [isMobile, setIsMobile]   = useState(false);
+  const [dbStatus, setDbStatus]   = useState<'checking' | 'online' | 'error'>('checking');
 
   useEffect(() => {
     setMounted(true);
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    try {
-      const stored = localStorage.getItem('user');
-      if (!stored) { router.push('/login'); return; }
-      setUser(JSON.parse(stored));
-    } catch {
-      router.push('/login');
+    const checkSize = () => setIsMobile(window.innerWidth < 768);
+    checkSize();
+    window.addEventListener('resize', checkSize);
+
+    async function checkSession() {
+      try {
+        const { createClient } = await import('@/lib/client');
+        const supabase = createClient();
+        
+        // 1. Verificar Auth
+        const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
+
+        if (authErr || !authUser) {
+          setDbStatus('online'); // La conexión técnica está bien, pero no hay sesión
+          router.push('/login');
+          return;
+        }
+
+        // 2. Verificar Conexión y Perfil (Prueba real a la base de datos)
+        const { data: profile, error: profErr } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+
+        if (profErr && profErr.code !== 'PGRST116') {
+          // Error de conexión o permisos
+          setDbStatus('error');
+        } else {
+          setDbStatus('online');
+        }
+
+        if (profile) {
+          setUser({
+            nombre: profile.nombre_completo,
+            correo: authUser.email,
+            rol: profile.rol as Rol,
+          });
+        } else {
+          // Si el usuario existe en Auth pero NO tiene perfil en la tabla public.usuarios
+          console.warn('Usuario autenticado pero sin perfil en base de datos:', authUser.email);
+          setUser({ 
+            nombre: 'Sin Perfil', 
+            correo: authUser.email, 
+            rol: 'residente' // Rol por defecto si falta el perfil
+          });
+        }
+      } catch (err) {
+        console.error('Fallo crítico de conexión:', err);
+        setDbStatus('error');
+      }
     }
-    return () => window.removeEventListener('resize', check);
+
+    checkSession();
+    return () => window.removeEventListener('resize', checkSize);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    router.push('/login');
+  const handleLogout = async () => {
+    const { createClient } = await import('@/lib/client');
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = '/login';
   };
 
   const rol          = user?.rol ?? 'residente';
@@ -183,6 +232,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         alignItems: collapsed && !isMobile ? 'center' : 'flex-start',
       }}>
         {(!collapsed || isMobile) && (
+          <div style={{ padding: '0', marginBottom: '0.1rem', width: '100%' }}>
+            <div style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.5rem', 
+              padding: '0.5rem', borderRadius: '4px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.05)'
+            }}>
+              <div style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : '#fbbf24',
+                boxShadow: `0 0 8px ${dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : '#fbbf24'}`,
+                animation: dbStatus === 'checking' ? 'pulse 1s infinite' : 'none'
+              }} />
+              <span style={{ fontSize: '0.55rem', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                Supabase: {dbStatus.toUpperCase()}
+              </span>
+            </div>
+          </div>
+        )}
+        
+        {(!collapsed || isMobile) && (
           <div>
             <span style={{
               fontSize: '0.5rem', letterSpacing: '0.12em', textTransform: 'uppercase' as const,
@@ -194,7 +264,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {ROL_LABEL[rol]}
             </span>
             <div style={{ fontSize: '0.68rem', color: 'rgba(255, 255, 255, 1)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
-              {user?.nombre ?? 'Usuario'}
+              {user?.nombre || 'Sin Perfil'}
             </div>
             <div style={{ fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
               {user?.correo}

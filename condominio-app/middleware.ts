@@ -1,61 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server'
+import { updateSession } from '@/lib/middleware'
 
-// Rutas públicas — no requieren sesión
-const PUBLIC_ROUTES = ['/', '/login'];
-
-// Rutas y los roles que pueden acceder
-const PROTECTED_ROUTES: Record<string, string[]> = {
-  '/dashboard':                    ['admin', 'trabajador', 'residente'],
-  '/dashboard/lecturas':           ['admin', 'trabajador'],
-  '/dashboard/casas':              ['admin', 'trabajador'],
-  '/dashboard/reportes':           ['admin', 'trabajador'],
-  '/dashboard/avisos':             ['admin', 'residente', 'trabajador'],
-  '/dashboard/reservas':           ['admin', 'residente', 'trabajador'],
-  '/dashboard/mis-lecturas':       ['residente'],
-  '/dashboard/usuarios':           ['admin'],
-  '/dashboard/configuracion':      ['admin'],
-};
-
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  // Dejar pasar rutas públicas y archivos estáticos
-  if (
-    PUBLIC_ROUTES.includes(pathname) ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.')
-  ) {
-    return NextResponse.next();
-  }
-
-  // Leer sesión desde cookie (ver nota abajo)
-  const sessionCookie = req.cookies.get('session')?.value;
-
-  if (!sessionCookie) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  let user: { rol?: string } = {};
-  try {
-    user = JSON.parse(sessionCookie);
-  } catch {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  const rol = user?.rol;
-  if (!rol) return NextResponse.redirect(new URL('/login', req.url));
-
-  // Verificar permiso para la ruta actual
-  const allowedRoles = PROTECTED_ROUTES[pathname];
-  if (allowedRoles && !allowedRoles.includes(rol)) {
-    // No tiene permiso → redirigir al dashboard general
-    return NextResponse.redirect(new URL('/dashboard', req.url));
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return await updateSession(request)
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}

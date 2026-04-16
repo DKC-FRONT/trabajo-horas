@@ -9,10 +9,25 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'online' | 'error'>('checking');
 
   useEffect(() => {
     setMounted(true);
+    checkConnection();
   }, []);
+
+  const checkConnection = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.from('casas').select('id').limit(1);
+      if (error) throw error;
+      setDbStatus('online');
+    } catch (err) {
+      console.error('Error de conexión:', err);
+      setDbStatus('error');
+    }
+  };
 
   const handleLogin = async () => {
     if (!correo || !password) {
@@ -24,22 +39,23 @@ export default function Login() {
     setMensaje('');
 
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, password }),
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: correo,
+        password: password,
       });
 
-      const data = await res.json();
-
-      if (data.error) {
-        setMensaje(data.error);
+      if (error) {
+        setMensaje('Credenciales incorrectas o usuario no encontrado.');
       } else {
-        localStorage.setItem('user', JSON.stringify(data.user));
+        // El middleware y Supabase SSR se encargan de la sesión
         window.location.href = '/dashboard';
       }
-    } catch {
-      setMensaje('Error de conexión. Intenta de nuevo.');
+    } catch (err) {
+      console.error(err);
+      setMensaje('Error al intentar iniciar sesión.');
     } finally {
       setLoading(false);
     }
@@ -132,13 +148,13 @@ export default function Login() {
               alignItems: 'center',
               gap: '0.5rem',
               background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: `1px solid ${dbStatus === 'online' ? '#4ade8050' : dbStatus === 'error' ? '#f8717150' : 'rgba(255,255,255,0.1)'}`,
               borderRadius: '2px',
               padding: '0.3rem 0.75rem',
               marginBottom: '1.5rem',
-              fontSize: '0.65rem',
-              letterSpacing: '0.2em',
-              color: 'rgba(255,255,255,0.4)',
+              fontSize: '0.6rem',
+              letterSpacing: '0.15em',
+              color: dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : 'rgba(255,255,255,0.4)',
               textTransform: 'uppercase',
             }}
           >
@@ -147,12 +163,13 @@ export default function Login() {
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                background: '#4ade80',
-                boxShadow: '0 0 6px #4ade80',
-                animation: 'pulse 2s infinite',
+                background: dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : '#fbbf24',
+                boxShadow: `0 0 6px ${dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : '#fbbf24'}`,
+                animation: dbStatus === 'checking' ? 'pulse 1s infinite' : 'none',
               }}
             />
-            Acceso restringido
+            {dbStatus === 'online' ? 'Sistema Online · Supabase' : 
+             dbStatus === 'error' ? 'Conexión Fallida' : 'Verificando Conexión...'}
           </div>
 
           <h1

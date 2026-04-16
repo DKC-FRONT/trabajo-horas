@@ -22,50 +22,74 @@ export default function CasasPage() {
   const [fieldError, setFieldError] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // Hook inicial para cargar los datos al montar el componente
   useEffect(() => {
     fetchCasas();
     setTimeout(() => setVisible(true), 50);
   }, []);
 
+  /**
+   * Obtiene la lista completa de casas desde Supabase
+   * Ordenadas por número para mantener consistencia
+   */
   const fetchCasas = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/casas');
-      if (!res.ok) throw new Error('Error al cargar las casas.');
-      const data = await res.json();
-      setCasas(Array.isArray(data) ? data : []);
-    } catch {
-      setError('Error al cargar las casas.');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('casas')
+        .select('*')
+        .order('numero_casa', { ascending: true });
+
+      if (error) throw error;
+      
+      setCasas(data || []);
+    } catch (err: any) {
+      setError('Error al conectar con la base de datos: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Muestra notificaciones temporales de éxito o error
+   */
   const notify = (msg: string, type: 'success' | 'error') => {
     if (type === 'success') { setSuccess(msg); setError(''); }
     else { setError(msg); setSuccess(''); }
     setTimeout(() => { setSuccess(''); setError(''); }, 3500);
   };
 
+  /**
+   * Agrega una nueva unidad residencial a la tabla 'casas'
+   */
   const handleAgregar = async () => {
     setFieldError('');
     if (!nuevaCasa.trim()) { setFieldError('Ingresa un número de casa.'); return; }
     setSaving(true);
     try {
-      const res = await fetch('/api/casas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ numero_casa: nuevaCasa.trim() }),
-      });
-      const data = await res.json();
-      if (data.error) { notify(data.error, 'error'); return; }
-      notify('Casa agregada correctamente.', 'success');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('casas')
+        .insert([{ numero_casa: nuevaCasa.trim() }]);
+
+      if (error) throw error;
+
+      notify('Casa agregada correctamente en Supabase.', 'success');
       setNuevaCasa('');
       await fetchCasas();
-    } catch { notify('Error al agregar la casa.', 'error'); }
-    finally { setSaving(false); }
+    } catch (err: any) { 
+      notify('Error al agregar: ' + err.message, 'error'); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
+  // Prepara el estado para la edición de una fila
   const startEdit = (casa: Casa) => {
     setEditingId(casa.id); setEditValor(casa.numero_casa);
     setError(''); setSuccess('');
@@ -73,39 +97,58 @@ export default function CasasPage() {
 
   const cancelEdit = () => { setEditingId(null); setEditValor(''); };
 
+  /**
+   * Actualiza el número de una casa existente
+   */
   const handleEditar = async (id: number) => {
     if (!editValor.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/casas', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, numero_casa: editValor.trim() }),
-      });
-      const data = await res.json();
-      if (data.error) { notify(data.error, 'error'); return; }
-      notify('Casa actualizada correctamente.', 'success');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('casas')
+        .update({ numero_casa: editValor.trim() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      notify('Actualización exitosa.', 'success');
       setEditingId(null);
       await fetchCasas();
-    } catch { notify('Error al actualizar.', 'error'); }
-    finally { setSaving(false); }
+    } catch (err: any) { 
+      notify('Fallo al actualizar: ' + err.message, 'error'); 
+    } finally { 
+      setSaving(false); 
+    }
   };
 
+  /**
+   * Elimina una casa de la base de datos
+   * Nota: Si hay lecturas vinculadas, Supabase lanzará un error de integridad
+   */
   const handleEliminar = async (id: number) => {
     if (!confirm('¿Eliminar esta casa? No se puede deshacer.')) return;
     setDeletingId(id);
     try {
-      const res = await fetch('/api/casas', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (data.error) { notify(data.error, 'error'); return; }
-      notify('Casa eliminada correctamente.', 'success');
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      const { error } = await supabase
+        .from('casas')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      notify('Eliminada correctamente.', 'success');
       await fetchCasas();
-    } catch { notify('Error al eliminar.', 'error'); }
-    finally { setDeletingId(null); }
+    } catch (err: any) { 
+      notify('Error al eliminar (puede tener datos vinculados): ' + err.message, 'error'); 
+    } finally { 
+      setDeletingId(null); 
+    }
   };
 
   const inputStyle = (field: string, hasError = false): React.CSSProperties => ({
