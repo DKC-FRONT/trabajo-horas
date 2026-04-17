@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
 type Casa = { id: number; numero_casa: string };
 type Lectura = {
   id: number;
@@ -13,6 +15,8 @@ type Lectura = {
   consumo_cobrar: number;
   valor: number;
   fecha: string;
+  mes: number;
+  anio: number;
 };
 
 export default function LecturasPage() {
@@ -28,6 +32,9 @@ export default function LecturasPage() {
   const [mounted, setMounted] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
+  const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
+
   const [form, setForm] = useState({
     casa_id: '',
     lectura_anterior: '',
@@ -39,7 +46,7 @@ export default function LecturasPage() {
   useEffect(() => {
     setMounted(true);
     loadData();
-  }, []);
+  }, [mesSeleccionado, anioSeleccionado]);
 
   /**
    * Automatización: Cargar lectura anterior al seleccionar una casa
@@ -111,21 +118,33 @@ export default function LecturasPage() {
   };
 
   /**
-   * Obtiene el historial de lecturas con join a casas para mostrar el número de unidad
+   * Obtiene el historial de lecturas filtrado por mes y año
    */
   const fetchLecturas = async () => {
     const { createClient } = await import('@/lib/client');
     const supabase = createClient();
     
-    // Usamos join relacional de Supabase para traer el numero_casa
+    const inicioMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01`;
+    const ultimoDia = new Date(anioSeleccionado, mesSeleccionado, 0).getDate();
+    const finMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-${ultimoDia}`;
+    
     const { data, error } = await supabase
       .from('lecturas_agua')
       .select('*, casas(numero_casa)')
+      .gte('fecha', inicioMes)
+      .lte('fecha', finMes)
       .order('fecha', { ascending: false });
 
     if (error) throw error;
 
-    const adapted = (data || []).map(l => ({
+    // Ordenar por número de casa de forma numérica (1, 2, 3... en lugar de 1, 10, 100)
+    const sortedByCasa = (data || []).sort((a, b) => {
+      const numA = parseInt(a.casas?.numero_casa?.replace(/\D/g, '') || '0');
+      const numB = parseInt(b.casas?.numero_casa?.replace(/\D/g, '') || '0');
+      return numA - numB;
+    });
+    
+    const adapted = sortedByCasa.map(l => ({
       ...l,
       numero_casa: l.casas?.numero_casa || 'N/A'
     }));
@@ -176,7 +195,6 @@ export default function LecturasPage() {
           casa_id: Number(form.casa_id),
           lectura_anterior: anterior,
           lectura_actual: actual,
-          consumo: consumo,
           consumo_cobrar: consumoCobrar,
           valor: valor,
           fecha: form.fecha
@@ -318,13 +336,43 @@ export default function LecturasPage() {
       {/* Content */}
       <main style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto', padding: '1rem', opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity 0.5s ease, transform 0.5s ease' }}>
         {/* Page title */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
-            Módulo activo
-          </p>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-            Lecturas de Agua
-          </h1>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
+              Módulo activo
+            </p>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
+              Lecturas de Agua
+            </h1>
+          </div>
+          
+          {/* Selectores de mes y año */}
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
+              <select 
+                value={mesSeleccionado} 
+                onChange={(e) => setMesSeleccionado(Number(e.target.value))}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
+              >
+                {MESES.map((m, i) => (
+                  <option key={m} value={i + 1}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
+              <select 
+                value={anioSeleccionado} 
+                onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
+              >
+                {[2024, 2025, 2026].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Summary stats */}
@@ -488,7 +536,7 @@ export default function LecturasPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      {['Casa', 'Anterior', 'Actual', 'Consumo', 'Exceso', 'Valor', 'Fecha', ''].map((h) => (
+                      {['#', 'Casa', 'Anterior', 'Actual', 'Consumo', 'Exceso', 'Valor', 'Fecha', ''].map((h) => (
                         <th key={h} style={{ padding: '0.5rem 0.75rem', textAlign: 'center', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', fontWeight: 600, whiteSpace: 'nowrap' }}>
                           {h}
                         </th>
@@ -498,7 +546,7 @@ export default function LecturasPage() {
                   <tbody>
                     {lecturas.length === 0 ? (
                       <tr>
-                        <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem', letterSpacing: '0.05em' }}>
+                        <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem', letterSpacing: '0.05em' }}>
                           Sin registros todavía
                         </td>
                       </tr>
@@ -506,6 +554,7 @@ export default function LecturasPage() {
                       lecturas.map((l, i) => (
                         <tr key={l.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
                           {[
+                            { val: i + 1, color: 'rgba(255, 255, 255, 0.5)', weight: 'normal' },
                             { val: `Casa ${l.numero_casa}`, color: 'rgba(255, 255, 255, 1)', weight: 'bold' },
                             { val: (isNaN(l.lectura_anterior) || l.lectura_anterior == null) ? '—' : Math.round(l.lectura_anterior), color: 'rgba(255, 255, 255, 1)' },
                             { val: (isNaN(l.lectura_actual) || l.lectura_actual == null) ? '—' : Math.round(l.lectura_actual), color: 'rgba(255, 255, 255, 1)' },
