@@ -106,7 +106,7 @@ export default function AsistenciaPage() {
 
       const { data: records } = await query;
       
-      // 3. Cruzar datos manualmente (manual join) ya que la FK puede no estar detectada por PostgREST
+      // 3. Cruzar datos manualmente
       const mapped = (records || []).map(r => {
         const u = (users || []).find(user => user.id === r.usuario_id);
         return {
@@ -119,6 +119,19 @@ export default function AsistenciaPage() {
 
     } catch (err) {
       console.error('Error fetching admin data:', err);
+    }
+  };
+
+  const handleDeleteRecord = async (id: number) => {
+    if (!confirm('¿Eliminar este registro de asistencia? No se puede deshacer.')) return;
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.from('asistencia').delete().eq('id', id);
+      if (error) throw error;
+      fetchAdminData();
+    } catch (err) {
+      console.error('Error al eliminar:', err);
     }
   };
 
@@ -273,11 +286,12 @@ export default function AsistenciaPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.01)' }}>
-                      <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Empleado</th>
-                      <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Fecha</th>
-                      <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Entrada</th>
-                      <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Salida</th>
-                      <th style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Horas</th>
+                <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Empleado</th>
+                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Fecha</th>
+                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Entrada</th>
+                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Salida</th>
+                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Horas</th>
+                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -288,6 +302,17 @@ export default function AsistenciaPage() {
                         <td style={{ padding: '0.9rem 1.5rem', color: '#fff', fontSize: '0.8rem' }}>{formatTime(record.hora_entrada)}</td>
                         <td style={{ padding: '0.9rem 1.5rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>{record.hora_salida ? formatTime(record.hora_salida) : '--:--'}</td>
                         <td style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700 }}>{record.total_horas || 0}h</td>
+                        <td style={{ padding: '0.9rem 0.75rem', textAlign: 'right' }}>
+                          <button
+                            onClick={() => handleDeleteRecord(record.id)}
+                            title="Eliminar registro"
+                            style={{ background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: 'rgba(248,113,113,0.6)', padding: '0.25rem 0.6rem', fontSize: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.06em', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#f87171'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(248,113,113,0.6)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; }}
+                          >
+                            ✕
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {adminHistory.length === 0 && (

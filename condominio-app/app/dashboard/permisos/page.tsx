@@ -35,7 +35,8 @@ export default function PermisosPage() {
     hora_retorno: '',
     tipo_duracion: 'medio_dia' as 'medio_dia' | 'un_dia',
     motivo: '',
-    categoria: 'personal' as 'personal' | 'salud'
+    categoria: 'personal' as 'personal' | 'salud',
+    intent_retorno: 'si'
   });
 
   useEffect(() => {
@@ -60,12 +61,17 @@ export default function PermisosPage() {
       
       setUserProfile(profile);
 
-      const { data: permits } = await supabase
+      // Admin ve todos los permisos, trabajador/residente solo los suyos
+      const permisosQuery = supabase
         .from('permisos')
         .select('*')
-        .eq('usuario_id', user.id)
         .order('creado_el', { ascending: false });
 
+      const finalQuery = profile?.rol === 'admin'
+        ? permisosQuery
+        : permisosQuery.eq('usuario_id', user.id);
+
+      const { data: permits } = await finalQuery;
       setHistory(permits || []);
     } catch (err) {
       console.error('Error loading permits:', err);
@@ -82,13 +88,25 @@ export default function PermisosPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      // Ajustar hora_retorno si dice que no retorna
+      const finalData = { ...formData };
+      if (formData.intent_retorno === 'no') {
+        finalData.hora_retorno = 'SIN RETORNO';
+      }
+
+      const { error } = await supabase
         .from('permisos')
         .insert([{
           usuario_id: user?.id,
           nombre_completo: userProfile?.nombre_completo,
           cargo: userProfile?.cargo,
-          ...formData
+          fecha: finalData.fecha,
+          horas: finalData.horas,
+          hora_salida: finalData.hora_salida,
+          hora_retorno: finalData.hora_retorno,
+          tipo_duracion: finalData.tipo_duracion,
+          motivo: finalData.motivo,
+          categoria: finalData.categoria
         }])
         .select()
         .single();
@@ -105,20 +123,42 @@ export default function PermisosPage() {
     }
   };
 
-  const generatePDF = (permit: Permit) => {
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Seguro que deseas eliminar este permiso?')) return;
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.from('permisos').delete().eq('id', id);
+      if (error) throw error;
+      loadData();
+    } catch (err) {
+      alert('Error al eliminar');
+    }
+  };
+
+  const generatePDF = async (permit: Permit) => {
     const doc = new jsPDF();
     
     // Configuración de fuentes y colores (Premium)
     const primaryColor = '#1e293b';
     const accentColor = '#60a5fa';
 
-    // Logo (usando el local si existe, o texto si falla)
+    // Logo del condominio
     try {
-      doc.addImage('/img/logo.png', 'PNG', 15, 15, 60, 20);
+      const response = await fetch('/logo.png');
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      await new Promise<void>(resolve => {
+        reader.onloadend = () => {
+          try {
+            doc.addImage(reader.result as string, 'PNG', 15, 10, 30, 30);
+          } catch { /* Si falla la imagen, continuar */ }
+          resolve();
+        };
+      });
     } catch {
-      doc.setFontSize(18);
-      doc.setTextColor(accentColor);
-      doc.text('LA FLORIDA', 15, 25);
+      // Si no carga la imagen, solo mostramos texto
     }
 
     // Encabezado
@@ -151,7 +191,7 @@ export default function PermisosPage() {
     drawField('FECHA', permit.fecha, startY + lineHeight * 2);
     drawField('HORAS', permit.horas, startY + lineHeight * 3);
     drawField('HORA SALIDA', permit.hora_salida, startY + lineHeight * 4);
-    drawField('HORA RETORNO', permit.hora_retorno, startY + lineHeight * 5);
+    drawField('HORA RETORNO', permit.hora_retorno || 'SIN RETORNO', startY + lineHeight * 5);
     
     // Duración Checks
     doc.setFont('helvetica', 'bold');
@@ -195,12 +235,15 @@ export default function PermisosPage() {
       transition: 'all 0.6s ease',
     }}>
       {/* Header */}
-      <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
-            Formato de <span style={{ color: '#a78bfa' }}>Permisos</span>
-          </h1>
+      <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '64px', height: '64px', border: '1px solid rgba(255,255,255,0.1)' }} />
+          <div>
+            <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+              Formato de <span style={{ color: '#a78bfa' }}>Permisos</span>
+            </h1>
+          </div>
         </div>
         {!showForm && (
           <button 
@@ -244,23 +287,31 @@ export default function PermisosPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>¿Retorna?</label>
+              <select value={formData.intent_retorno} onChange={e => setFormData({...formData, intent_retorno: e.target.value})} style={selectStyle}>
+                <option value="si" style={{ background: '#0a0a0f' }}>SÍ</option>
+                <option value="no" style={{ background: '#0a0a0f' }}>NO</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: formData.intent_retorno === 'si' ? 1 : 0.4, pointerEvents: formData.intent_retorno === 'si' ? 'auto' : 'none' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora Retorno</label>
-              <input type="time" value={formData.hora_retorno} onChange={e => setFormData({...formData, hora_retorno: e.target.value})} style={inputStyle} />
+              <input type="time" disabled={formData.intent_retorno === 'no'} value={formData.hora_retorno} onChange={e => setFormData({...formData, hora_retorno: e.target.value})} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Duración</label>
-              <select value={formData.tipo_duracion} onChange={e => setFormData({...formData, tipo_duracion: e.target.value as any})} style={inputStyle}>
-                <option value="medio_dia">Medio día</option>
-                <option value="un_dia">Un día</option>
+              <select value={formData.tipo_duracion} onChange={e => setFormData({...formData, tipo_duracion: e.target.value as any})} style={selectStyle}>
+                <option value="medio_dia" style={{ background: '#0a0a0f' }}>Medio día</option>
+                <option value="un_dia" style={{ background: '#0a0a0f' }}>Un día</option>
               </select>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Categoría</label>
-              <select value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value as any})} style={inputStyle}>
-                <option value="personal">Asunto Personal</option>
-                <option value="salud">Salud / Médica</option>
+              <select value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value as any})} style={selectStyle}>
+                <option value="personal" style={{ background: '#0a0a0f' }}>Asunto Personal</option>
+                <option value="salud" style={{ background: '#0a0a0f' }}>Salud / Médica</option>
               </select>
             </div>
 
@@ -320,12 +371,22 @@ export default function PermisosPage() {
                     {permit.estado === 'aprobado' ? <CheckCircle2 size={16} color="#4ade80" /> : permit.estado === 'rechazado' ? <XCircle size={16} color="#f87171" /> : <Clock size={16} color="#fbbf24" />}
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right' }}>
-                    <button 
-                      onClick={() => generatePDF(permit)}
-                      style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
-                    >
-                      <Download size={14} /> PDF
-                    </button>
+                    <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
+                      <button 
+                        onClick={() => generatePDF(permit)}
+                        style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                      >
+                        <Download size={14} /> PDF
+                      </button>
+                      {userProfile?.rol === 'admin' && (
+                        <button 
+                          onClick={() => handleDelete(permit.id)}
+                          style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                        >
+                          <XCircle size={14} /> Borrar
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -342,7 +403,7 @@ export default function PermisosPage() {
   );
 }
 
-const inputStyle = {
+const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
   padding: '0.8rem',
@@ -350,6 +411,19 @@ const inputStyle = {
   fontSize: '0.85rem',
   fontFamily: 'inherit',
   outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+  colorScheme: 'dark',
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  appearance: 'none',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 0.8rem center',
+  paddingRight: '2.5rem',
+  cursor: 'pointer',
 };
 
 const thStyle: React.CSSProperties = {

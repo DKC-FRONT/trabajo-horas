@@ -40,12 +40,18 @@ export default function CasasPage() {
       
       const { data, error } = await supabase
         .from('casas')
-        .select('*')
-        .order('numero_casa', { ascending: true });
+        .select('*');
 
       if (error) throw error;
+
+      // Ordenar numéricamente (1, 2, 3... 10, 11... no 1, 10, 100)
+      const sorted = (data || []).sort((a, b) => {
+        const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
+        return numA - numB;
+      });
       
-      setCasas(data || []);
+      setCasas(sorted);
     } catch (err: any) {
       setError('Error al conectar con la base de datos: ' + err.message);
     } finally {

@@ -155,12 +155,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         minHeight: '60px',
       }}>
         {(!collapsed || isMobile) && (
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff', letterSpacing: '0.05em', lineHeight: 1 }}>
-              La Florida
-            </div>
-            <div style={{ fontSize: '0.55rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginTop: '0.2rem' }}>
-              Condominio
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', border: '1px solid rgba(255,255,255,0.1)' }} />
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff', letterSpacing: '0.05em', lineHeight: 1 }}>
+                La Florida
+              </div>
+              <div style={{ fontSize: '0.55rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginTop: '0.2rem' }}>
+                Condominio
+              </div>
             </div>
           </div>
         )}

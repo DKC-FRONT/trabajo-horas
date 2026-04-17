@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Condominio Campestre La Florida",
   description: "Sistema de gestión para residentes y administradores del Condominio Campestre La Florida.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
