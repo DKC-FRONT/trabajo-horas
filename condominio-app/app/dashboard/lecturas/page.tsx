@@ -34,6 +34,7 @@ export default function LecturasPage() {
 
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
+  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([]);
 
   const [form, setForm] = useState({
     casa_id: '',
@@ -46,7 +47,35 @@ export default function LecturasPage() {
   useEffect(() => {
     setMounted(true);
     loadData();
+    fetchAniosDisponibles();
   }, [mesSeleccionado, anioSeleccionado]);
+
+  /**
+   * Obtiene los años que tienen datos en la base de datos
+   */
+  const fetchAniosDisponibles = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('lecturas_agua')
+        .select('fecha')
+        .order('fecha', { ascending: true });
+      
+      if (error) throw error;
+      
+      const aniosSet = new Set<number>();
+      (data || []).forEach(l => {
+        const anio = new Date(l.fecha).getFullYear();
+        aniosSet.add(anio);
+      });
+      
+      const aniosOrdenados = Array.from(aniosSet).sort((a, b) => a - b);
+      setAniosDisponibles(aniosOrdenados);
+    } catch (err) {
+      console.log('Error al cargar años:', err);
+    }
+  };
 
   /**
    * Automatización: Cargar lectura anterior al seleccionar una casa
@@ -367,9 +396,13 @@ export default function LecturasPage() {
                 onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
               >
-                {[2024, 2025, 2026].map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
+                {aniosDisponibles.length > 0 ? (
+                  aniosDisponibles.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))
+                ) : (
+                  <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                )}
               </select>
             </div>
           </div>
