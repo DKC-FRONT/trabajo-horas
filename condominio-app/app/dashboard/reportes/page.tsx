@@ -82,8 +82,8 @@ export default function ReportesPage() {
       const { data: lecturasMes, error: lecturasErr } = await supabase
         .from('lecturas_agua')
         .select('*, casas(numero_casa)')
-        .gte('fecha_lectura', inicioMes)
-        .lte('fecha_lectura', finMes);
+        .gte('fecha', inicioMes)
+        .lte('fecha', finMes);
       if (lecturasErr) throw lecturasErr;
 
       // 3. Procesar datos del mes
@@ -92,9 +92,9 @@ export default function ReportesPage() {
         lectura_anterior: Number(l.lectura_anterior) || 0,
         lectura_actual: Number(l.lectura_actual) || 0,
         consumo: Number(l.consumo) || 0,
-        consumo_cobrar: Number(l.consumo_exceso) || 0,
-        valor: Number(l.valor_total) || 0,
-        fecha: l.fecha_lectura
+        consumo_cobrar: Number(l.consumo_cobrar) || 0,
+        valor: Number(l.valor) || 0,
+        fecha: l.fecha
       }));
 
       const excedidas = porCasa.filter(c => c.consumo_cobrar > 0);
@@ -113,13 +113,13 @@ export default function ReportesPage() {
       const { data: lecturasHistorico } = await supabase
         .from('lecturas_agua')
         .select('*')
-        .gte('fecha_lectura', `${fechaLimite.getFullYear()}-${String(fechaLimite.getMonth() + 1).padStart(2, '0')}-01`)
-        .order('fecha_lectura', { ascending: true });
+        .gte('fecha', `${fechaLimite.getFullYear()}-${String(fechaLimite.getMonth() + 1).padStart(2, '0')}-01`)
+        .order('fecha', { ascending: true });
 
       // Agrupar por mes/año para el comparativo
       const historicoMap: Record<string, Comparativo> = {};
       (lecturasHistorico || []).forEach(l => {
-        const d = new Date(l.fecha_lectura + 'T00:00:00');
+        const d = new Date(l.fecha + 'T00:00:00');
         const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
         if (!historicoMap[key]) {
           historicoMap[key] = {
@@ -132,8 +132,8 @@ export default function ReportesPage() {
           };
         }
         historicoMap[key].consumo_total += Number(l.consumo) || 0;
-        historicoMap[key].valor_total += Number(l.valor_total) || 0;
-        if ((Number(l.consumo_exceso) || 0) > 0) historicoMap[key].casas_excedidas++;
+        historicoMap[key].valor_total += Number(l.valor) || 0;
+        if ((Number(l.consumo_cobrar) || 0) > 0) historicoMap[key].casas_excedidas++;
       });
 
       // Ordenar cronológicamente antes de mostrar
