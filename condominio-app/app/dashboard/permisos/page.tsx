@@ -132,7 +132,7 @@ export default function PermisosPage() {
       const { error } = await supabase.from('permisos').delete().eq('id', id);
       if (error) throw error;
       loadData();
-    } catch (err) {
+    } catch {
       alert('Error al eliminar');
     }
   };

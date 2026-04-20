@@ -89,7 +89,6 @@ export default function LecturasPage() {
     } else {
       setForm(prev => ({ ...prev, lectura_anterior: '' }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.casa_id]);
 
   const fetchUltimaLectura = async (id: number) => {

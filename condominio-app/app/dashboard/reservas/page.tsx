@@ -290,7 +290,7 @@ export default function ReservasPage() {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
 
-      const { error: _searchError } = await supabase
+      await supabase
       .from('reservas')
       .select('id')
       .eq('area', area)

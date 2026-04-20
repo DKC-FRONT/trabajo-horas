@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Megaphone, Trash2, Plus, X, AlertCircle } from 'lucide-react';
+import { Megaphone, Trash2, Plus, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
 type TipoAviso = 'general' | 'urgente' | 'recordatorio';
 
@@ -223,7 +223,7 @@ export default function AvisosPage() {
       )}
       {successMsg && (
         <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>✓</span> {successMsg}
+          <CheckCircle2 size={16} /> {successMsg}
         </div>
       )}
 
@@ -289,7 +289,11 @@ export default function AvisosPage() {
                 onMouseEnter={e => { if (!formLoading) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}35, ${ACCENT}20)` }}
                 onMouseLeave={e => { if (!formLoading) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}10)` }}
               >
-                {formLoading ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Guardando...</> : <>→ {editingId ? 'Actualizar aviso' : 'Publicar aviso'}</>}
+                {formLoading ? (
+                  <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Guardando...</>
+                ) : (
+                  <><Plus size={16} /> {editingId ? 'Actualizar aviso' : 'Publicar aviso'}</>
+                )}
               </button>
             </div>
           </form>
@@ -307,7 +311,9 @@ export default function AvisosPage() {
           </div>
         ) : avisos.length === 0 ? (
           <div style={{ padding: '3rem 2rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.75rem', opacity: 0.3 }}>📢</div>
+            <div style={{ marginBottom: '1rem', opacity: 0.3, display: 'flex', justifyContent: 'center' }}>
+              <Megaphone size={48} color={ACCENT} />
+            </div>
             <p style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 1)', margin: 0, letterSpacing: '0.05em' }}>
               No hay avisos publicados en este momento.
             </p>
@@ -369,12 +375,12 @@ export default function AvisosPage() {
                           <button
                             onClick={() => handleEliminar(aviso.id)}
                             disabled={deletingId === aviso.id}
-                            style={{ background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.35)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.2rem', transition: 'color 0.2s, transform 0.15s', lineHeight: 1 }}
+                            style={{ background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.35)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.2rem', transition: 'color 0.2s, transform 0.15s', lineHeight: 1, display: 'flex', alignItems: 'center' }}
                             onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.transform = 'scale(1.2)'; }}
                             onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.35)'; e.currentTarget.style.transform = 'scale(1)'; }}
                             title="Eliminar aviso"
                           >
-                            {deletingId === aviso.id ? '◌' : '✕'}
+                            {deletingId === aviso.id ? <span style={{ animation: 'spin 1s linear infinite' }}>◌</span> : <Trash2 size={14} />}
                           </button>
                         </>
                       )}
