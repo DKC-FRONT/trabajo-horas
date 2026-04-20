@@ -29,7 +29,6 @@ export default function AsistenciaPage() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     setTimeout(() => setVisible(true), 50);
     return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

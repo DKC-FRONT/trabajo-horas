@@ -8,8 +8,8 @@ export async function createClient() {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   return createServerClient(
-    supabaseUrl,
-    supabaseKey,
+    supabaseUrl || '',
+    supabaseKey || '',
     {
       cookies: {
         getAll() {
