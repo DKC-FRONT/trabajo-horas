@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Todos los campos excepto la casa son requeridos.' }, { status: 400 });
     }
 
-    const { data: profile, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('usuarios')
       .insert([{
         nombre_completo: nombre.trim(),

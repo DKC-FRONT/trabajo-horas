@@ -209,22 +209,28 @@ export default function AsistenciaPage() {
       transform: visible ? 'translateY(0)' : 'translateY(20px)',
       transition: 'all 0.6s ease',
     }}>
-      {/* Header */}
-      <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Operatividad</p>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
-            Registro de <span style={{ color: '#60a5fa' }}>Asistencia</span>
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem', fontSize: '0.9rem' }}>Control horario de entrada y salida del personal.</p>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#fff', fontFamily: "'Courier New', monospace" }}>
+          Cargando sistema de asistencia...
         </div>
-        
-        {userRole === 'admin' && (
-          <div style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', padding: '0.5rem 1rem', borderRadius: '4px' }}>
-            <span style={{ color: '#a78bfa', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em' }}>● MODO ADMINISTRADOR</span>
+      ) : (
+        <>
+          {/* Header */}
+          <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Operatividad</p>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+                Registro de <span style={{ color: '#60a5fa' }}>Asistencia</span>
+              </h1>
+              <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem', fontSize: '0.9rem' }}>Control horario de entrada y salida del personal.</p>
+            </div>
+            
+            {userRole === 'admin' && (
+              <div style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', padding: '0.5rem 1rem', borderRadius: '4px' }}>
+                <span style={{ color: '#a78bfa', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em' }}>● MODO ADMINISTRADOR</span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: userRole === 'admin' ? '1fr' : '1fr 350px', gap: '2.5rem' }}>
         
@@ -373,6 +379,8 @@ export default function AsistenciaPage() {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

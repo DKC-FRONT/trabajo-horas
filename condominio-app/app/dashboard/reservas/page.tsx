@@ -244,8 +244,18 @@ export default function ReservasPage() {
    * Notificaciones
    */
   const notify = (msg: string, err = false) => {
-    err ? setErrorMsg(msg) : setSuccessMsg(msg);
-    setTimeout(() => err ? setErrorMsg('') : setSuccessMsg(''), err ? 6000 : 3500);
+    if (err) {
+      setErrorMsg(msg);
+    } else {
+      setSuccessMsg(msg);
+    }
+    setTimeout(() => {
+      if (err) {
+        setErrorMsg('');
+      } else {
+        setSuccessMsg('');
+      }
+    }, err ? 6000 : 3500);
   };
 
   /**

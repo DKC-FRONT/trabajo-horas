@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Megaphone, Trash2, Plus, X, AlertCircle } from 'lucide-react';
 
-type Rol = 'admin' | 'trabajador' | 'residente';
 type TipoAviso = 'general' | 'urgente' | 'recordatorio';
 
 type Aviso = {
@@ -18,12 +18,11 @@ const ACCENT = '#fbbf24';
 const TIPO_META: Record<TipoAviso, { color: string; icon: string; label: string }> = {
   general: { color: '#60a5fa', icon: '◈', label: 'General' },
   urgente: { color: '#f87171', icon: '⚠', label: 'Urgente' },
-  recordatorio: { color: '#fbbf24', icon: '◎', label: 'Evento' }, // Cambiado para coincidir con el CHECK de la DB
+  recordatorio: { color: '#fbbf24', icon: '◎', label: 'Evento' },
 };
 
 export default function AvisosPage() {
-  const searchParams = useSearchParams();
-  const [user, _setUser] = useState<{ id: string; rol: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; rol: string } | null>(null);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -38,18 +37,33 @@ export default function AvisosPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  /**
-   * Hook inicial para cargar los avisos al montar el componente.
-   */
   useEffect(() => {
-    fetchAvisos();
-    setTimeout(() => setVisible(true), 50);
+    const init = async () => {
+      await fetchUser();
+      await fetchAvisos();
+      setTimeout(() => setVisible(true), 50);
+    };
+    init();
   }, []);
 
-  /**
-   * Obtiene la lista de avisos desde la tabla 'notices' de Supabase.
-   * Ordenados por fecha de creación descendente.
-   */
+  const fetchUser = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data: profile } = await supabase
+          .from('usuarios')
+          .select('id, rol')
+          .eq('id', authUser.id)
+          .single();
+        if (profile) setUser(profile);
+      }
+    } catch (err) {
+      console.error('Error fetching user:', err);
+    }
+  };
+
   const fetchAvisos = async () => {
     try {
       setLoading(true);
@@ -71,17 +85,21 @@ export default function AvisosPage() {
     }
   };
 
-  /**
-   * Notificaciones temporales
-   */
   const notify = (msg: string, isErr = false) => {
-    isErr ? setErrorMsg(msg) : setSuccessMsg(msg);
-    setTimeout(() => isErr ? setErrorMsg('') : setSuccessMsg(''), isErr ? 5000 : 3000);
+    if (isErr) {
+      setErrorMsg(msg);
+    } else {
+      setSuccessMsg(msg);
+    }
+    setTimeout(() => {
+      if (isErr) {
+        setErrorMsg('');
+      } else {
+        setSuccessMsg('');
+      }
+    }, isErr ? 5000 : 3000);
   };
 
-  /**
-   * Crea o actualiza un aviso directamente en Supabase.
-   */
   const handleCrear = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titulo.trim() || !mensaje.trim()) return;
@@ -92,7 +110,6 @@ export default function AvisosPage() {
       const supabase = createClient();
 
       if (editingId) {
-        // Actualización
         const { error } = await supabase
           .from('avisos')
           .update({
@@ -106,7 +123,6 @@ export default function AvisosPage() {
         if (error) throw error;
         notify('Aviso actualizado correctamente en Supabase.');
       } else {
-        // Creación
         const { error } = await supabase
           .from('avisos')
           .insert([{
@@ -129,9 +145,6 @@ export default function AvisosPage() {
     }
   };
 
-  /**
-   * Carga los datos de un aviso en el formulario para editar.
-   */
   const handleEditClick = (aviso: Aviso) => {
     setEditingId(aviso.id);
     setTitulo(aviso.titulo);
@@ -140,17 +153,11 @@ export default function AvisosPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /**
-   * Elimina un aviso permanentemente.
-   */
   const handleEliminar = async (id: number) => {
     if (!confirm('¿Seguro que deseas eliminar este aviso de Supabase?')) return;
     setDeletingId(id);
     try {
       const { createClient } = await import('@/lib/client');
-      // Los parámetros mes y anio son para filtrado futuro si se desea
-      const _mes = searchParams.get('mes');
-      const _anio = searchParams.get('anio');
       const supabase = createClient();
 
       const { error } = await supabase
@@ -211,7 +218,7 @@ export default function AvisosPage() {
       {/* ── Alertas ── */}
       {errorMsg && (
         <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>⚠</span> {errorMsg}
+          <AlertCircle size={16} /> {errorMsg}
         </div>
       )}
       {successMsg && (

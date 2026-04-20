@@ -85,6 +85,7 @@ export default function MisLecturasPage() {
     if (user && user.casa_id) {
       fetchLecturas();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, mes, anio]);
 
   /**

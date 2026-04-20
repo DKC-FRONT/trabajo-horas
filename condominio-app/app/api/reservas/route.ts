@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar superposición de horarios en Postgres
-    const { data: existing, error: searchError } = await supabase
+    const { data: existing } = await supabase
       .from('reservas')
       .select('id')
       .eq('area', area)

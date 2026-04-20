@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
     ];
 
     // ── Datos ────────────────────────────────────────────────────
-    (rows || []).forEach((row: any, i) => {
+    (rows || []).forEach((row: any) => {
       const dr = worksheet.addRow({
         numero_casa:      `Casa ${row.casas?.numero_casa || 'N/A'}`,
         lectura_anterior: Math.round(row.lectura_anterior),

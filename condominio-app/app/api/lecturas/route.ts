@@ -37,10 +37,6 @@ export async function POST(req: NextRequest) {
     // Cálculos centralizados desde lib/calcularLectura.ts
     const { consumo, consumo_cobrar, valor } = calcularLectura(anterior, actual);
 
-    const fechaDate = new Date(fecha);
-    const mes  = fechaDate.getMonth() + 1;
-    const anio = fechaDate.getFullYear();
-
     const { error: insertError } = await supabase
       .from('lecturas_agua')
       .insert([{ 

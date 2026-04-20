@@ -50,6 +50,7 @@ export default function UsuariosPage() {
   useEffect(() => {
     fetchData();
     setTimeout(() => setVisible(true), 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -99,8 +100,18 @@ export default function UsuariosPage() {
    * Notificaciones
    */
   const notify = (msg: string, isErr = false) => {
-    isErr ? setErrorMsg(msg) : setSuccessMsg(msg);
-    setTimeout(() => isErr ? setErrorMsg('') : setSuccessMsg(''), isErr ? 5000 : 3000);
+    if (isErr) {
+      setErrorMsg(msg);
+    } else {
+      setSuccessMsg(msg);
+    }
+    setTimeout(() => {
+      if (isErr) {
+        setErrorMsg('');
+      } else {
+        setSuccessMsg('');
+      }
+    }, isErr ? 5000 : 3000);
   };
 
   const resetForm = () => {

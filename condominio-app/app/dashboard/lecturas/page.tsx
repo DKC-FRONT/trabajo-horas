@@ -96,13 +96,13 @@ export default function LecturasPage() {
     try {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('lecturas_agua')
         .select('lectura_actual')
         .eq('casa_id', id)
         .order('fecha', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (data) {
         setForm(prev => ({ ...prev, lectura_anterior: String(data.lectura_actual) }));
@@ -110,8 +110,8 @@ export default function LecturasPage() {
         // Si no hay lecturas previas, dejar en 0 o vacío
         setForm(prev => ({ ...prev, lectura_anterior: '0' }));
       }
-    } catch (err) {
-      console.log('Sin lectura previa para esta casa.');
+    } catch {
+      // Generalmente significa que no hay lecturas previas
       setForm(prev => ({ ...prev, lectura_anterior: '0' }));
     }
   };
