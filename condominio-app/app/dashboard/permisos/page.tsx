@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FileText, Download, Plus, History, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
@@ -141,7 +142,6 @@ export default function PermisosPage() {
     
     // Configuración de fuentes y colores (Premium)
     const primaryColor = '#1e293b';
-    const accentColor = '#60a5fa';
 
     // Logo del condominio
     try {
@@ -237,7 +237,7 @@ export default function PermisosPage() {
       {/* Header */}
       <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Logo" style={{ width: '64px', height: '64px', border: '1px solid rgba(255,255,255,0.1)' }} />
+          <Image src="/logo.png" alt="Logo" width={64} height={64} style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
           <div>
             <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>

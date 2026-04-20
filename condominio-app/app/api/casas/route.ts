@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El número de casa es requerido.' }, { status: 400 });
     }
 
-    const { data: existing, error: _searchError } = await supabase
+    const { data: existing } = await supabase
       .from('casas')
       .select('id')
       .eq('numero_casa', String(numero_casa).trim())
@@ -82,12 +82,16 @@ export async function DELETE(req: NextRequest) {
     const supabase = await createClient();
     const { id } = await req.json();
 
+    // Parámetros disponibles para filtrado futuro si se requiere
+    // searchParams.get('mes');
+    // searchParams.get('anio');
+
     if (!id || isNaN(Number(id))) {
       return NextResponse.json({ error: 'ID inválido.' }, { status: 400 });
     }
 
     // Verificar si tiene lecturas asociadas (Supabase maneja esto con FK si se desea, pero hacemos el check manual sugerido)
-    const { count, error: _countError } = await supabase
+    const { count } = await supabase
       .from('lecturas_agua')
       .select('*', { count: 'exact', head: true })
       .eq('casa_id', id);
