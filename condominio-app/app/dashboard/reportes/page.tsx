@@ -50,13 +50,27 @@ export default function ReportesPage() {
   const [tab, setTab]         = useState<'resumen' | 'detalle' | 'comparativo'>('resumen');
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
+  // Estados para el rango del comparativo
+  const [mesInicio, setMesInicio] = useState(1);
+  const [anioInicio, setAnioInicio] = useState(new Date().getFullYear());
+  const [mesFin, setMesFin] = useState(new Date().getMonth() + 1);
+  const [anioFin, setAnioFin] = useState(new Date().getFullYear());
+
+  // Inicializar el rango (6 meses atrás por defecto)
+  useEffect(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 5);
+    setMesInicio(d.getMonth() + 1);
+    setAnioInicio(d.getFullYear());
+  }, []);
+
   /**
    * Hook inicial para cargar el reporte al montar el componente o cuando cambian los filtros.
    */
   useEffect(() => {
     fetchReporte();
     setTimeout(() => setVisible(true), 50);
-  }, [mesSeleccionado, anioSeleccionado]);
+  }, [mesSeleccionado, anioSeleccionado, mesInicio, anioInicio, mesFin, anioFin]);
 
   /**
    * Genera el reporte completo consultando Supabase y procesando los datos localmente.
@@ -86,16 +100,21 @@ export default function ReportesPage() {
         .lte('fecha', finMes);
       if (lecturasErr) throw lecturasErr;
 
-      // 3. Procesar datos del mes
+      // 3. Procesar datos del mes (Ordenados numéricamente)
       const porCasa: LecturaRow[] = (lecturasMes || []).map(l => ({
-        numero_casa: l.casas?.numero_casa || '?',
+        // Usamos el ID de la casa si el Join falla por alguna razón
+        numero_casa: l.casas?.numero_casa || `Casa ${l.casa_id}`,
         lectura_anterior: Number(l.lectura_anterior) || 0,
         lectura_actual: Number(l.lectura_actual) || 0,
         consumo: Number(l.consumo) || 0,
         consumo_cobrar: Number(l.consumo_cobrar) || 0,
         valor: Number(l.valor) || 0,
         fecha: l.fecha
-      }));
+      })).sort((a, b) => {
+        const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
+        return numA - numB;
+      });
 
       const excedidas = porCasa.filter(c => c.consumo_cobrar > 0);
 
@@ -106,20 +125,22 @@ export default function ReportesPage() {
         valor_total: porCasa.reduce((s, c) => s + c.valor, 0)
       };
 
-      // 4. Obtener comparativo de los últimos 6 meses
-      const fechaLimite = new Date(anioSeleccionado, mesSeleccionado - 1, 1);
-      fechaLimite.setMonth(fechaLimite.getMonth() - 5);
+      // 4. Obtener comparativo basado en el rango dinámico
+      const fechaInicioComp = `${anioInicio}-${String(mesInicio).padStart(2, '0')}-01`;
+      const ultimoDiaFin = new Date(anioFin, mesFin, 0).getDate();
+      const fechaFinComp = `${anioFin}-${String(mesFin).padStart(2, '0')}-${ultimoDiaFin}`;
       
       const { data: lecturasHistorico } = await supabase
         .from('lecturas_agua')
         .select('*')
-        .gte('fecha', `${fechaLimite.getFullYear()}-${String(fechaLimite.getMonth() + 1).padStart(2, '0')}-01`)
+        .gte('fecha', fechaInicioComp)
+        .lte('fecha', fechaFinComp)
         .order('fecha', { ascending: true });
 
       // Agrupar por mes/año para el comparativo
       const historicoMap: Record<string, Comparativo> = {};
       (lecturasHistorico || []).forEach(l => {
-        const d = new Date(l.fecha + 'T00:00:00');
+        const d = new Date(l.fecha + 'T12:00:00'); // Evitar problemas de zona horaria
         const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
         if (!historicoMap[key]) {
           historicoMap[key] = {
@@ -136,10 +157,10 @@ export default function ReportesPage() {
         if ((Number(l.consumo_cobrar) || 0) > 0) historicoMap[key].casas_excedidas++;
       });
 
-      // Ordenar cronológicamente antes de mostrar
+      // Ordenar cronológicamente
       const sortedComp = Object.values(historicoMap).sort((a, b) => 
         (a.anio * 100 + a.mes) - (b.anio * 100 + b.mes)
-      ).slice(-6);
+      );
 
       setData({
         mes: mesSeleccionado, anio: anioSeleccionado,
@@ -167,33 +188,110 @@ export default function ReportesPage() {
       const workbook = new ExcelJS.Workbook();
       const ws = workbook.addWorksheet(`Reporte_${MESES[mesSeleccionado-1]}`);
 
+      // Colores corporativos (Mismos de Lecturas)
+      const darkBlue = 'FF1E3A8A';
+      const brightBlue = 'FF3B82F6';
+      const white = 'FFFFFFFF';
+      const redExceso = 'FF991B1B';
+      const greenValor = 'FF166534';
+
+      // 1. TÍTULO PRINCIPAL (Fila 1)
+      const mesNombre = MESES[mesSeleccionado - 1];
+      ws.mergeCells('A1:G1');
+      const titleCell = ws.getCell('A1');
+      titleCell.value = `Condominio Campestre La Florida — Reporte Detallado ${mesNombre} ${anioSeleccionado}`;
+      titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: white } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: darkBlue } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(1).height = 40;
+
+      // 2. SUBTÍTULO (Fila 2)
+      ws.mergeCells('A2:G2');
+      const subtitleCell = ws.getCell('A2');
+      const fechaHoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      subtitleCell.value = `Resumen consolidado generado el ${fechaHoy}`;
+      subtitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF4B5563' } };
+      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      ws.getRow(2).height = 25;
+
+      // 3. ENCABEZADOS DE COLUMNA (Fila 3)
+      const headers = ['Casa', 'Lect. Anterior', 'Lect. Actual', 'Consumo (m³)', 'Exceso (m³)', 'Valor ($)', 'Fecha'];
+      ws.getRow(3).values = headers;
+      ws.getRow(3).height = 20;
+
       ws.columns = [
-        { header: 'Casa', key: 'casa', width: 10 },
-        { header: 'Ant.', key: 'ant', width: 10 },
-        { header: 'Act.', key: 'act', width: 10 },
-        { header: 'Consumo', key: 'con', width: 12 },
-        { header: 'Exceso', key: 'exc', width: 12 },
-        { header: 'Valor ($)', key: 'val', width: 15 },
-        { header: 'Fecha', key: 'fec', width: 15 },
+        { key: 'casa', width: 15 },
+        { key: 'ant', width: 18 },
+        { key: 'act', width: 18 },
+        { key: 'con', width: 15 },
+        { key: 'exc', width: 15 },
+        { key: 'val', width: 20 },
+        { key: 'fec', width: 15 },
       ];
 
+      ws.getRow(3).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: white } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brightBlue } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: white } },
+          left: { style: 'thin', color: { argb: white } },
+          bottom: { style: 'thin', color: { argb: white } },
+          right: { style: 'thin', color: { argb: white } }
+        };
+      });
+
+      // 4. DATOS (desde Fila 4)
       data.porCasa.forEach(row => {
-        ws.addRow({
-          casa: row.numero_casa,
-          ant: row.lectura_anterior,
-          act: row.lectura_actual,
-          con: row.consumo,
-          exc: row.consumo_cobrar,
-          val: row.valor,
-          fec: row.fecha
+        const r = ws.addRow({
+          casa: `Casa ${row.numero_casa}`,
+          ant: Number(row.lectura_anterior),
+          act: Number(row.lectura_actual),
+          con: Number(row.consumo),
+          exc: Number(row.consumo_cobrar),
+          val: Number(row.valor),
+          fec: new Date(row.fecha).toLocaleDateString('es-CO')
+        });
+
+        r.eachCell((cell, colNumber) => {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          
+          if (colNumber === 2 || colNumber === 3) {
+            cell.numFmt = '0.00';
+            cell.alignment = { horizontal: 'right' };
+          }
+          if (colNumber === 6) {
+            cell.numFmt = '"$"#,##0';
+            cell.font = { color: { argb: greenValor }, bold: true };
+          }
+          if (colNumber === 5 && (Number(cell.value) || 0) > 0) {
+            cell.font = { color: { argb: redExceso }, bold: true };
+          }
+          if (colNumber === 1) {
+            cell.alignment = { horizontal: 'left' };
+          }
         });
       });
 
-      ws.getRow(1).font = { bold: true };
-      
+      // 5. FILA DE TOTALES
+      const totalRow = ws.addRow({
+        casa: 'TOTAL GENERAL',
+        con: data.porCasa.reduce((s, l) => s + (Number(l.consumo) || 0), 0),
+        exc: data.porCasa.reduce((s, l) => s + (Number(l.consumo_cobrar) || 0), 0),
+        val: data.porCasa.reduce((s, l) => s + (Number(l.valor) || 0), 0),
+      });
+
+      totalRow.height = 25;
+      totalRow.eachCell((cell, colNumber) => {
+        cell.font = { bold: true, color: { argb: white } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: darkBlue } };
+        cell.alignment = { vertical: 'middle', horizontal: colNumber === 1 ? 'left' : 'center' };
+        if (colNumber === 6) cell.numFmt = '"$"#,##0';
+      });
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, `Reporte_Agua_${MESES[mesSeleccionado-1]}_${anioSeleccionado}.xlsx`);
+      saveAs(blob, `Reporte_Consolidado_${mesNombre}_${anioSeleccionado}.xlsx`);
     } catch (err) {
       console.error('Error Excel:', err);
       alert('Error al generar el Excel');
@@ -258,7 +356,7 @@ export default function ReportesPage() {
               style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
             >
               {MESES.map((m, i) => (
-                <option key={m} value={i + 1}>{m}</option>
+                <option key={m} value={i + 1} style={{ background: '#0a0a0f', color: '#fff' }}>{m}</option>
               ))}
             </select>
           </div>
@@ -270,7 +368,7 @@ export default function ReportesPage() {
               style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
             >
               {[2024, 2025, 2026].map(y => (
-                <option key={y} value={y}>{y}</option>
+                <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>
               ))}
             </select>
           </div>
@@ -466,10 +564,37 @@ export default function ReportesPage() {
           {/* ── Tab: Comparativo ── */}
           {tab === 'comparativo' && (
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', overflow: 'hidden' }}>
-              <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+               <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
-                  COMPARATIVO <span style={{ color: ACCENT }}>ÚLTIMOS 6 MESES</span>
+                  COMPARATIVO <span style={{ color: ACCENT }}>ÚLTIMOS MESES</span>
                 </h2>
+                
+                {/* Selectores de Rango */}
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.5rem 1rem', borderRadius: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Desde:</span>
+                    <select value={mesInicio} onChange={e => setMesInicio(Number(e.target.value))}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      {MESES.map((m, i) => <option key={i} value={i+1} style={{ background: '#0a0a0f' }}>{m}</option>)}
+                    </select>
+                    <select value={anioInicio} onChange={e => setAnioInicio(Number(e.target.value))}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      {[2024, 2025, 2026].map(y => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ width: '1px', height: '15px', background: 'rgba(255,255,255,0.1)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hasta:</span>
+                    <select value={mesFin} onChange={e => setMesFin(Number(e.target.value))}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      {MESES.map((m, i) => <option key={i} value={i+1} style={{ background: '#0a0a0f' }}>{m}</option>)}
+                    </select>
+                    <select value={anioFin} onChange={e => setAnioFin(Number(e.target.value))}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      {[2024, 2025, 2026].map(y => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {/* Barras */}

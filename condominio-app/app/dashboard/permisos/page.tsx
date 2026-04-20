@@ -289,8 +289,8 @@ export default function PermisosPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>¿Retorna?</label>
               <select value={formData.intent_retorno} onChange={e => setFormData({...formData, intent_retorno: e.target.value})} style={selectStyle}>
-                <option value="si" style={{ background: '#0a0a0f' }}>SÍ</option>
-                <option value="no" style={{ background: '#0a0a0f' }}>NO</option>
+                <option value="si" style={{ background: '#0a0a0f', color: '#fff' }}>SÍ (Regresa hoy)</option>
+                <option value="no" style={{ background: '#0a0a0f', color: '#fff' }}>NO (No regresa hoy)</option>
               </select>
             </div>
 
@@ -302,16 +302,16 @@ export default function PermisosPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Duración</label>
               <select value={formData.tipo_duracion} onChange={e => setFormData({...formData, tipo_duracion: e.target.value as any})} style={selectStyle}>
-                <option value="medio_dia" style={{ background: '#0a0a0f' }}>Medio día</option>
-                <option value="un_dia" style={{ background: '#0a0a0f' }}>Un día</option>
+                <option value="medio_dia" style={{ background: '#0a0a0f', color: '#fff' }}>Medio día</option>
+                <option value="un_dia" style={{ background: '#0a0a0f', color: '#fff' }}>Un día</option>
               </select>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Categoría</label>
               <select value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value as any})} style={selectStyle}>
-                <option value="personal" style={{ background: '#0a0a0f' }}>Asunto Personal</option>
-                <option value="salud" style={{ background: '#0a0a0f' }}>Salud / Médica</option>
+                <option value="personal" style={{ background: '#0a0a0f', color: '#fff' }}>Asunto Personal</option>
+                <option value="salud" style={{ background: '#0a0a0f', color: '#fff' }}>Salud / Médica</option>
               </select>
             </div>
 

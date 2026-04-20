@@ -48,7 +48,8 @@ export default function CasasPage() {
       const sorted = (data || []).sort((a, b) => {
         const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
         const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
-        return numA - numB;
+        if (numA !== numB) return numA - numB;
+        return a.numero_casa.localeCompare(b.numero_casa);
       });
       
       setCasas(sorted);

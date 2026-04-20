@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -35,6 +35,8 @@ export default function LecturasPage() {
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([]);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     casa_id: '',
@@ -140,7 +142,8 @@ export default function LecturasPage() {
     const sorted = (data || []).sort((a, b) => {
       const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
       const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
-      return numA - numB;
+      if (numA !== numB) return numA - numB;
+      return a.numero_casa.localeCompare(b.numero_casa);
     });
     
     setCasas(sorted);
@@ -157,6 +160,9 @@ export default function LecturasPage() {
     const ultimoDia = new Date(anioSeleccionado, mesSeleccionado, 0).getDate();
     const finMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-${ultimoDia}`;
     
+    console.log('Buscando lecturas desde:', inicioMes, 'hasta:', finMes);
+    console.log('Mes seleccionado:', mesSeleccionado, 'Año:', anioSeleccionado);
+    
     const { data, error } = await supabase
       .from('lecturas_agua')
       .select('*, casas(numero_casa)')
@@ -164,20 +170,34 @@ export default function LecturasPage() {
       .lte('fecha', finMes)
       .order('fecha', { ascending: false });
 
+    console.log('Datos obtenidos:', data?.length, 'registros');
+    if (error) console.log('Error:', error);
+
     if (error) throw error;
 
     // Ordenar por número de casa de forma numérica (1, 2, 3... en lugar de 1, 10, 100)
     const sortedByCasa = (data || []).sort((a, b) => {
       const numA = parseInt(a.casas?.numero_casa?.replace(/\D/g, '') || '0');
       const numB = parseInt(b.casas?.numero_casa?.replace(/\D/g, '') || '0');
-      return numA - numB;
+      if (numA !== numB) return numA - numB;
+      return (a.casas?.numero_casa || '').localeCompare(b.casas?.numero_casa || '');
     });
     
-    const adapted = sortedByCasa.map(l => ({
-      ...l,
-      numero_casa: l.casas?.numero_casa || 'N/A'
-    }));
+    // Calcular consumo siempre (el campo GENERATED puede no devolver valor)
+    const adapted = sortedByCasa.map(l => {
+      const lecturaAnterior = Number(l.lectura_anterior) || 0;
+      const lecturaActual = Number(l.lectura_actual) || 0;
+      const consumo = lecturaActual - lecturaAnterior;
+      return {
+        ...l,
+        numero_casa: l.casas?.numero_casa || 'N/A',
+        consumo: consumo,
+        lectura_anterior: lecturaAnterior,
+        lectura_actual: lecturaActual
+      };
+    });
     
+    console.log('Primera lectura:', adapted[0]);
     setLecturas(adapted);
   };
 
@@ -272,42 +292,288 @@ export default function LecturasPage() {
   const exportarExcel = async () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
-      const saveAs = (await import('file-saver')).saveAs;
+      const fileSaver = await import('file-saver');
+      const saveAs = fileSaver.saveAs || (fileSaver as any).default?.saveAs;
       
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Lecturas de Agua');
 
+      // Colores corporativos
+      const darkBlue = 'FF1E3A8A';
+      const brightBlue = 'FF3B82F6';
+      const white = 'FFFFFFFF';
+      const gray = 'FFD1D5DB';
+      const redExceso = 'FF991B1B';
+      const greenValor = 'FF166534';
+
+      // 1. TÍTULO PRINCIPAL (Fila 1)
+      const mesNombre = MESES[mesSeleccionado - 1];
+      worksheet.mergeCells('A1:G1');
+      const titleCell = worksheet.getCell('A1');
+      titleCell.value = `Condominio Campestre La Florida — Reporte ${mesNombre} ${anioSeleccionado}`;
+      titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: white } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: darkBlue } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      worksheet.getRow(1).height = 40;
+
+      // 2. SUBTÍTULO (Fila 2)
+      worksheet.mergeCells('A2:G2');
+      const subtitleCell = worksheet.getCell('A2');
+      const fechaHoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      subtitleCell.value = `Generado el ${fechaHoy}`;
+      subtitleCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF4B5563' } };
+      subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      worksheet.getRow(2).height = 25;
+
+      // 3. ENCABEZADOS DE COLUMNA (Fila 3)
+      const headers = ['Casa', 'Lect. Anterior', 'Lect. Actual', 'Consumo (m³)', 'Exceso (m³)', 'Valor ($)', 'Fecha'];
+      worksheet.getRow(3).values = headers;
+      worksheet.getRow(3).height = 20;
+
+      // Configurar anchos de columna y estilos de base
       worksheet.columns = [
-        { header: 'Casa', key: 'casa', width: 15 },
-        { header: 'Anterior', key: 'ant', width: 15 },
-        { header: 'Actual', key: 'act', width: 15 },
-        { header: 'Consumo m³', key: 'con', width: 15 },
-        { header: 'Exceso m³', key: 'exc', width: 15 },
-        { header: 'Valor ($)', key: 'val', width: 15 },
-        { header: 'Fecha', key: 'fec', width: 20 },
+        { key: 'casa', width: 15 },
+        { key: 'ant', width: 18 },
+        { key: 'act', width: 18 },
+        { key: 'con', width: 15 },
+        { key: 'exc', width: 15 },
+        { key: 'val', width: 20 },
+        { key: 'fec', width: 15 },
       ];
 
+      // Aplicar estilos a la fila de encabezados
+      worksheet.getRow(3).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: white } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brightBlue } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: white } },
+          left: { style: 'thin', color: { argb: white } },
+          bottom: { style: 'thin', color: { argb: white } },
+          right: { style: 'thin', color: { argb: white } }
+        };
+      });
+
+      // 4. DATOS (desde Fila 4)
       lecturas.forEach(l => {
-        worksheet.addRow({
-          casa: l.numero_casa,
-          ant: l.lectura_anterior,
-          act: l.lectura_actual,
-          con: l.consumo,
-          exc: l.consumo_cobrar,
-          val: l.valor,
-          fec: l.fecha
+        const row = worksheet.addRow({
+          casa: `Casa ${l.numero_casa}`,
+          ant: Number(l.lectura_anterior) || 0,
+          act: Number(l.lectura_actual) || 0,
+          con: Number(l.consumo) || 0,
+          exc: Number(l.consumo_cobrar) || 0,
+          val: Number(l.valor) || 0,
+          fec: new Date(l.fecha).toLocaleDateString('es-CO')
+        });
+
+        // Estilos de celda para los datos
+        row.eachCell((cell, colNumber) => {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          
+          // Formatos numéricos
+          if (colNumber === 2 || colNumber === 3) {
+            cell.numFmt = '0.00';
+            cell.alignment = { horizontal: 'right' };
+          }
+          if (colNumber === 6) {
+            cell.numFmt = '"$"#,##0';
+            cell.font = { color: { argb: greenValor }, bold: true };
+          }
+          if (colNumber === 5 && (Number(cell.value) || 0) > 0) {
+            cell.font = { color: { argb: redExceso }, bold: true };
+          }
+           if (colNumber === 1) {
+            cell.alignment = { horizontal: 'left' };
+          }
         });
       });
 
-      // Estilo de cabecera
-      worksheet.getRow(1).font = { bold: true };
-      
+      // 5. FILA DE TOTALES
+      const totalRow = worksheet.addRow({
+        casa: 'TOTAL',
+        con: lecturas.reduce((s, l) => s + (Number(l.consumo) || 0), 0),
+        exc: lecturas.reduce((s, l) => s + (Number(l.consumo_cobrar) || 0), 0),
+        val: lecturas.reduce((s, l) => s + (Number(l.valor) || 0), 0),
+      });
+
+      totalRow.height = 25;
+      totalRow.eachCell((cell, colNumber) => {
+        cell.font = { bold: true, color: { argb: white } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: darkBlue } };
+        cell.alignment = { vertical: 'middle', horizontal: colNumber === 1 ? 'left' : 'center' };
+        
+        if (colNumber === 6) {
+          cell.numFmt = '"$"#,##0';
+        }
+      });
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, `Reporte_Agua_${new Date().toISOString().split('T')[0]}.xlsx`);
+      saveAs(blob, `Reporte_Agua_${mesNombre}_${anioSeleccionado}.xlsx`);
     } catch (err) {
       console.error('Error al exportar:', err);
       alert('Error al generar el Excel');
+    }
+  };
+
+  /**
+   * Importa lecturas desde un archivo Excel/CSV
+   * Formato esperado: Periodo, Casa_id, Lec_Salida_Anterior_M3, Lec_Entrada_Actual_M3
+   */
+  const importarExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setImporting(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      console.log('Leyendo archivo...');
+      const XLSX = await import('xlsx');
+      
+      let data: any[] = [];
+      
+      // Leer como texto para CSV o array para XLSX
+      if (file.name.endsWith('.csv')) {
+        const text = await file.text();
+        const wb = XLSX.read(text, { type: 'string' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(sheet);
+      } else {
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        data = XLSX.utils.sheet_to_json(sheet);
+      }
+      
+      console.log('Filas leídas:', data.length);
+      console.log('Primera fila:', data[0]);
+      
+      if (data.length === 0) {
+        throw new Error('El archivo está vacío');
+      }
+      
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      let insertados = 0;
+      let errores = 0;
+      
+      for (let i = 0; i < data.length; i++) {
+        try {
+          const rowData = data[i] as any;
+          
+          // Mostrar primera fila para debug
+          if (i === 0) {
+            console.log('Primera fila completa:', JSON.stringify(rowData));
+            console.log('Keys disponibles:', Object.keys(rowData));
+          }
+          
+          // Intentar encontrar las columnas con diferentes nombres posibles (compatibilidad con exportaciones previas)
+          const casa_id = Number(rowData.Casa_id || rowData.No_Casa || rowData.casa_id || rowData['Casa_id'] || rowData['No_Casa']);
+          const lectura_anterior = Number(
+            rowData['Lec_Salida_Anterior_M3'] || 
+            rowData.Lec_Salida_Anterior_M3 || 
+            rowData.lectura_anterior ||
+            rowData['Lectura Anterior']
+          );
+          const lectura_actual = Number(
+            rowData['Lec_Entrada_Actual_M3'] || 
+            rowData.Lec_Entrada_Actual_M3 || 
+            rowData.lectura_actual ||
+            rowData['Lectura Actual']
+          );
+          const fechaRaw = rowData.Periodo || rowData.periodo || rowData.Fecha || rowData.fecha || rowData['FECHA:'];
+          
+          // Convertir fecha a YYYY-MM-DD (Supabase/Postgres requiere este formato estricto)
+          let fecha = '';
+          if (fechaRaw instanceof Date) {
+            fecha = fechaRaw.toISOString().split('T')[0];
+          } else if (typeof fechaRaw === 'number') {
+            // Excel serial date (días desde 1900)
+            const excelEpoch = new Date(1899, 11, 30);
+            const fechaObj = new Date(excelEpoch.getTime() + fechaRaw * 24 * 60 * 60 * 1000);
+            fecha = fechaObj.toISOString().split('T')[0];
+          } else if (typeof fechaRaw === 'string') {
+            const clean = fechaRaw.trim();
+            // Caso: DD-MM-YYYY o YYYY-MM-DD con guiones o barras
+            if (clean.includes('-') || clean.includes('/')) {
+              const parts = clean.split(/[-/]/).map(p => p.trim());
+              if (parts.length >= 3) {
+                let d, m, y;
+                if (parts[0].length === 4) { // Formato YYYY-MM-DD (o con hora al final)
+                  y = parts[0]; m = parts[1]; d = parts[2].substring(0, 2);
+                } else { // Formato DD-MM-YYYY
+                  d = parts[0]; m = parts[1]; y = parts[2].substring(0, 4);
+                }
+                fecha = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+              }
+            } else if (clean.split(' ').length >= 2) {
+              // Caso: "enero 2025"
+              const p = clean.split(' ');
+              const mesStr = p[0].toLowerCase();
+              const anioStr = p[1];
+              const mesIdx = MESES.findIndex(m => m.toLowerCase().startsWith(mesStr.substring(0,3)));
+              if (mesIdx !== -1) {
+                fecha = `${anioStr}-${String(mesIdx + 1).padStart(2, '0')}-01`;
+              }
+            }
+          }
+          
+          // Debug de transformación
+          console.log(`Fila ${i} procesada:`, { casa_id, lectura_anterior, lectura_actual, fechaOriginal: fechaRaw, fechaConvertida: fecha });
+          
+          if (!casa_id || isNaN(lectura_anterior) || isNaN(lectura_actual) || !fecha || fecha === 'NaN-NaN-NaN') {
+            console.log(`Fila ${i} ignorada (datos incompletos o inválidos)`);
+            errores++;
+            continue;
+          }
+          
+          const consumo = lectura_actual - lectura_anterior;
+          const consumo_cobrar = Math.max(0, consumo - 60);
+          const valor = consumo_cobrar * 1605;
+          
+          const insertData = {
+            casa_id,
+            lectura_anterior,
+            lectura_actual,
+            consumo_cobrar,
+            valor,
+            fecha
+          };
+          
+          console.log(`Fila ${i} enviando a DB:`, insertData);
+          
+          const { error: insertError } = await supabase
+            .from('lecturas_agua')
+            .insert(insertData);
+          
+          if (insertError) {
+            console.error('Error insertando:', insertError);
+            errores++;
+          } else {
+            insertados++;
+          }
+        } catch (err) {
+          console.error('Error procesando fila:', err);
+          errores++;
+        }
+      }
+      
+      setSuccess(`Importación completada: ${insertados} registros insertados, ${errores} errores`);
+      await fetchLecturas();
+      await fetchAniosDisponibles();
+      
+    } catch (err: any) {
+      console.error('Error completo:', err);
+      setError('Error al importar: ' + err.message);
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -354,6 +620,17 @@ export default function LecturasPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
             <span style={{ fontSize: '1rem' }}>↓</span> Exportar a Excel
+          </button>
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={importarExcel}
+            accept=".xlsx,.xls,.csv"
+            style={{ display: 'none' }}
+          />
+          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {importing ? '◌ Importando...' : '↑ Importar Excel'}
           </button>
           
           <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '0.08em', textTransform: 'capitalize' }}>
