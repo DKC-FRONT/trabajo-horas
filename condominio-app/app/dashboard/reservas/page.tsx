@@ -109,7 +109,7 @@ function calcularValor(area: string, fecha: string, iniVal: number, finVal: numb
 
 function parseHora(hora: string) {
   const parts = hora.split(':');
-  let h = Number(parts[0]);
+  const h = Number(parts[0]);
   if (h >= 24) {
     const realH = h - 24;
     return `${realH.toString().padStart(2, '0')}:${parts[1]} (Día sig.)`;
@@ -188,6 +188,7 @@ export default function ReservasPage() {
 
     init();
     setTimeout(() => setVisible(true), 50);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -278,6 +279,14 @@ export default function ReservasPage() {
       setFormLoading(true);
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
+
+      const { error: _searchError } = await supabase
+      .from('reservas')
+      .select('id')
+      .eq('area', area)
+      .eq('fecha', fecha)
+      .eq('estado', 'aprobada')
+      .maybeSingle();
 
       const { error } = await supabase
         .from('reservas')

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import {
   Droplets, Home, FileBarChart2, Megaphone, CalendarCheck,
   Gauge, Users, Settings, ChevronLeft, LogOut, Clock, FileText, LucideIcon
@@ -113,6 +114,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     checkSession();
     return () => window.removeEventListener('resize', checkSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogout = async () => {
@@ -156,7 +158,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}>
         {(!collapsed || isMobile) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', border: '1px solid rgba(255,255,255,0.1)' }} />
+            <Image src="/logo.png" alt="Logo" width={32} height={32} style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff', letterSpacing: '0.05em', lineHeight: 1 }}>
                 La Florida

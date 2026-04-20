@@ -22,7 +22,8 @@ const TIPO_META: Record<TipoAviso, { color: string; icon: string; label: string 
 };
 
 export default function AvisosPage() {
-  const [user, setUser] = useState<{ rol?: Rol } | null>(null);
+  const searchParams = useSearchParams();
+  const [user, _setUser] = useState<{ id: string; rol: string } | null>(null);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -147,6 +148,9 @@ export default function AvisosPage() {
     setDeletingId(id);
     try {
       const { createClient } = await import('@/lib/client');
+      // Los parámetros mes y anio son para filtrado futuro si se desea
+      const _mes = searchParams.get('mes');
+      const _anio = searchParams.get('anio');
       const supabase = createClient();
 
       const { error } = await supabase

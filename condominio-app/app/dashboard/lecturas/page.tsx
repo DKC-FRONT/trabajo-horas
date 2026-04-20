@@ -50,6 +50,7 @@ export default function LecturasPage() {
     setMounted(true);
     loadData();
     fetchAniosDisponibles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mesSeleccionado, anioSeleccionado]);
 
   /**
@@ -88,6 +89,7 @@ export default function LecturasPage() {
     } else {
       setForm(prev => ({ ...prev, lectura_anterior: '' }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.casa_id]);
 
   const fetchUltimaLectura = async (id: number) => {
@@ -302,7 +304,6 @@ export default function LecturasPage() {
       const darkBlue = 'FF1E3A8A';
       const brightBlue = 'FF3B82F6';
       const white = 'FFFFFFFF';
-      const gray = 'FFD1D5DB';
       const redExceso = 'FF991B1B';
       const greenValor = 'FF166534';
 

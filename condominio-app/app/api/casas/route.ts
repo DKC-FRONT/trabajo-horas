@@ -29,11 +29,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El número de casa es requerido.' }, { status: 400 });
     }
 
-    const { data: existing, error: searchError } = await supabase
+    const { data: existing, error: _searchError } = await supabase
       .from('casas')
       .select('id')
       .eq('numero_casa', String(numero_casa).trim())
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ error: `La casa ${numero_casa} ya existe.` }, { status: 409 });
@@ -87,7 +87,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Verificar si tiene lecturas asociadas (Supabase maneja esto con FK si se desea, pero hacemos el check manual sugerido)
-    const { count, error: countError } = await supabase
+    const { count, error: _countError } = await supabase
       .from('lecturas_agua')
       .select('*', { count: 'exact', head: true })
       .eq('casa_id', id);

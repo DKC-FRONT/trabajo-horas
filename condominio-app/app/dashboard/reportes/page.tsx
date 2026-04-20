@@ -67,9 +67,9 @@ export default function ReportesPage() {
   /**
    * Hook inicial para cargar el reporte al montar el componente o cuando cambian los filtros.
    */
-  useEffect(() => {
     fetchReporte();
     setTimeout(() => setVisible(true), 50);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mesSeleccionado, anioSeleccionado, mesInicio, anioInicio, mesFin, anioFin]);
 
   /**

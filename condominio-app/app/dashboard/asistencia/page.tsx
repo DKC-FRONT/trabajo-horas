@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Play, Square, History, Activity } from 'lucide-react';
+import { Play, Square, History, Activity } from 'lucide-react';
 
 type AttendanceRecord = {
   id: number;
@@ -29,6 +29,7 @@ export default function AsistenciaPage() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     setTimeout(() => setVisible(true), 50);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
