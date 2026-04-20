@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -30,8 +33,10 @@ export async function GET(req: NextRequest) {
     // Adaptar formato para compatibilidad con el frontend
     const porCasa = (rawPorCasa || []).map((r: any) => ({
       ...r,
-      numero_casa: r.casas?.numero_casa
+      numero_casa: r.casas?.numero_casa,
+      consumo: r.consumo || Math.max(0, Number(r.lectura_actual || 0) - Number(r.lectura_anterior || 0))
     })).sort((a: any, b: any) => parseInt(a.numero_casa) - parseInt(b.numero_casa));
+
 
     // 2. Casas que superaron 60m³
     const excedidas = porCasa.filter((r: any) => Number(r.consumo_cobrar) > 0);
@@ -44,7 +49,7 @@ export async function GET(req: NextRequest) {
     // Para simplificar, obtenemos los datos de los últimos meses
     const { data: rawComp, error: err2 } = await supabase
       .from('lecturas_agua')
-      .select('mes, anio, consumo, consumo_cobrar, valor')
+      .select('mes, anio, consumo, lectura_actual, lectura_anterior, consumo_cobrar, valor')
       .or(`and(anio.eq.${anio},mes.lte.${mes}),and(anio.eq.${anio - 1},mes.gt.${mes})`)
       .order('anio', { ascending: false })
       .order('mes', { ascending: false });
@@ -59,7 +64,9 @@ export async function GET(req: NextRequest) {
         agrupado[key] = { mes: r.mes, anio: r.anio, total_casas: 0, consumo_total: 0, valor_total: 0, casas_excedidas: 0 };
       }
       agrupado[key].total_casas += 1;
-      agrupado[key].consumo_total += Number(r.consumo);
+      
+      const realConsumo = r.consumo || Math.max(0, Number(r.lectura_actual || 0) - Number(r.lectura_anterior || 0));
+      agrupado[key].consumo_total += realConsumo;
       agrupado[key].valor_total += Number(r.valor);
       if (Number(r.consumo_cobrar) > 0) agrupado[key].casas_excedidas += 1;
     });

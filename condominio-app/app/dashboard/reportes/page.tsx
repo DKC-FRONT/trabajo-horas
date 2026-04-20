@@ -107,7 +107,7 @@ export default function ReportesPage() {
         numero_casa: l.casas?.numero_casa || `Casa ${l.casa_id}`,
         lectura_anterior: Number(l.lectura_anterior) || 0,
         lectura_actual: Number(l.lectura_actual) || 0,
-        consumo: Number(l.consumo) || 0,
+        consumo: Number(l.consumo) || Math.max(0, Number(l.lectura_actual || 0) - Number(l.lectura_anterior || 0)),
         consumo_cobrar: Number(l.consumo_cobrar) || 0,
         valor: Number(l.valor) || 0,
         fecha: l.fecha
@@ -153,7 +153,7 @@ export default function ReportesPage() {
             casas_excedidas: 0
           };
         }
-        historicoMap[key].consumo_total += Number(l.consumo) || 0;
+        historicoMap[key].consumo_total += Number(l.consumo) || Math.max(0, Number(l.lectura_actual || 0) - Number(l.lectura_anterior || 0));
         historicoMap[key].valor_total += Number(l.valor) || 0;
         if ((Number(l.consumo_cobrar) || 0) > 0) historicoMap[key].casas_excedidas++;
       });
