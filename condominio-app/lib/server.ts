@@ -7,9 +7,15 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  if (!supabaseUrl || !supabaseKey) {
+    // Si faltan las llaves (ej: durante el build de Vercel),
+    // devolvemos un objeto que no rompa el pre-renderizado.
+    return { auth: {}, from: () => ({ select: () => ({ eq: () => ({ single: () => ({}) }) }) }) } as any;
+  }
+
   return createServerClient(
-    supabaseUrl || '',
-    supabaseKey || '',
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

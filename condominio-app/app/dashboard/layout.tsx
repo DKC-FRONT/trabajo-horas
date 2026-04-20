@@ -187,7 +187,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '0.75rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
-        {visibleItems.map((item) => {
+        {visibleItems.map((item: any) => {
           const isActive = pathname === item.route;
           const Icon = item.icon;
           return (

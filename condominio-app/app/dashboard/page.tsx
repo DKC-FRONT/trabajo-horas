@@ -110,7 +110,7 @@ export default function DashboardHomePage() {
 
   const rol = user?.rol ?? 'residente';
   const rolMeta = ROL_META[rol] ?? ROL_META.residente;
-  const visibleModules = NAV_MODULES.filter(m => m.roles.includes(rol as Rol));
+  const visibleModules = NAV_MODULES.filter((m: any) => m.roles.includes(rol as Rol));
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
 

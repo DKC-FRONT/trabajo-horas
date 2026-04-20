@@ -72,7 +72,7 @@ export default function UsuariosPage() {
       if (hRes.error) throw hRes.error;
 
       // Adaptamos los usuarios
-      const adaptedUsers: Usuario[] = (uRes.data || []).map(u => ({
+      const adaptedUsers: Usuario[] = (uRes.data || []).map((u: any) => ({
         id: u.id, // UUID
         nombre: u.nombre_completo,
         correo: u.email || '—',
@@ -82,7 +82,7 @@ export default function UsuariosPage() {
       }));
 
       // Ordenar casas numéricamente
-      const sortedCasas = (hRes.data || []).sort((a, b) => {
+      const sortedCasas = (hRes.data || []).sort((a: any, b: any) => {
         const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
         const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
         return numA - numB;
@@ -228,8 +228,8 @@ export default function UsuariosPage() {
         </div>
         {!loading && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {(['admin','trabajador','residente'] as Rol[]).map(r => {
-              const count = usuarios.filter(u => u.rol === r).length;
+            {(['admin','trabajador','residente'] as Rol[]).map((r: Rol) => {
+              const count = usuarios.filter((u: any) => u.rol === r).length;
               if (!count) return null;
               const meta = ROL_META[r];
               return (
@@ -301,7 +301,7 @@ export default function UsuariosPage() {
               <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>Casa</label>
               <select value={casaId} onChange={e => setCasaId(e.target.value)} style={{ ...inputStyle('casa'), appearance: 'none' as any }}>
                 <option value="" style={{ background: '#0a0a0f' }}>— Ninguna</option>
-                {casas.map(c => <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>Casa {c.numero_casa}</option>)}
+                {casas.map((c: any) => <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>Casa {c.numero_casa}</option>)}
               </select>
             </div>
           )}

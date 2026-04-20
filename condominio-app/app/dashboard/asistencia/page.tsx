@@ -35,6 +35,7 @@ export default function AsistenciaPage() {
     if (userRole === 'admin') {
       fetchAdminData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole, filterEmployee]);
 
   const fetchStatus = async () => {
@@ -107,8 +108,8 @@ export default function AsistenciaPage() {
       const { data: records } = await query;
       
       // 3. Cruzar datos manualmente
-      const mapped = (records || []).map(r => {
-        const u = (users || []).find(user => user.id === r.usuario_id);
+      const mapped = (records || []).map((r: any) => {
+        const u = (users || []).find((user: any) => user.id === r.usuario_id);
         return {
           ...r,
           nombre_completo: u ? u.nombre_completo : 'Usuario desconocido'
@@ -284,7 +285,7 @@ export default function AsistenciaPage() {
                   style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.8rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
                 >
                   <option value="all" style={{ background: '#0a0a0f', color: '#fff' }}>Todos los empleados</option>
-                  {employees.map(e => <option key={e.id} value={e.id} style={{ background: '#0a0a0f', color: '#fff' }}>{e.nombre_completo}</option>)}
+                  {employees.map((e: any) => <option key={e.id} value={e.id} style={{ background: '#0a0a0f', color: '#fff' }}>{e.nombre_completo}</option>)}
                 </select>
               </div>
 
@@ -364,7 +365,7 @@ export default function AsistenciaPage() {
                 <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff', margin: 0 }}>MIS ÚLTIMOS TURNOS</h3>
               </div>
               <div style={{ padding: '0.5rem' }}>
-                {history.map(r => (
+                {history.map((r: any) => (
                   <div key={r.id} style={{ padding: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{formatDate(r.hora_entrada)}</p>

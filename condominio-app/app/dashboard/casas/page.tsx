@@ -45,7 +45,7 @@ export default function CasasPage() {
       if (error) throw error;
 
       // Ordenar numéricamente (1, 2, 3... 10, 11... no 1, 10, 100)
-      const sorted = (data || []).sort((a, b) => {
+      const sorted = (data || []).sort((a: any, b: any) => {
         const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
         const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
         if (numA !== numB) return numA - numB;

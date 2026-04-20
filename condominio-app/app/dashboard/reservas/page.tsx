@@ -137,7 +137,7 @@ export default function ReservasPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const reservasFiltradas = reservas.filter(r => {
+  const reservasFiltradas = reservas.filter((r: any) => {
     if (!filtroTablaCasa) return true;
     return String(r.casa_id) === filtroTablaCasa;
   });
@@ -200,7 +200,7 @@ export default function ReservasPage() {
     const { data } = await supabase.from('casas').select('*');
     
     // Ordenar numéricamente (1, 2, 3...)
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = (data || []).sort((a: any, b: any) => {
       const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
       const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
       return numA - numB;
@@ -226,7 +226,7 @@ export default function ReservasPage() {
 
       if (error) throw error;
 
-      const adapted: Reserva[] = (data || []).map(r => ({
+      const adapted: Reserva[] = (data || []).map((r: any) => ({
         ...r,
         numero_casa: r.casas?.numero_casa || 'N/A',
         fecha_reserva: r.fecha
@@ -374,9 +374,9 @@ export default function ReservasPage() {
   });
 
   const counts = {
-    pendiente: reservasFiltradas.filter(r => r.estado === 'pendiente').length,
-    aprobada:  reservasFiltradas.filter(r => r.estado === 'aprobada').length,
-    rechazada: reservasFiltradas.filter(r => r.estado === 'rechazada').length,
+    pendiente: reservasFiltradas.filter((r: any) => r.estado === 'pendiente').length,
+    aprobada:  reservasFiltradas.filter((r: any) => r.estado === 'aprobada').length,
+    rechazada: reservasFiltradas.filter((r: any) => r.estado === 'rechazada').length,
   };
 
   // Solo Admin y Residente (con casa) pueden CREAR reservas
@@ -466,7 +466,7 @@ export default function ReservasPage() {
                   style={fieldStyle('casa')} required
                   onFocus={() => setFocusedField('casa')} onBlur={() => setFocusedField(null)}>
                   <option value="" style={{ background: '#0a0a0f', color: 'rgba(255, 255, 255, 1)' }}>— Seleccionar</option>
-                  {casas.map(c => (
+                  {casas.map((c: any) => (
                     <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fff' }}>
                       Casa {c.numero_casa}
                     </option>
@@ -481,7 +481,7 @@ export default function ReservasPage() {
               <select value={area} onChange={e => setArea(e.target.value)}
                 style={fieldStyle('area')}
                 onFocus={() => setFocusedField('area')} onBlur={() => setFocusedField(null)}>
-                {AREAS.map(a => (
+                {AREAS.map((a: any) => (
                   <option key={a} value={a} style={{ background: '#0a0a0f', color: '#fff' }}>{a}</option>
                 ))}
               </select>
@@ -503,7 +503,7 @@ export default function ReservasPage() {
               <select value={horaInicio} onChange={e => setHoraInicio(Number(e.target.value))}
                 style={fieldStyle('ini')}
                 onFocus={() => setFocusedField('ini')} onBlur={() => setFocusedField(null)}>
-                {HORARIOS.slice(0, -1).map(h => (
+                {HORARIOS.slice(0, -1).map((h: any) => (
                   <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fff' }}>{h.label}</option>
                 ))}
               </select>
@@ -515,7 +515,7 @@ export default function ReservasPage() {
               <select value={horaFin} onChange={e => setHoraFin(Number(e.target.value))}
                 style={fieldStyle('fin')}
                 onFocus={() => setFocusedField('fin')} onBlur={() => setFocusedField(null)}>
-                {HORARIOS.slice(1).map(h => (
+                {HORARIOS.slice(1).map((h: any) => (
                   <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fff' }}>{h.label}</option>
                 ))}
               </select>
@@ -570,7 +570,7 @@ export default function ReservasPage() {
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.65rem', padding: '0.25rem 0.5rem', outline: 'none', fontFamily: 'inherit' }}
               >
                 <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todas las casas</option>
-                {casas.map(c => (
+                {casas.map((c: any) => (
                   <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fff' }}>
                     Casa {c.numero_casa}
                   </option>

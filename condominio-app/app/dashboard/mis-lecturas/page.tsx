@@ -113,7 +113,7 @@ export default function MisLecturasPage() {
       if (error) throw error;
 
       // Mapeamos los datos al formato del estado, extrayendo mes y año de la fecha
-      const mapped: Lectura[] = (data || []).map(l => {
+      const mapped: Lectura[] = (data || []).map((l: any) => {
         const d = new Date(l.fecha_lectura + 'T00:00:00');
         return {
           id: l.id,
@@ -130,7 +130,7 @@ export default function MisLecturasPage() {
       });
 
       // Filtro manual por mes (ya que Supabase no tiene extract month directo en cliente simple)
-      const filtered = mes ? mapped.filter(l => l.mes === Number(mes)) : mapped;
+      const filtered = mes ? mapped.filter((l: any) => l.mes === Number(mes)) : mapped;
       setLecturas(filtered);
 
     } catch (err: any) {
@@ -210,7 +210,7 @@ export default function MisLecturasPage() {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '90px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
                 <option value="" style={{ background: '#0a0a0f' }}>Todos</option>
-                {[2023, 2024, 2025].map(y => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                {[2023, 2024, 2025].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
               </select>
             </div>
             {(mes || anio !== String(new Date().getFullYear())) && (

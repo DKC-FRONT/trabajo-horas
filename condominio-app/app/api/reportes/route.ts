@@ -31,14 +31,14 @@ export async function GET(req: NextRequest) {
     const porCasa = (rawPorCasa || []).map((r: any) => ({
       ...r,
       numero_casa: r.casas?.numero_casa
-    })).sort((a, b) => parseInt(a.numero_casa) - parseInt(b.numero_casa));
+    })).sort((a: any, b: any) => parseInt(a.numero_casa) - parseInt(b.numero_casa));
 
     // 2. Casas que superaron 60m³
-    const excedidas = porCasa.filter((r) => Number(r.consumo_cobrar) > 0);
+    const excedidas = porCasa.filter((r: any) => Number(r.consumo_cobrar) > 0);
 
     // 3. Totales
-    const totalValor   = porCasa.reduce((s, r) => s + Number(r.valor), 0);
-    const totalConsumo = porCasa.reduce((s, r) => s + Number(r.consumo), 0);
+    const totalValor   = porCasa.reduce((s: number, r: any) => s + Number(r.valor), 0);
+    const totalConsumo = porCasa.reduce((s: number, r: any) => s + Number(r.consumo), 0);
 
     // 4. Comparativo últimos 6 meses (Uso rpc o consulta agrupada si fuera posible, por ahora simple select)
     // Para simplificar, obtenemos los datos de los últimos meses
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     // Agrupar manualmente en JS para el comparativo (similar a GROUP BY)
     const agrupado: Record<string, any> = {};
-    (rawComp || []).forEach(r => {
+    (rawComp || []).forEach((r: any) => {
       const key = `${r.anio}-${r.mes}`;
       if (!agrupado[key]) {
         agrupado[key] = { mes: r.mes, anio: r.anio, total_casas: 0, consumo_total: 0, valor_total: 0, casas_excedidas: 0 };

@@ -102,7 +102,7 @@ export default function ReportesPage() {
       if (lecturasErr) throw lecturasErr;
 
       // 3. Procesar datos del mes (Ordenados numéricamente)
-      const porCasa: LecturaRow[] = (lecturasMes || []).map(l => ({
+      const porCasa: LecturaRow[] = (lecturasMes || []).map((l: any) => ({
         // Usamos el ID de la casa si el Join falla por alguna razón
         numero_casa: l.casas?.numero_casa || `Casa ${l.casa_id}`,
         lectura_anterior: Number(l.lectura_anterior) || 0,
@@ -111,13 +111,13 @@ export default function ReportesPage() {
         consumo_cobrar: Number(l.consumo_cobrar) || 0,
         valor: Number(l.valor) || 0,
         fecha: l.fecha
-      })).sort((a, b) => {
+      })).sort((a: any, b: any) => {
         const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
         const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
         return numA - numB;
       });
 
-      const excedidas = porCasa.filter(c => c.consumo_cobrar > 0);
+      const excedidas = porCasa.filter((c: any) => c.consumo_cobrar > 0);
 
       const resumen = {
         total_casas: casasData?.length || 0,
@@ -140,7 +140,7 @@ export default function ReportesPage() {
 
       // Agrupar por mes/año para el comparativo
       const historicoMap: Record<string, Comparativo> = {};
-      (lecturasHistorico || []).forEach(l => {
+      (lecturasHistorico || []).forEach((l: any) => {
         const d = new Date(l.fecha + 'T12:00:00'); // Evitar problemas de zona horaria
         const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
         if (!historicoMap[key]) {
@@ -159,7 +159,7 @@ export default function ReportesPage() {
       });
 
       // Ordenar cronológicamente
-      const sortedComp = Object.values(historicoMap).sort((a, b) => 
+      const sortedComp = Object.values(historicoMap).sort((a: any, b: any) => 
         (a.anio * 100 + a.mes) - (b.anio * 100 + b.mes)
       );
 
@@ -243,7 +243,7 @@ export default function ReportesPage() {
       });
 
       // 4. DATOS (desde Fila 4)
-      data.porCasa.forEach(row => {
+      data.porCasa.forEach((row: any) => {
         const r = ws.addRow({
           casa: `Casa ${row.numero_casa}`,
           ant: Number(row.lectura_anterior),
@@ -368,7 +368,7 @@ export default function ReportesPage() {
               onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
               style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
             >
-              {[2024, 2025, 2026].map(y => (
+              {[2024, 2025, 2026].map((y: any) => (
                 <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>
               ))}
             </select>
@@ -423,7 +423,7 @@ export default function ReportesPage() {
 
           {/* ── Tabs ── */}
           <div style={{ display: 'flex', gap: '1px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '0' }}>
-            {TABS.map(t => (
+            {TABS.map((t: any) => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 style={{
                   flex: 1, border: 'none', padding: '0.85rem',
@@ -580,7 +580,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioInicio} onChange={e => setAnioInicio(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {[2024, 2025, 2026].map(y => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {[2024, 2025, 2026].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                   <div style={{ width: '1px', height: '15px', background: 'rgba(255,255,255,0.1)' }} />
@@ -592,7 +592,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioFin} onChange={e => setAnioFin(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {[2024, 2025, 2026].map(y => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {[2024, 2025, 2026].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                 </div>

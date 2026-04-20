@@ -38,7 +38,14 @@ export default function LecturasPage() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [form, setForm] = useState({
+  interface ReadingForm {
+    casa_id: string;
+    lectura_anterior: string;
+    lectura_actual: string;
+    fecha: string;
+  }
+
+  const [form, setForm] = useState<ReadingForm>({
     casa_id: '',
     lectura_anterior: '',
     lectura_actual: '',
@@ -68,12 +75,12 @@ export default function LecturasPage() {
       if (error) throw error;
       
       const aniosSet = new Set<number>();
-      (data || []).forEach(l => {
+      (data || []).forEach((l: any) => {
         const anio = new Date(l.fecha).getFullYear();
         aniosSet.add(anio);
       });
       
-      const aniosOrdenados = Array.from(aniosSet).sort((a, b) => a - b);
+      const aniosOrdenados = Array.from(aniosSet).sort((a: number, b: number) => a - b);
       setAniosDisponibles(aniosOrdenados);
     } catch (err) {
       console.log('Error al cargar años:', err);
@@ -140,7 +147,7 @@ export default function LecturasPage() {
     if (error) throw error;
     
     // Ordenar numéricamente por numero_casa
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = (data || []).sort((a: any, b: any) => {
       const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
       const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
       if (numA !== numB) return numA - numB;
@@ -177,7 +184,7 @@ export default function LecturasPage() {
     if (error) throw error;
 
     // Ordenar por número de casa de forma numérica (1, 2, 3... en lugar de 1, 10, 100)
-    const sortedByCasa = (data || []).sort((a, b) => {
+    const sortedByCasa = (data || []).sort((a: any, b: any) => {
       const numA = parseInt(a.casas?.numero_casa?.replace(/\D/g, '') || '0');
       const numB = parseInt(b.casas?.numero_casa?.replace(/\D/g, '') || '0');
       if (numA !== numB) return numA - numB;
@@ -185,7 +192,7 @@ export default function LecturasPage() {
     });
     
     // Calcular consumo siempre (el campo GENERATED puede no devolver valor)
-    const adapted = sortedByCasa.map(l => {
+    const adapted = sortedByCasa.map((l: any) => {
       const lecturaAnterior = Number(l.lectura_anterior) || 0;
       const lecturaActual = Number(l.lectura_actual) || 0;
       const consumo = lecturaActual - lecturaAnterior;
@@ -355,7 +362,7 @@ export default function LecturasPage() {
       });
 
       // 4. DATOS (desde Fila 4)
-      lecturas.forEach(l => {
+      lecturas.forEach((l: any) => {
         const row = worksheet.addRow({
           casa: `Casa ${l.numero_casa}`,
           ant: Number(l.lectura_anterior) || 0,
@@ -500,7 +507,7 @@ export default function LecturasPage() {
             const clean = fechaRaw.trim();
             // Caso: DD-MM-YYYY o YYYY-MM-DD con guiones o barras
             if (clean.includes('-') || clean.includes('/')) {
-              const parts = clean.split(/[-/]/).map(p => p.trim());
+              const parts = clean.split(/[-/]/).map((p: any) => p.trim());
               if (parts.length >= 3) {
                 let d, m, y;
                 if (parts[0].length === 4) { // Formato YYYY-MM-DD (o con hora al final)
@@ -674,7 +681,7 @@ export default function LecturasPage() {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
               >
                 {aniosDisponibles.length > 0 ? (
-                  aniosDisponibles.map(y => (
+                  aniosDisponibles.map((y: any) => (
                     <option key={y} value={y}>{y}</option>
                   ))
                 ) : (
