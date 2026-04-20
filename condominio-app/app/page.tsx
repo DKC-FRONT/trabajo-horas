@@ -65,7 +65,7 @@ const ALL_NAV_ITEMS = [
 
 export default function Home() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
   const [user, setUser] = useState<{ id: string; nombre?: string; rol?: Rol } | null>(null);
