@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Megaphone, Trash2, Plus, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Megaphone, Trash2, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 
 type TipoAviso = 'general' | 'urgente' | 'recordatorio';
 
