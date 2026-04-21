@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const currY = new Date().getFullYear();
+const ANIOS = Array.from({ length: currY - 2024 + 2 }, (_, i) => 2024 + i);
 
 const ACCENT = '#fb923c';
 
@@ -368,7 +370,7 @@ export default function ReportesPage() {
               onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
               style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
             >
-              {[2024, 2025, 2026].map((y: any) => (
+              {ANIOS.map((y: any) => (
                 <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>
               ))}
             </select>
@@ -580,7 +582,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioInicio} onChange={e => setAnioInicio(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {[2024, 2025, 2026].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                   <div style={{ width: '1px', height: '15px', background: 'rgba(255,255,255,0.1)' }} />
@@ -592,7 +594,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioFin} onChange={e => setAnioFin(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {[2024, 2025, 2026].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                 </div>

@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const currY = new Date().getFullYear();
+const ANIOS = Array.from({ length: currY - 2024 + 2 }, (_, i) => 2024 + i);
 
 type Casa = { id: number; numero_casa: string };
 type Lectura = {
@@ -701,13 +702,9 @@ export default function LecturasPage() {
                 onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
               >
-                {aniosDisponibles.length > 0 ? (
-                  aniosDisponibles.map((y: any) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))
-                ) : (
-                  <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-                )}
+                {ANIOS.map((y: any) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
               </select>
             </div>
           </div>

@@ -28,6 +28,8 @@ type Lectura = {
 const ACCENT = '#60a5fa';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const currY = new Date().getFullYear();
+const ANIOS = Array.from({ length: currY - 2024 + 2 }, (_, i) => 2024 + i);
 
 export default function MisLecturasPage() {
   const [user, setUser]           = useState<UserSession | null>(null);
@@ -102,11 +104,11 @@ export default function MisLecturasPage() {
         .from('lecturas_agua')
         .select('*, casas(numero_casa)')
         .eq('casa_id', user.casa_id)
-        .order('fecha_lectura', { ascending: false });
+        .order('fecha', { ascending: false });
 
       // Aplicar filtros de fecha si existen
       if (anio) {
-        query = query.gte('fecha_lectura', `${anio}-01-01`).lte('fecha_lectura', `${anio}-12-31`);
+        query = query.gte('fecha', `${anio}-01-01`).lte('fecha', `${anio}-12-31`);
       }
       
       const { data, error } = await query;
@@ -114,15 +116,15 @@ export default function MisLecturasPage() {
 
       // Mapeamos los datos al formato del estado, extrayendo mes y año de la fecha
       const mapped: Lectura[] = (data || []).map((l: any) => {
-        const d = new Date(l.fecha_lectura + 'T00:00:00');
+        const d = new Date(l.fecha + 'T00:00:00');
         return {
           id: l.id,
           lectura_anterior: l.lectura_anterior,
           lectura_actual: l.lectura_actual,
-          consumo: l.consumo,
-          consumo_cobrar: l.consumo_exceso,
-          valor: l.valor_total,
-          fecha: l.fecha_lectura,
+          consumo: l.consumo || (l.lectura_actual - l.lectura_anterior),
+          consumo_cobrar: l.consumo_cobrar,
+          valor: l.valor,
+          fecha: l.fecha,
           mes: d.getMonth() + 1,
           anio: d.getFullYear(),
           numero_casa: l.casas?.numero_casa || 'N/A'
@@ -210,7 +212,7 @@ export default function MisLecturasPage() {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '90px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
                 <option value="" style={{ background: '#0a0a0f' }}>Todos</option>
-                {[2023, 2024, 2025].map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
               </select>
             </div>
             {(mes || anio !== String(new Date().getFullYear())) && (
