@@ -3,62 +3,73 @@
 import { createClient } from '@/lib/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { 
+  Droplets, 
+  Home as HomeIcon, 
+  Megaphone, 
+  Calendar, 
+  BarChart3, 
+  Settings, 
+  LogOut,
+  User,
+  ShieldCheck
+} from 'lucide-react';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
 
 const ALL_NAV_ITEMS = [
   {
-    icon: '◈',
+    icon: <Droplets size={20} />,
     label: 'Lecturas',
     description: 'Registro y seguimiento de consumo por unidad',
     route: '/dashboard/lecturas',
     accent: '#4ade80',
-    stat: 'Este mes',
+    stat: 'ESTE MES',
     roles: ['admin', 'trabajador'],
   },
   {
-    icon: '⬡',
+    icon: <HomeIcon size={20} />,
     label: 'Casas',
     description: 'Directorio y estado de cada unidad residencial',
     route: '/dashboard/casas',
     accent: '#60a5fa',
-    stat: 'Activas',
+    stat: 'ACTIVAS',
     roles: ['admin', 'trabajador'],
   },
   {
-    icon: '📢',
+    icon: <Megaphone size={20} />,
     label: 'Avisos',
     description: 'Noticias y comunicados del condominio',
     route: '/dashboard/avisos',
     accent: '#fbbf24',
-    stat: 'Activos',
+    stat: 'ACTIVOS',
     roles: ['admin', 'residente'],
   },
   {
-    icon: '🏊',
+    icon: <Calendar size={20} />,
     label: 'Reservas',
     description: 'Reserva de áreas comunes y espacios compartidos',
     route: '/dashboard/reservas',
     accent: '#4ade80',
-    stat: 'Disponible',
+    stat: 'DISPONIBLE',
     roles: ['admin', 'residente'],
   },
   {
-    icon: '◎',
+    icon: <BarChart3 size={20} />,
     label: 'Reportes',
     description: 'Análisis histórico y exportación de datos',
     route: '/dashboard/reportes',
     accent: '#f472b6',
-    stat: 'ya realizado',
+    stat: 'YA REALIZADO',
     roles: ['admin', 'trabajador'],
   },
   {
-    icon: '⊕',
+    icon: <Settings size={20} />,
     label: 'Configuración',
     description: 'Ajustes del sistema y administración',
     route: '/dashboard/configuracion',
     accent: '#fb923c',
-    stat: 'Próximamente',
+    stat: 'PRÓXIMAMENTE',
     roles: ['admin'],
   },
 ];
@@ -75,7 +86,6 @@ export default function Home() {
     const getUser = async () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
-        // Obtenemos el perfil para el rol y nombre
         const { data: profile } = await supabase
           .from('usuarios')
           .select('nombre_completo, rol')
@@ -103,21 +113,19 @@ export default function Home() {
     : [];
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#0a0a0f',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        fontFamily: "'Courier New', monospace",
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Grid background */}
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a0f',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+      fontFamily: "'Courier New', monospace",
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Grid background (Matching Login) */}
       <div style={{
         position: 'absolute', inset: 0,
         backgroundImage: `
@@ -130,14 +138,14 @@ export default function Home() {
 
       {/* Radial glow */}
       <div style={{
-        position: 'absolute', top: '20%', left: '50%',
+        position: 'absolute', top: '15%', left: '50%',
         transform: 'translateX(-50%)',
         width: '600px', height: '400px',
         background: 'radial-gradient(ellipse at center, rgba(96,165,250,0.08) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
-      {/* Corner marks */}
+      {/* Corner marks (Matching Login) */}
       {['topleft', 'topright', 'bottomleft', 'bottomright'].map((pos) => (
         <div key={pos} style={{
           position: 'fixed',
@@ -153,65 +161,41 @@ export default function Home() {
         }} />
       ))}
 
-      {/* Top right — sesión */}
-      <div style={{
-        position: 'fixed', top: '1.5rem', right: '2.5rem',
-        display: 'flex', alignItems: 'center', gap: '0.75rem',
-        opacity: mounted ? 1 : 0, transition: 'opacity 0.4s ease',
-        zIndex: 10,
-      }}>
-        {user ? (
-          <>
-            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
-              {user.nombre}
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
-                padding: '0.3rem 0.75rem',
-                color: 'rgba(255,255,255,0.3)',
-                fontSize: '0.6rem', fontFamily: "'Courier New', monospace",
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                cursor: 'pointer', transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#f87171';
-                e.currentTarget.style.borderColor = 'rgba(248,113,113,0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'rgba(255,255,255,0.3)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              }}
-            >
-              → Salir
-            </button>
-          </>
-        ) : (
+      {/* Sesión info (Top Right) */}
+      {user && (
+        <div style={{
+          position: 'fixed', top: '1.5rem', right: '2.5rem',
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          opacity: mounted ? 1 : 0, transition: 'opacity 0.4s ease',
+          zIndex: 10,
+        }}>
+          <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
+            {user.nombre}
+          </span>
           <button
-            onClick={() => router.push('/login')}
+            onClick={handleLogout}
             style={{
-              background: 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15))',
-              border: '1px solid rgba(96,165,250,0.35)',
-              padding: '0.35rem 1rem', color: '#ffffff',
-              fontSize: '0.65rem', fontFamily: "'Courier New', monospace",
-              letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700,
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.08)',
+              padding: '0.3rem 0.75rem',
+              color: 'rgba(255,255,255,0.3)',
+              fontSize: '0.6rem', fontFamily: "'Courier New', monospace",
+              letterSpacing: '0.12em', textTransform: 'uppercase',
               cursor: 'pointer', transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(96,165,250,0.25), rgba(167,139,250,0.25))';
-              e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)';
+              e.currentTarget.style.color = '#f87171';
+              e.currentTarget.style.borderColor = 'rgba(248,113,113,0.3)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15))';
-              e.currentTarget.style.borderColor = 'rgba(96,165,250,0.35)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.3)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
             }}
           >
-            → Iniciar sesión
+            → Salir
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{
@@ -219,6 +203,7 @@ export default function Home() {
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0)' : 'translateY(-16px)',
         transition: 'opacity 0.6s ease, transform 0.6s ease',
+        zIndex: 2,
       }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
@@ -227,14 +212,14 @@ export default function Home() {
           borderRadius: '2px', padding: '0.3rem 0.75rem',
           marginBottom: '1.5rem', fontSize: '0.65rem',
           letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)',
-          textTransform: 'uppercase' as const,
+          textTransform: 'uppercase',
         }}>
           <span style={{
             width: '6px', height: '6px', borderRadius: '50%',
             background: '#4ade80', boxShadow: '0 0 6px #4ade80',
             animation: 'pulse 2s infinite',
           }} />
-          Sistema activo
+          SISTEMA ACTIVO
         </div>
 
         <h1 style={{
@@ -256,28 +241,24 @@ export default function Home() {
 
         <p style={{
           color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem',
-          letterSpacing: '0.1em', textTransform: 'uppercase' as const, margin: 0,
+          letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0,
         }}>
-          {user ? `Bienvenido, ${user.nombre}` : 'Sistema de gestión del condominio'}
+          {user ? `BIENVENIDO, ${user.nombre}` : 'SISTEMA DE GESTIÓN DEL CONDOMINIO'}
         </p>
       </div>
 
-      {/* Sin sesión — CTA central */}
+      {/* Login CTA (If no session) */}
       {!user && mounted && (
-        <div style={{
-          textAlign: 'center', marginBottom: '2rem',
-          opacity: 1, transition: 'opacity 0.6s ease 0.3s',
-        }}>
-          <button
+        <div style={{ textAlign: 'center', zIndex: 2 }}>
+           <button
             onClick={() => router.push('/login')}
             style={{
               background: 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15))',
               border: '1px solid rgba(96,165,250,0.35)',
               padding: '0.85rem 2.5rem', color: '#ffffff',
               fontSize: '0.75rem', fontFamily: "'Courier New', monospace",
-              letterSpacing: '0.2em', textTransform: 'uppercase' as const, fontWeight: 700,
+              letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700,
               cursor: 'pointer', transition: 'all 0.2s',
-              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'linear-gradient(135deg, rgba(96,165,250,0.25), rgba(167,139,250,0.25))';
@@ -290,67 +271,56 @@ export default function Home() {
           >
             → Ingresar al sistema
           </button>
-          <p style={{
-            marginTop: '0.75rem', fontSize: '0.6rem',
-            color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em',
-          }}>
-            Acceso restringido · Solo usuarios autorizados
-          </p>
         </div>
       )}
 
-      {/* Cards — solo si hay sesión activa */}
+      {/* Cards Section */}
       {user && navItems.length > 0 && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1px', width: '100%', maxWidth: '720px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1px', width: '100%', maxWidth: '860px',
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(255,255,255,0.06)',
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(16px)',
-          transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s',
+          zIndex: 2,
         }}>
           {navItems.map((item, i) => {
-            const isComingSoon = !item.route;
             const isHovered = hovered === i;
-
             return (
               <button
                 key={item.label}
-                onMouseEnter={() => !isComingSoon && setHovered(i)}
+                onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => item.route && router.push(item.route)}
-                disabled={isComingSoon}
+                onClick={() => router.push(item.route)}
                 style={{
                   background: isHovered ? 'rgba(255,255,255,0.05)' : 'rgba(10,10,15,0.95)',
                   border: 'none', padding: '1.75rem',
-                  cursor: isComingSoon ? 'not-allowed' : 'pointer',
-                  textAlign: 'left' as const, transition: 'background 0.2s ease',
-                  position: 'relative', display: 'flex', flexDirection: 'column' as const, gap: '0.75rem',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'background 0.2s ease',
+                  display: 'flex', flexDirection: 'column', gap: '0.75rem',
+                  position: 'relative',
                 }}
               >
+                {/* Accent Top Bar */}
                 <div style={{
                   position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
                   background: item.accent, opacity: isHovered ? 1 : 0,
-                  transition: 'opacity 0.2s ease',
-                  boxShadow: isHovered ? `0 0 12px ${item.accent}` : 'none',
+                  transition: 'opacity 0.2s',
+                  boxShadow: isHovered ? `0 0 10px ${item.accent}` : 'none',
                 }} />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <span style={{
-                    fontSize: '1.5rem',
                     color: isHovered ? item.accent : 'rgba(255,255,255,0.3)',
-                    transition: 'color 0.2s ease', lineHeight: 1,
+                    transition: 'color 0.2s',
                   }}>
                     {item.icon}
                   </span>
                   <span style={{
-                    fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                    color: isComingSoon ? 'rgba(255,255,255,0.15)' : item.accent,
-                    padding: '0.15rem 0.4rem',
-                    border: `1px solid ${isComingSoon ? 'rgba(255,255,255,0.08)' : item.accent + '40'}`,
-                    borderRadius: '1px', opacity: isComingSoon ? 0.6 : 1,
+                    fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                    color: item.accent, padding: '0.15rem 0.4rem',
+                    border: `1px solid ${item.accent}30`,
+                    borderRadius: '1px',
                   }}>
                     {item.stat}
                   </span>
@@ -358,28 +328,25 @@ export default function Home() {
 
                 <div>
                   <div style={{
-                    color: isComingSoon ? 'rgba(255,255,255,0.25)' : isHovered ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                    fontSize: '1rem', fontWeight: 700, letterSpacing: '0.05em',
-                    textTransform: 'uppercase' as const, transition: 'color 0.2s ease', marginBottom: '0.35rem',
+                    color: isHovered ? '#fff' : 'rgba(255,255,255,0.8)',
+                    fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.05em',
+                    textTransform: 'uppercase', marginBottom: '0.25rem',
                   }}>
                     {item.label}
                   </div>
-                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.72rem', lineHeight: 1.5, letterSpacing: '0.02em' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.7rem', lineHeight: 1.4 }}>
                     {item.description}
                   </div>
                 </div>
 
-                {!isComingSoon && (
-                  <div style={{
-                    color: item.accent, fontSize: '0.8rem',
-                    opacity: isHovered ? 1 : 0,
-                    transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
-                    transition: 'opacity 0.2s ease, transform 0.2s ease',
-                    letterSpacing: '0.05em',
-                  }}>
-                    → Abrir
-                  </div>
-                )}
+                <div style={{
+                  marginTop: '0.5rem', color: item.accent, fontSize: '0.7rem',
+                  opacity: isHovered ? 1 : 0,
+                  transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+                  transition: 'all 0.2s',
+                }}>
+                  → ABRIR
+                </div>
               </button>
             );
           })}
@@ -388,11 +355,11 @@ export default function Home() {
 
       {/* Footer */}
       <div style={{
-        marginTop: '2.5rem', color: 'rgba(255,255,255,0.15)',
-        fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' as const,
-        opacity: mounted ? 1 : 0, transition: 'opacity 0.6s ease 0.4s',
+        marginTop: '3.5rem', color: 'rgba(255,255,255,0.12)',
+        fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+        zIndex: 1,
       }}>
-        v1.0.0 · Administración de condominios
+        v1.0.0 · ADMINISTRACIÓN DE CONDOMINIOS
       </div>
 
       <style>{`

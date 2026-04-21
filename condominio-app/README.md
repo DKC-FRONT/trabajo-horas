@@ -1,7 +1,7 @@
 # 🔳 Condominio Campestre La Florida
 
 > **Sistema Integral de Gestión Administrativa y Operativa**
-> Una plataforma premium construida con un diseño minimalista oscuro, optimizada para la gestión eficiente de personal, servicios y convivencia.
+> Una plataforma premium con diseño minimalista oscuro (Dark Mode), optimizada para la gestión eficiente de personal, servicios, consumos y convivencia.
 
 ---
 
@@ -10,64 +10,58 @@
 ### ⏱️ Control de Asistencia Inteligente
 Sistema de marcado de tiempo real para el personal (Entrada/Salida) con cálculo automático de horas laboradas.
 - **Vista de Administrador:** Panel de búsqueda y filtrado histórico global por empleado.
-- **Validación:** Registros protegidos mediante sesiones activas.
+- **Validación:** Registros protegidos mediante sesiones activas y estados de conexión en tiempo real.
 
 ### 💧 Automatización de Lecturas de Agua
-Módulo optimizado para la lectura mensual de contadores con lógica de autocompletado inteligente.
-- **Arrastre de Lectura:** El sistema consulta automáticamente la última lectura registrada para precargarla.
-- **Cálculo Financiero:** Gestión de tarifas por excedentes (base 60m³) y generación de cálculos de cobro al instante.
+Módulo robusto para el control mensual de acueducto con lógica de autocompletado.
+- **Cálculo de Consumo:** El sistema realiza cálculos automáticos (`Lectura Actual - Lectura Anterior`) incluso si los datos son nulos en la base de datos, garantizando reportes precisos.
+- **Gestión de Tarifas:** Facturación basada en excedentes sobre el límite básico (60m³) con tarifas configurables.
+
+### 📊 Reportes e Indicadores (NUEVO)
+Panel analítico detallado con visualización de métricas clave.
+- **Consolidado Mensual:** Tarjetas de resumen para consumo total, casas excedidas y recaudo esperado.
+- **Comparativos:** Gráficos históricos de los últimos 6 meses para análisis de tendencias.
+- **Exportación Premium:** Generación de archivos Excel (.xlsx) con estilos corporativos y semáforos de exceso de consumo.
 
 ### 👥 Gestión Documental y Usuarios
-Control absoluto sobre las credenciales y roles del condominio.
-- **Roles Dinámicos:** Administrador, Trabajador y Residente.
-- **Admin API:** Creación y edición de usuarios sin necesidad de confirmación por correo, permitiendo gestión directa de contraseñas por la administración.
-
-### 📅 Reservas y Comunicación
-- **Áreas Comunes:** Sistema de apartado para Capilla, Salón de Eventos, Restaurante y Canchas.
-- **Cartelera Virtual:** Publicación de avisos y alertas generales para toda la comunidad.
+Control absoluto de roles y accesos sin fricción.
+- **Roles Dinámicos:** Administrador (Control total), Trabajador (Operativo) y Residente (Consultas).
+- **Admin Bypass:** Los administradores pueden gestionar identidades y contraseñas de forma directa para agilizar la operatividad del personal.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-El proyecto está diseñado para ser extremadamente ligero y no depender de librerías de UI pesadas, utilizando estilos en línea optimizados para un control total del diseño.
+El proyecto prioriza el rendimiento extremo y la estética artesanal, evitando librerías de componentes pesadas y utilizando una arquitectura "Custom CSS-in-JS".
 
-*   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
-*   **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+*   **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+*   **Lenguaje:** [TypeScript 5](https://www.typescriptlang.org/) (Strict Mode)
 *   **Base de Datos & Auth:** [Supabase](https://supabase.com/) (PostgreSQL)
-*   **Iconografía:** [Lucide React](https://lucide.dev/)
-*   **Reportes:** [ExcelJS](https://github.com/exceljs/exceljs) para exportaciones nativas.
+*   **Estilos:** Vanilla CSS / Inline Styles con enfoque en Glassmorphism.
+*   **Reportes:** [ExcelJS](https://github.com/exceljs/exceljs) para exportación de datos.
 
 ---
 
-## 🔐 Seguridad y Configuración
+## 🔐 Seguridad e Infraestructura
 
-El proyecto utiliza variables de entorno para proteger las credenciales críticas. **IMPORTANTE:** Nunca subas el archivo `.env.local` al repositorio.
+El proyecto cuenta con un sistema de **"Cliente Fantasma" (Shadow Client)** que permite realizar el proceso de construcción (Build) en Vercel incluso si las llaves de Supabase no están presentes, evitando errores de pre-renderizado.
 
-### Variables Requeridas
-| Variable | Descripción |
+### Variables de Entorno (.env.local)
+| Variable | Definición |
 | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | URL de tu instancia en Supabase. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima para operaciones de cliente. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **(Secreto)** Requerido para operaciones administrativas de usuarios. |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL de conexión de Supabase. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública de acceso (Anon). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clave secreta para gestión administrativa de usuarios. |
 
 ---
 
-## 🚀 Guía de Inicio Rápido
+## 🚀 Instalación y Despliegue
 
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone https://github.com/tu-usuario/condominio-app.git
-    cd condominio-app
-    ```
-
-2.  **Instalar dependencias:**
+1.  **Instalación:**
     ```bash
     npm install
     ```
 
-3.  **Configurar Entorno:**
-    Crea un archivo `.env.local` en la raíz y añade tus claves de Supabase.
 
 4.  **Ejecutar en desarrollo:**
     ```bash
