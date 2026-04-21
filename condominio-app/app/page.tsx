@@ -9,10 +9,7 @@ import {
   Megaphone, 
   Calendar, 
   BarChart3, 
-  Settings, 
-  LogOut,
-  User,
-  ShieldCheck
+  Settings
 } from 'lucide-react';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
@@ -69,7 +66,7 @@ const ALL_NAV_ITEMS = [
     description: 'Ajustes del sistema y administración',
     route: '/dashboard/configuracion',
     accent: '#fb923c',
-    stat: 'PRÓXIMAMENTE',
+    stat: 'YA REALIZADO',
     roles: ['admin'],
   },
 ];

@@ -27,6 +27,7 @@ export default function LecturasPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [config, setConfig] = useState({ tarifa: 1605, limite: 60 });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [focused, setFocused] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -55,10 +56,30 @@ export default function LecturasPage() {
   // Hook inicial para preparar el componente
   useEffect(() => {
     setMounted(true);
+    fetchConfig();
     loadData();
     fetchAniosDisponibles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mesSeleccionado, anioSeleccionado]);
+
+  const fetchConfig = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('configuracion').select('clave, valor');
+      
+      if (data && data.length > 0) {
+        const newConfig = { ...config };
+        data.forEach((item: any) => {
+          if (item.clave === 'tarifa_m3') newConfig.tarifa = Number(item.valor);
+          if (item.clave === 'limite_basico') newConfig.limite = Number(item.valor);
+        });
+        setConfig(newConfig);
+      }
+    } catch (err) {
+      console.log('Usando valores por defecto:', err);
+    }
+  };
 
   /**
    * Obtiene los años que tienen datos en la base de datos
@@ -243,8 +264,8 @@ export default function LecturasPage() {
         throw new Error('La lectura actual no puede ser menor a la anterior');
       }
 
-      const consumoCobrar = Math.max(0, consumo - 60); // 60m³ es el límite básico
-      const valor = consumoCobrar * 1605; // Tarifa fija por m³ excedente
+      const consumoCobrar = Math.max(0, consumo - config.limite);
+      const valor = consumoCobrar * config.tarifa;
 
       const { error } = await supabase
         .from('lecturas_agua')
