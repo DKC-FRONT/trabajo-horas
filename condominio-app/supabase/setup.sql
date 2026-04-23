@@ -149,3 +149,4 @@ CREATE POLICY "Public full access" ON avisos FOR ALL USING (true) WITH CHECK (tr
 CREATE POLICY "Public full access" ON reservas FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON asistencia FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON permisos FOR ALL USING (true) WITH CHECK (true);
+    

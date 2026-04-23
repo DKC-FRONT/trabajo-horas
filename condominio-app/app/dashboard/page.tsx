@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {
   Droplets, Home, FileBarChart2, Megaphone, CalendarCheck,
-  Gauge, Users, Settings, Activity, Clock, FileText, LucideIcon
+  Gauge, Users, Settings, Activity, Clock, FileText, Shield, LucideIcon
 } from 'lucide-react';
  
 type Rol = 'admin' | 'trabajador' | 'residente';
@@ -31,6 +31,7 @@ const NAV_MODULES: NavModule[] = [
   { icon: FileBarChart2, label: 'Reportes',         desc: 'Análisis histórico y exportación',   route: '/dashboard/reportes',      accent: '#fb923c', roles: ['admin','trabajador'] as Rol[] },
   { icon: Clock,         label: 'Asistencia',       desc: 'Registro de entrada y salida',           route: '/dashboard/asistencia',    accent: '#60a5fa', roles: ['admin','trabajador'] as Rol[] },
   { icon: FileText,      label: 'Permisos',         desc: 'Gestión de inasistencias y permisos',    route: '/dashboard/permisos',      accent: '#a78bfa', roles: ['admin','trabajador'] as Rol[] },
+  { icon: Shield,        label: 'Dotación',         desc: 'Entrega de elementos de protección',     route: '/dashboard/dotacion',      accent: '#2b7a2b', roles: ['admin'] as Rol[] },
   { icon: Megaphone,     label: 'Avisos',           desc: 'Cartelera y notificaciones',             route: '/dashboard/avisos',        accent: '#fbbf24', roles: ['admin', 'residente', 'trabajador'] as Rol[] },
   { icon: CalendarCheck, label: 'Reservas',         desc: 'Gestión de áreas comunes',            route: '/dashboard/reservas',      accent: '#4ade80', roles: ['admin', 'residente', 'trabajador'] as Rol[] },
   { icon: Gauge,         label: 'Mis Lecturas',     desc: 'Historial de consumo personal',          route: '/dashboard/mis-lecturas',  accent: '#60a5fa', roles: ['residente'] as Rol[] },

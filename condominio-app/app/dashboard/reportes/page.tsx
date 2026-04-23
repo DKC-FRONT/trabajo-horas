@@ -46,6 +46,7 @@ export default function ReportesPage() {
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [data, setData]       = useState<ReporteData | null>(null);
+  const [limiteBasico, setLimiteBasico] = useState(60);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
   const [visible, setVisible] = useState(false);
@@ -85,9 +86,16 @@ export default function ReportesPage() {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
 
-      // 1. Obtener todas las casas
-      const { data: casasData, error: casasErr } = await supabase.from('casas').select('*');
-      if (casasErr) throw casasErr;
+      // 1. Obtener todas las casas y configuración de limite
+      const [casasRes, configRes] = await Promise.all([
+        supabase.from('casas').select('*'),
+        supabase.from('configuracion').select('clave, valor').eq('clave', 'limite_basico')
+      ]);
+      if (casasRes.error) throw casasRes.error;
+      const casasData = casasRes.data;
+      if (configRes.data && configRes.data.length > 0) {
+        setLimiteBasico(Number(configRes.data[0].valor) || 60);
+      }
 
       // 2. Obtener lecturas del mes actual seleccionado
       const inicioMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01`;
@@ -449,7 +457,7 @@ export default function ReportesPage() {
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', position: 'relative', overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
-                  CASAS QUE SUPERARON <span style={{ color: '#f87171' }}>60 m³</span>
+                  CASAS QUE SUPERARON <span style={{ color: '#f87171' }}>{limiteBasico} m³</span>
                 </h2>
                 <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.08em' }}>
                   {data.excedidas.length} casas
