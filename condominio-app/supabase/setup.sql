@@ -149,4 +149,29 @@ CREATE POLICY "Public full access" ON avisos FOR ALL USING (true) WITH CHECK (tr
 CREATE POLICY "Public full access" ON reservas FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON asistencia FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON permisos FOR ALL USING (true) WITH CHECK (true);
+
+-- 14. Tablas de Inventario y Almacén (Herramientas, Gasolina, EPP)
+CREATE TABLE inventario_items (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL UNIQUE,
+    categoria TEXT DEFAULT 'herramienta' CHECK (categoria IN ('herramienta', 'consumible', 'gasolina', 'epp', 'otro')),
+    unidad_medida TEXT DEFAULT 'unidad' CHECK (unidad_medida IN ('unidad', 'galones', 'litros', 'cajas', 'pares')),
+    stock_actual NUMERIC(10,2) DEFAULT 0,
+    creado_el TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE inventario_movimientos (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER REFERENCES inventario_items(id) ON DELETE CASCADE,
+    tipo TEXT NOT NULL CHECK (tipo IN ('entrada', 'salida', 'devolucion', 'baja')),
+    cantidad NUMERIC(10,2) NOT NULL,
+    responsable_email TEXT NOT NULL,
+    observaciones TEXT,
+    fecha TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE inventario_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventario_movimientos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public full access" ON inventario_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access" ON inventario_movimientos FOR ALL USING (true) WITH CHECK (true);
     
