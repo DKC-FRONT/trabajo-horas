@@ -28,7 +28,7 @@ export default function LecturasPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [config, setConfig] = useState({ tarifa: 1605, limite: 60 });
+  const [config, setConfig] = useState({ tarifa: 2000, limite: 55 });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [focused, setFocused] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -38,6 +38,9 @@ export default function LecturasPage() {
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([]);
   const [importing, setImporting] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [syncQueue, setSyncQueue] = useState<any[]>([]);
+  const [syncing, setSyncing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   interface ReadingForm {
@@ -60,8 +63,45 @@ export default function LecturasPage() {
     fetchConfig();
     loadData();
     fetchAniosDisponibles();
+
+    // Monitoreo de conexión
+    setIsOnline(navigator.onLine);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Cargar cola desde localStorage
+    const savedQueue = localStorage.getItem('lecturas_sync_queue');
+    if (savedQueue) {
+      try {
+        setSyncQueue(JSON.parse(savedQueue));
+      } catch (e) {
+        console.error("Error al cargar cola de sincronización:", e);
+      }
+    }
+
+    // Cargar configuración previa de localStorage (por si no hay internet)
+    const savedConfig = localStorage.getItem('lecturas_config');
+    if (savedConfig) {
+      try {
+        setConfig(JSON.parse(savedConfig));
+      } catch (e) {
+        console.error("Error al cargar configuración guardada:", e);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mesSeleccionado, anioSeleccionado]);
+
+  // Persistir cola cuando cambie
+  useEffect(() => {
+    localStorage.setItem('lecturas_sync_queue', JSON.stringify(syncQueue));
+  }, [syncQueue]);
 
   const fetchConfig = async () => {
     try {
@@ -76,6 +116,7 @@ export default function LecturasPage() {
           if (item.clave === 'limite_basico') newConfig.limite = Number(item.valor);
         });
         setConfig(newConfig);
+        localStorage.setItem('lecturas_config', JSON.stringify(newConfig));
       }
     } catch (err) {
       console.log('Usando valores por defecto:', err);
@@ -268,20 +309,37 @@ export default function LecturasPage() {
       const consumoCobrar = Math.max(0, consumo - config.limite);
       const valor = consumoCobrar * config.tarifa;
 
-      const { error } = await supabase
-        .from('lecturas_agua')
-        .insert([{
-          casa_id: Number(form.casa_id),
-          lectura_anterior: anterior,
-          lectura_actual: actual,
-          consumo_cobrar: consumoCobrar,
-          valor: valor,
-          fecha: form.fecha
-        }]);
+      const nuevaLectura = {
+        casa_id: Number(form.casa_id),
+        numero_casa: casas.find(c => c.id === Number(form.casa_id))?.numero_casa || '?',
+        lectura_anterior: anterior,
+        lectura_actual: actual,
+        consumo_cobrar: consumoCobrar,
+        valor: valor,
+        fecha: form.fecha
+      };
 
-      if (error) throw error;
+      if (!isOnline) {
+        // MODO OFFLINE: Guardar en cola local
+        setSyncQueue(prev => [...prev, nuevaLectura]);
+        setSuccess('¡Guardado LOCALMENTE! No tienes internet. Sincroniza cuando tengas señal.');
+      } else {
+        // MODO ONLINE: Guardar en Supabase
+        const { error } = await supabase
+          .from('lecturas_agua')
+          .insert([{
+            casa_id: nuevaLectura.casa_id,
+            lectura_anterior: nuevaLectura.lectura_anterior,
+            lectura_actual: nuevaLectura.lectura_actual,
+            consumo_cobrar: nuevaLectura.consumo_cobrar,
+            valor: nuevaLectura.valor,
+            fecha: nuevaLectura.fecha
+          }]);
 
-      setSuccess('Lectura guardada en Supabase correctamente.');
+        if (error) throw error;
+        setSuccess('Lectura guardada en Supabase correctamente.');
+      }
+
       setForm({
         casa_id: '',
         lectura_anterior: '',
@@ -294,6 +352,43 @@ export default function LecturasPage() {
       setError('Error al guardar: ' + err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  /**
+   * Sincroniza las lecturas guardadas localmente hacia Supabase
+   */
+  const handleSync = async () => {
+    if (syncQueue.length === 0 || syncing) return;
+    setSyncing(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+
+      // Mapear al formato de la tabla (sin numero_casa que es virtual)
+      const batch = syncQueue.map(item => ({
+        casa_id: item.casa_id,
+        lectura_anterior: item.lectura_anterior,
+        lectura_actual: item.lectura_actual,
+        consumo_cobrar: item.consumo_cobrar,
+        valor: item.valor,
+        fecha: item.fecha
+      }));
+
+      const { error } = await supabase.from('lecturas_agua').insert(batch);
+      if (error) throw error;
+
+      setSuccess(`¡Sincronización exitosa! ${syncQueue.length} registros subidos.`);
+      setSyncQueue([]);
+      localStorage.removeItem('lecturas_sync_queue');
+      await fetchLecturas();
+    } catch (err: any) {
+      setError('Fallo al sincronizar: ' + err.message);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -668,6 +763,50 @@ export default function LecturasPage() {
         </div>
       </nav>
 
+      {/* Banner de Sincronización / Offline */}
+      {(syncQueue.length > 0 || !isOnline) && (
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 100,
+          background: !isOnline ? 'rgba(239,68,68,0.95)' : 'rgba(59,130,246,0.95)',
+          color: '#fff', padding: '0.75rem 1rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '10px', height: '10px', borderRadius: '50%',
+              background: !isOnline ? '#fff' : '#fff',
+              animation: !isOnline ? 'pulse 1.5s infinite' : 'none'
+            }} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {!isOnline ? 'MODO OFFLINE ACTIVO - SIN CONEXIÓN' : 'CONEXIÓN RECUPERADA'}
+            </span>
+            {syncQueue.length > 0 && (
+              <span style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.5rem', borderRadius: '10px' }}>
+                {syncQueue.length} lecturas pendientes por subir
+              </span>
+            )}
+          </div>
+          
+          {isOnline && syncQueue.length > 0 && (
+            <button 
+              onClick={handleSync}
+              disabled={syncing}
+              style={{
+                background: '#fff', color: '#3b82f6', border: 'none',
+                padding: '0.4rem 1rem', borderRadius: '4px', fontSize: '0.75rem',
+                fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+              onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+              onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              {syncing ? 'SUBIENDO...' : 'SINCRONIZAR AHORA'}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Content */}
       <main style={{ position: 'relative', zIndex: 1, maxWidth: '100%', margin: '0 auto', padding: '1rem', opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity 0.5s ease, transform 0.5s ease' }}>
         {/* Page title */}
@@ -813,8 +952,8 @@ export default function LecturasPage() {
                 const actual = Number(form.lectura_actual);
                 if (isNaN(anterior) || isNaN(actual) || !form.lectura_anterior || !form.lectura_actual || actual < anterior) return null;
                 const consumo = actual - anterior;
-                const consumoCobrar = Math.max(0, consumo - 60);
-                const valor = consumoCobrar * 1605;
+                const consumoCobrar = Math.max(0, consumo - config.limite);
+                const valor = consumoCobrar * config.tarifa;
                 return (
                   <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'rgba(96,165,250,0.05)', border: '1px solid rgba(96,165,250,0.12)', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em' }}>
@@ -834,7 +973,7 @@ export default function LecturasPage() {
                       </span>
                     )}
                     <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em', marginLeft: 'auto' }}>
-                      Límite: 60 m³ · Tarifa: $1.605/m³
+                      Límite: {config.limite} m³ · Tarifa: ${config.tarifa.toLocaleString('es-CO')}/m³
                     </span>
                   </div>
                 );
