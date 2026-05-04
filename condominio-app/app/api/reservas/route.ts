@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 
 export async function GET(req: NextRequest) {
   try {
@@ -89,6 +90,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id, estado } = await req.json();
@@ -112,6 +116,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id } = await req.json();

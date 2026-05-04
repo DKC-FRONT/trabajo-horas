@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Lock, LogIn, LogOut, Clock, RefreshCw, UserCheck } from 'lucide-react';
 import Image from 'next/image';
 
-const PIN_CORRECTO = '1';
 const ACCENT = '#4ade80'; // Verde estilo terminal
 
 type Trabajador = {
@@ -51,15 +50,33 @@ export default function PorteriaPage() {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInput.toLowerCase() === PIN_CORRECTO.toLowerCase()) {
-      localStorage.setItem('porteria_auth', 'true');
-      setIsAuthenticated(true);
-      setErrorPin(false);
-    } else {
+    setActionLoading('login'); // Reusamos tu state de loading para mostrar que estamos verificando
+    
+    try {
+      // 🛡️ El frontend ya no sabe el PIN. Ahora le pregunta al servidor.
+      const res = await fetch('/api/porteria/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinInput })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        localStorage.setItem('porteria_auth', 'true');
+        setIsAuthenticated(true);
+        setErrorPin(false);
+      } else {
+        setErrorPin(true);
+        setPinInput('');
+      }
+    } catch (error) {
+      console.error('Error al verificar PIN', error);
       setErrorPin(true);
-      setPinInput('');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -204,14 +221,15 @@ export default function PorteriaPage() {
           />
           {errorPin && <div style={{ color: '#f87171', fontSize: '0.65rem', marginBottom: '1rem' }}>⚠ CÓDIGO INCORRECTO</div>}
 
-          <button type="submit" style={{
+          <button type="submit" disabled={actionLoading === 'login'} style={{
             width: '100%', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.5)',
             color: ACCENT, padding: '0.8rem', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em',
-            cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase'
+            cursor: actionLoading === 'login' ? 'not-allowed' : 'pointer', transition: 'all 0.2s', textTransform: 'uppercase',
+            opacity: actionLoading === 'login' ? 0.5 : 1
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(74,222,128,0.2)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; }}>
-            ACCEDER AL SISTEMA
+          onMouseEnter={e => { if(actionLoading !== 'login') e.currentTarget.style.background = 'rgba(74,222,128,0.2)'; }}
+          onMouseLeave={e => { if(actionLoading !== 'login') e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; }}>
+            {actionLoading === 'login' ? 'VERIFICANDO...' : 'ACCEDER AL SISTEMA'}
           </button>
         </form>
       </div>

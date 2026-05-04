@@ -124,7 +124,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 13. Políticas de Seguridad (RLS)
+-- 13. Políticas de Seguridad (RLS) — Basadas en Roles
 ALTER TABLE casas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lecturas_agua ENABLE ROW LEVEL SECURITY;
@@ -133,22 +133,47 @@ ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE asistencia ENABLE ROW LEVEL SECURITY;
 ALTER TABLE permisos ENABLE ROW LEVEL SECURITY;
 
--- Acceso total para desarrollo (desactivar en producción)
-DROP POLICY IF EXISTS "Public full access" ON casas;
-DROP POLICY IF EXISTS "Public full access" ON usuarios;
-DROP POLICY IF EXISTS "Public full access" ON lecturas_agua;
-DROP POLICY IF EXISTS "Public full access" ON avisos;
-DROP POLICY IF EXISTS "Public full access" ON reservas;
-DROP POLICY IF EXISTS "Public full access" ON asistencia;
-DROP POLICY IF EXISTS "Public full access" ON permisos;
+-- CASAS: Todos leen, admin/trabajador crean, admin edita/borra
+CREATE POLICY "casas_select" ON casas FOR SELECT USING (true);
+CREATE POLICY "casas_insert" ON casas FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "casas_update" ON casas FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "casas_delete" ON casas FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
-CREATE POLICY "Public full access" ON casas FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON usuarios FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON lecturas_agua FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON avisos FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON reservas FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON asistencia FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON permisos FOR ALL USING (true) WITH CHECK (true);
+-- USUARIOS: Todos leen, trigger crea, admin/propio edita, admin borra
+CREATE POLICY "usuarios_select" ON usuarios FOR SELECT USING (true);
+CREATE POLICY "usuarios_insert" ON usuarios FOR INSERT WITH CHECK (true);
+CREATE POLICY "usuarios_update" ON usuarios FOR UPDATE USING (id = auth.uid() OR EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "usuarios_delete" ON usuarios FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+-- LECTURAS: Todos leen, admin/trabajador insertan/editan, admin borra
+CREATE POLICY "lecturas_select" ON lecturas_agua FOR SELECT USING (true);
+CREATE POLICY "lecturas_insert" ON lecturas_agua FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "lecturas_update" ON lecturas_agua FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "lecturas_delete" ON lecturas_agua FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+-- AVISOS: Todos leen, admin publica/edita/borra
+CREATE POLICY "avisos_select" ON avisos FOR SELECT USING (true);
+CREATE POLICY "avisos_insert" ON avisos FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "avisos_update" ON avisos FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "avisos_delete" ON avisos FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+-- RESERVAS: Todos leen, autenticados crean, admin aprueba/borra
+CREATE POLICY "reservas_select" ON reservas FOR SELECT USING (true);
+CREATE POLICY "reservas_insert" ON reservas FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "reservas_update" ON reservas FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "reservas_delete" ON reservas FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+-- ASISTENCIA: Todos leen/insertan/editan (portería), admin borra
+CREATE POLICY "asistencia_select" ON asistencia FOR SELECT USING (true);
+CREATE POLICY "asistencia_insert" ON asistencia FOR INSERT WITH CHECK (true);
+CREATE POLICY "asistencia_update" ON asistencia FOR UPDATE USING (true);
+CREATE POLICY "asistencia_delete" ON asistencia FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+-- PERMISOS: Todos leen, admin/trabajador crean/editan, admin borra
+CREATE POLICY "permisos_select" ON permisos FOR SELECT USING (true);
+CREATE POLICY "permisos_insert" ON permisos FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "permisos_update" ON permisos FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "permisos_delete" ON permisos FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- 14. Tablas de Inventario y Almacén (Herramientas, Gasolina, EPP)
 CREATE TABLE inventario_items (

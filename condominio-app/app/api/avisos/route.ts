@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 
 // ── GET — Obtener todos los avisos ──────────────────────────────────────────
 export async function GET() {
@@ -14,13 +15,16 @@ export async function GET() {
 
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error('[GET /api/avisos]', error);
+    console.error('[GET /api/avisos] Error interno');
     return NextResponse.json({ error: 'Error al obtener avisos.' }, { status: 500 });
   }
 }
 
-// ── POST — Publicar nuevo aviso ────────────────────
+// ── POST — Publicar nuevo aviso (solo admin) ────────────────────
 export async function POST(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { titulo, mensaje, tipo } = await req.json();
@@ -37,13 +41,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'Aviso publicado correctamente.' }, { status: 201 });
   } catch (error) {
-    console.error('[POST /api/avisos]', error);
+    console.error('[POST /api/avisos] Error interno');
     return NextResponse.json({ error: 'Error al publicar aviso.' }, { status: 500 });
   }
 }
 
-// ── DELETE — Eliminar aviso ────────────────────────────────────────────────
+// ── DELETE — Eliminar aviso (solo admin) ────────────────────────────────────
 export async function DELETE(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id } = await req.json();
@@ -61,13 +68,16 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Aviso eliminado correctamente.' }, { status: 200 });
   } catch (error) {
-    console.error('[DELETE /api/avisos]', error);
+    console.error('[DELETE /api/avisos] Error interno');
     return NextResponse.json({ error: 'Error al eliminar el aviso.' }, { status: 500 });
   }
 }
 
-// ── PUT — Actualizar aviso ───────────────────────────────────────────────────
+// ── PUT — Actualizar aviso (solo admin) ─────────────────────────────────────
 export async function PUT(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id, titulo, mensaje, tipo } = await req.json();
@@ -85,7 +95,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ message: 'Aviso actualizado correctamente.' }, { status: 200 });
   } catch (error) {
-    console.error('[PUT /api/avisos]', error);
+    console.error('[PUT /api/avisos] Error interno');
     return NextResponse.json({ error: 'Error al actualizar aviso.' }, { status: 500 });
   }
 }

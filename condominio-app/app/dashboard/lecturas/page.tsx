@@ -622,22 +622,41 @@ export default function LecturasPage() {
     
     try {
       console.log('Leyendo archivo...');
-      const XLSX = await import('xlsx');
-      
       let data: any[] = [];
       
-      // Leer como texto para CSV o array para XLSX
+      // Procesar archivo
       if (file.name.endsWith('.csv')) {
         const text = await file.text();
-        const wb = XLSX.read(text, { type: 'string' });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        data = XLSX.utils.sheet_to_json(sheet);
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length > 0) {
+          const headers = lines[0].split(',').map(h => h.trim());
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            const rowObj: any = {};
+            headers.forEach((h, idx) => { rowObj[h] = values[idx]; });
+            data.push(rowObj);
+          }
+        }
       } else {
+        const ExcelJS = await import('exceljs');
+        const workbook = new ExcelJS.Workbook();
         const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer);
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        data = XLSX.utils.sheet_to_json(sheet);
+        await workbook.xlsx.load(arrayBuffer);
+        
+        const worksheet = workbook.worksheets[0];
+        const headers = worksheet.getRow(1).values as string[];
+        
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return; // Saltamos la cabecera
+          const rowObj: any = {};
+          (row.values as any[]).forEach((val, idx) => {
+            if (idx > 0 && headers[idx]) {
+              // Convertir a string/number si es un objeto (como fechas o formulas en excel)
+              rowObj[headers[idx]] = typeof val === 'object' && val !== null ? val.toString() : val;
+            }
+          });
+          data.push(rowObj);
+        });
       }
       
       console.log('Filas leídas:', data.length);

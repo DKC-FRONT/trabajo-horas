@@ -9,7 +9,8 @@ import {
   Megaphone, 
   Calendar, 
   BarChart3, 
-  Settings
+  Settings,
+  Gauge
 } from 'lucide-react';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
@@ -50,6 +51,15 @@ const ALL_NAV_ITEMS = [
     accent: '#4ade80',
     stat: 'DISPONIBLE',
     roles: ['admin', 'residente'],
+  },
+  {
+    icon: <Gauge size={20} />,
+    label: 'Mis Lecturas',
+    description: 'Historial de consumo personal de agua',
+    route: '/dashboard/mis-lecturas',
+    accent: '#60a5fa',
+    stat: 'MENSUAL',
+    roles: ['residente'],
   },
   {
     icon: <BarChart3 size={20} />,

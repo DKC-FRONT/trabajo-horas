@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 import { calcularLectura } from '@/lib/calcularLectura';
+import { verifyRole } from '@/lib/verifyRole';
 
 // ── POST — Guardar nueva lectura ────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  const auth = await verifyRole(['admin', 'trabajador']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const body = await req.json();
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[POST /api/lecturas]', error);
+    console.error('[POST /api/lecturas] Error interno');
     return NextResponse.json(
       { error: 'Error al guardar la lectura.' },
       { status: 500 }
@@ -115,6 +119,9 @@ export async function GET(req: NextRequest) {
 
 // ── DELETE — Eliminar lectura por ID ────────────────────────────────────────
 export async function DELETE(req: NextRequest) {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id } = await req.json();
@@ -139,7 +146,7 @@ export async function DELETE(req: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[DELETE /api/lecturas]', error);
+    console.error('[DELETE /api/lecturas] Error interno');
     return NextResponse.json(
       { error: 'Error al eliminar la lectura.' },
       { status: 500 }

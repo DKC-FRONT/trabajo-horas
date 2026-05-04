@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin';
+import { verifyRole } from '@/lib/verifyRole';
 
 /**
  * API DE ADMINISTRACIÓN — Gestión avanzada de usuarios
- * Solo accesible por administradores (debe verificarse la sesión o confiar en que se usa localmente)
+ * PROTEGIDA: Solo accesible por usuarios con rol 'admin'
  */
 
 export async function POST(req: NextRequest) {
+  // ── Verificar que quien llama es ADMIN ──
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const adminSupabase = createAdminClient();
     const { nombre, correo, password, rol, casa_id } = await req.json();
@@ -26,7 +31,6 @@ export async function POST(req: NextRequest) {
     if (authError) throw authError;
 
     // 2. Vincular el rol y la casa en la tabla pública usuarios
-    // El trigger ya debería haber creado la fila, pero nos aseguramos del rol y casa
     const { error: profileError } = await adminSupabase
       .from('usuarios')
       .update({
@@ -40,12 +44,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Usuario creado y confirmado correctamente.' }, { status: 201 });
 
   } catch (error: any) {
-    console.error('[POST /api/admin/usuarios]', error);
-    return NextResponse.json({ error: error.message || 'Error al crear usuario.' }, { status: 500 });
+    console.error('[POST /api/admin/usuarios] Error interno');
+    return NextResponse.json({ error: 'Error al crear usuario.' }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
+  // ── Verificar que quien llama es ADMIN ──
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const adminSupabase = createAdminClient();
     const { id, nombre, correo, password, rol, casa_id } = await req.json();
@@ -77,12 +85,16 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: 'Usuario actualizado correctamente.' }, { status: 200 });
 
   } catch (error: any) {
-    console.error('[PUT /api/admin/usuarios]', error);
-    return NextResponse.json({ error: error.message || 'Error al actualizar usuario.' }, { status: 500 });
+    console.error('[PUT /api/admin/usuarios] Error interno');
+    return NextResponse.json({ error: 'Error al actualizar usuario.' }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
+  // ── Verificar que quien llama es ADMIN ──
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const adminSupabase = createAdminClient();
     const { id } = await req.json();
@@ -97,7 +109,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ message: 'Usuario eliminado por completo.' }, { status: 200 });
 
   } catch (error: any) {
-    console.error('[DELETE /api/admin/usuarios]', error);
-    return NextResponse.json({ error: error.message || 'Error al eliminar usuario.' }, { status: 500 });
+    console.error('[DELETE /api/admin/usuarios] Error interno');
+    return NextResponse.json({ error: 'Error al eliminar usuario.' }, { status: 500 });
   }
 }
