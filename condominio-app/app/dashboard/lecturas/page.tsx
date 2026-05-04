@@ -41,6 +41,8 @@ export default function LecturasPage() {
   const [isOnline, setIsOnline] = useState(true);
   const [syncQueue, setSyncQueue] = useState<any[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [offlineCache, setOfflineCache] = useState<Record<number, string>>({});
+  const [isPreparingOffline, setIsPreparingOffline] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   interface ReadingForm {
@@ -78,6 +80,16 @@ export default function LecturasPage() {
         setSyncQueue(JSON.parse(savedQueue));
       } catch (e) {
         console.error("Error al cargar cola de sincronización:", e);
+      }
+    }
+
+    // Cargar caché de lecturas anteriores
+    const savedCache = localStorage.getItem('lecturas_ultimo_registro_cache');
+    if (savedCache) {
+      try {
+        setOfflineCache(JSON.parse(savedCache));
+      } catch (e) {
+        console.error("Error al cargar caché offline:", e);
       }
     }
 
@@ -155,11 +167,60 @@ export default function LecturasPage() {
    */
   useEffect(() => {
     if (form.casa_id) {
-      fetchUltimaLectura(Number(form.casa_id));
+      const houseId = Number(form.casa_id);
+      
+      // Intentar primero desde el caché offline si no hay internet
+      if (!isOnline && offlineCache[houseId]) {
+        setForm(prev => ({ ...prev, lectura_anterior: offlineCache[houseId] }));
+      } else {
+        fetchUltimaLectura(houseId);
+      }
     } else {
       setForm(prev => ({ ...prev, lectura_anterior: '' }));
     }
-  }, [form.casa_id]);
+  }, [form.casa_id, isOnline, offlineCache]);
+
+  /**
+   * Descarga las últimas lecturas de TODAS las casas para el modo offline
+   */
+  const prepareOfflineMode = async () => {
+    if (!isOnline) {
+      setError('Debes tener internet para preparar el modo offline.');
+      return;
+    }
+    
+    setIsPreparingOffline(true);
+    setError('');
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      // Obtenemos las lecturas más recientes (traemos bastantes para asegurar cubrir todas las casas)
+      const { data, error } = await supabase
+        .from('lecturas_agua')
+        .select('casa_id, lectura_actual')
+        .order('fecha', { ascending: false })
+        .limit(300); // 300 debería cubrir de sobra las 120 casas
+        
+      if (error) throw error;
+      
+      // Construir el mapa: casa_id -> lectura_actual (la primera que aparezca es la más reciente)
+      const cache: Record<number, string> = {};
+      data.forEach((l: any) => {
+        if (!cache[l.casa_id]) {
+          cache[l.casa_id] = String(l.lectura_actual);
+        }
+      });
+      
+      setOfflineCache(cache);
+      localStorage.setItem('lecturas_ultimo_registro_cache', JSON.stringify(cache));
+      setSuccess('Datos offline preparados. ¡Ya puedes ir al campo!');
+    } catch (err: any) {
+      setError('Fallo al preparar datos: ' + err.message);
+    } finally {
+      setIsPreparingOffline(false);
+    }
+  };
 
   const fetchUltimaLectura = async (id: number) => {
     try {
@@ -209,11 +270,18 @@ export default function LecturasPage() {
     const { data, error } = await supabase.from('casas').select('*');
     if (error) throw error;
     
-    // Ordenar numéricamente por numero_casa
+    // Ordenar: Casas numéricas primero, puntos con texto al final
     const sorted = (data || []).sort((a: any, b: any) => {
-      const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
-      const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
-      if (numA !== numB) return numA - numB;
+      const isNumA = /^\d+$/.test(a.numero_casa);
+      const isNumB = /^\d+$/.test(b.numero_casa);
+
+      if (isNumA && !isNumB) return -1;
+      if (!isNumA && isNumB) return 1;
+
+      if (isNumA && isNumB) {
+        return parseInt(a.numero_casa) - parseInt(b.numero_casa);
+      }
+
       return a.numero_casa.localeCompare(b.numero_casa);
     });
     
@@ -821,7 +889,35 @@ export default function LecturasPage() {
           </div>
           
           {/* Selectores de mes y año */}
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            {/* Offline Prep Button */}
+            {isOnline && (
+              <button 
+                onClick={prepareOfflineMode}
+                disabled={isPreparingOffline}
+                style={{
+                  background: 'rgba(96,165,250,0.1)',
+                  border: '1px solid rgba(96,165,250,0.3)',
+                  color: '#60a5fa',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  cursor: isPreparingOffline ? 'not-allowed' : 'pointer',
+                  letterSpacing: '0.05em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s',
+                  height: '2.1rem',
+                  minHeight: '2.1rem'
+                }}
+                onMouseEnter={e => { if(!isPreparingOffline) e.currentTarget.style.background = 'rgba(96,165,250,0.2)'; }}
+                onMouseLeave={e => { if(!isPreparingOffline) e.currentTarget.style.background = 'rgba(96,165,250,0.1)'; }}
+              >
+                {isPreparingOffline ? '⌛ DESCARGANDO...' : '📥 PREPARAR OFFLINE'}
+              </button>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
               <select 

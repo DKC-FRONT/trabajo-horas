@@ -32,7 +32,7 @@ CREATE TABLE usuarios (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     nombre_completo TEXT,
-    rol TEXT DEFAULT 'residente' CHECK (rol IN ('admin', 'trabajador', 'residente')),
+    rol TEXT DEFAULT 'residente' CHECK (rol IN ('admin', 'trabajador', 'residente', 'extras')),
     casa_id INTEGER REFERENCES casas(id),
     creado_el TIMESTAMPTZ DEFAULT NOW()
 );

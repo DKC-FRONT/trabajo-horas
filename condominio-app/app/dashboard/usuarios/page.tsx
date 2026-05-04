@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-type Rol = 'admin' | 'trabajador' | 'residente';
+type Rol = 'admin' | 'trabajador' | 'residente' | 'extras';
 
 type Usuario = {
   id: number;
@@ -21,6 +21,7 @@ const ROL_META: Record<Rol, { color: string; label: string; icon: string }> = {
   admin:      { color: '#a78bfa', label: 'Admin',      icon: '◈' },
   trabajador: { color: '#60a5fa', label: 'Trabajador', icon: '⬡' },
   residente:  { color: '#4ade80', label: 'Residente',  icon: '◎' },
+  extras:     { color: '#fb923c', label: 'Extras',     icon: '✦' },
 };
 
 export default function UsuariosPage() {
@@ -43,6 +44,9 @@ export default function UsuariosPage() {
   const [password, setPassword] = useState('');
   const [rol,      setRol]      = useState<Rol>('residente');
   const [casaId,   setCasaId]   = useState('');
+  const [filtroRol, setFiltroRol] = useState<'todos' | Rol>('todos');
+  const [isNewCasa, setIsNewCasa] = useState(false);
+  const [newCasaName, setNewCasaName] = useState('');
 
   /**
    * Hook inicial para cargar la lista de usuarios y casas.
@@ -81,14 +85,39 @@ export default function UsuariosPage() {
         numero_casa: u.casas?.numero_casa
       }));
 
-      // Ordenar casas numéricamente
+      // Ordenar casas: numéricas primero, luego texto (Shut, etc)
       const sortedCasas = (hRes.data || []).sort((a: any, b: any) => {
-        const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
-        return numA - numB;
+        const isNumA = /^\d+$/.test(a.numero_casa);
+        const isNumB = /^\d+$/.test(b.numero_casa);
+        if (isNumA && !isNumB) return -1;
+        if (!isNumA && isNumB) return 1;
+        if (isNumA && isNumB) return parseInt(a.numero_casa) - parseInt(b.numero_casa);
+        return a.numero_casa.localeCompare(b.numero_casa);
       });
 
-      setUsuarios(adaptedUsers);
+      // Ordenar usuarios de forma lógica: Admin > Trabajador > Extras > Residentes (por casa)
+      const sortedUsers = adaptedUsers.sort((a, b) => {
+        // Primero por rol
+        const rolesOrder: Record<string, number> = { admin: 0, trabajador: 1, extras: 2, residente: 3 };
+        const orderA = rolesOrder[a.rol] ?? 99;
+        const orderB = rolesOrder[b.rol] ?? 99;
+        
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        
+        // Si ambos son residentes, ordenar por número de casa
+        if (a.rol === 'residente' && b.rol === 'residente') {
+          const numA = parseInt(a.numero_casa?.replace(/\D/g, '') || '999');
+          const numB = parseInt(b.numero_casa?.replace(/\D/g, '') || '999');
+          return numA - numB;
+        }
+        
+        // Por defecto, alfabético
+        return a.nombre.localeCompare(b.nombre);
+      });
+
+      setUsuarios(sortedUsers);
       setCasas(sortedCasas);
     } catch (err: any) {
       notify('Error de carga: ' + err.message, true);
@@ -140,6 +169,25 @@ export default function UsuariosPage() {
     e.preventDefault();
     try {
       setFormLoading(true);
+
+      let finalCasaId: number | null = casaId ? Number(casaId) : null;
+
+      // Si el usuario escribió un medidor nuevo, lo creamos primero
+      if ((rol === 'residente' || rol === 'extras') && isNewCasa && newCasaName.trim()) {
+        const { createClient } = await import('@/lib/client');
+        const supabase = createClient();
+        
+        // Verificar si ya existe para no duplicar
+        const { data: existing } = await supabase.from('casas').select('id').eq('numero_casa', newCasaName.trim()).maybeSingle();
+        
+        if (existing) {
+          finalCasaId = existing.id;
+        } else {
+          const { data: newC, error: errC } = await supabase.from('casas').insert({ numero_casa: newCasaName.trim() }).select().single();
+          if (errC) throw new Error('Error al crear el nuevo medidor: ' + errC.message);
+          finalCasaId = newC.id;
+        }
+      }
       
       const endpoint = '/api/admin/usuarios';
       const method = isEditing ? 'PUT' : 'POST';
@@ -149,7 +197,7 @@ export default function UsuariosPage() {
         correo,
         password,
         rol,
-        casa_id: casaId ? Number(casaId) : null
+        casa_id: finalCasaId
       };
 
       const res = await fetch(endpoint, {
@@ -226,20 +274,36 @@ export default function UsuariosPage() {
             Administra accesos y vincula residentes a sus casas
           </p>
         </div>
-        {!loading && (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {(['admin','trabajador','residente'] as Rol[]).map((r: Rol) => {
-              const count = usuarios.filter((u: any) => u.rol === r).length;
-              if (!count) return null;
-              const meta = ROL_META[r];
-              return (
-                <div key={r} style={{ padding: '0.35rem 0.75rem', background: `${meta.color}10`, border: `1px solid ${meta.color}25`, fontSize: '0.6rem', color: meta.color, letterSpacing: '0.08em' }}>
-                  {count} {meta.label}
-                </div>
-              );
-            })}
-          </div>
-        )}
+      </div>
+
+      {/* ── Filtros de Rol ── */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        {[
+          { id: 'todos', label: 'Todos', color: '#fff' },
+          { id: 'admin', label: 'Administradores', color: ROL_META.admin.color },
+          { id: 'trabajador', label: 'Trabajadores', color: ROL_META.trabajador.color },
+          { id: 'residente', label: 'Residentes', color: ROL_META.residente.color },
+          { id: 'extras', label: 'Extras', color: ROL_META.extras.color },
+        ].map(f => (
+          <button
+            key={f.id}
+            onClick={() => setFiltroRol(f.id as any)}
+            style={{
+              padding: '0.5rem 1rem',
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              cursor: 'pointer',
+              background: filtroRol === f.id ? `${f.color}20` : 'transparent',
+              border: `1px solid ${filtroRol === f.id ? f.color : 'rgba(255,255,255,0.1)'}`,
+              color: filtroRol === f.id ? f.color : 'rgba(255,255,255,0.4)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       {/* ── Alertas ── */}
@@ -294,15 +358,82 @@ export default function UsuariosPage() {
               <option value="residente"  style={{ background: '#0a0a0f', color: '#4ade80' }}>◎ Residente</option>
               <option value="trabajador" style={{ background: '#0a0a0f', color: '#60a5fa' }}>⬡ Trabajador</option>
               <option value="admin"      style={{ background: '#0a0a0f', color: '#a78bfa' }}>◈ Admin</option>
+              <option value="extras"     style={{ background: '#0a0a0f', color: '#fb923c' }}>✦ Extras</option>
             </select>
           </div>
-          {rol === 'residente' && (
-            <div style={{ flex: '1 1 140px' }}>
-              <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>Casa</label>
-              <select value={casaId} onChange={e => setCasaId(e.target.value)} style={{ ...inputStyle('casa'), appearance: 'none' as any }}>
-                <option value="" style={{ background: '#0a0a0f' }}>— Ninguna</option>
-                {casas.map((c: any) => <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>Casa {c.numero_casa}</option>)}
-              </select>
+          { (rol === 'residente' || rol === 'extras') && (
+            <div style={{ flex: '1 1 220px' }}>
+              <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
+                {isNewCasa ? 'Nombre del Nuevo Medidor' : 'Vincular a Medidor'}
+              </label>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {isNewCasa ? (
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <input 
+                      autoFocus
+                      type="text" 
+                      placeholder="Ej: Tanque Reserva" 
+                      value={newCasaName} 
+                      onChange={e => setNewCasaName(e.target.value)}
+                      style={inputStyle('newCasa')}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => { setIsNewCasa(false); setNewCasaName(''); }}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '0.7rem' }}
+                    >✕</button>
+                  </div>
+                ) : (
+                  <select 
+                    value={casaId} 
+                    onChange={e => {
+                      if (e.target.value === 'CREATE_NEW') {
+                        setIsNewCasa(true);
+                        setCasaId('');
+                      } else {
+                        setCasaId(e.target.value);
+                      }
+                    }} 
+                    style={{ ...inputStyle('casa'), flex: 1, appearance: 'none' as any }}
+                  >
+                    <option value="" style={{ background: '#0a0a0f' }}>— Ninguno</option>
+                    <optgroup label="Acciones" style={{ background: '#0a0a0f', color: ACCENT }}>
+                      <option value="CREATE_NEW" style={{ background: '#0a0a0f', color: ACCENT, fontWeight: 'bold' }}>++ CREAR NUEVO MEDIDOR...</option>
+                    </optgroup>
+                    <optgroup label="Medidores Existentes" style={{ background: '#0a0a0f' }}>
+                      {casas.map((c: any) => (
+                        <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>
+                          {/^\d+$/.test(c.numero_casa) ? `Casa ${c.numero_casa}` : c.numero_casa}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                )}
+                
+                {!isNewCasa && (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsNewCasa(true)} 
+                    style={{ 
+                      padding: '0.6rem 1rem', 
+                      background: `${ACCENT}20`, 
+                      border: `2px solid ${ACCENT}`, 
+                      color: '#fff', 
+                      fontSize: '0.7rem', 
+                      fontWeight: 800,
+                      cursor: 'pointer', 
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                      boxShadow: `0 0 10px ${ACCENT}30`
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = `${ACCENT}40`; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = `${ACCENT}20`; }}
+                  >
+                    + NUEVO
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <div style={{ display: 'flex', gap: '0.5rem', paddingBottom: '1px' }}>
@@ -361,14 +492,16 @@ export default function UsuariosPage() {
                     <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
                   </td>
                 </tr>
-              ) : usuarios.length === 0 ? (
+              ) : usuarios.filter(u => filtroRol === 'todos' || u.rol === filtroRol).length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem', letterSpacing: '0.05em' }}>
-                    No hay usuarios registrados
+                    No hay usuarios con este rol
                   </td>
                 </tr>
               ) : (
-                usuarios.map((u, i) => {
+                usuarios
+                  .filter(u => filtroRol === 'todos' || u.rol === filtroRol)
+                  .map((u, i) => {
                   const meta = ROL_META[u.rol];
                   const isHov = hoveredRow === u.id;
                   return (
@@ -393,7 +526,11 @@ export default function UsuariosPage() {
                         </span>
                       </td>
                       <td style={{ padding: '0.9rem 1rem', fontSize: '0.75rem', color: u.numero_casa ? '#ffffff' : 'rgba(255,255,255,0.2)' }}>
-                        {u.numero_casa ? <span style={{ color: '#4ade80' }}>Casa {u.numero_casa}</span> : '—'}
+                        {u.numero_casa ? (
+                          <span style={{ color: '#4ade80' }}>
+                            {/^\d+$/.test(u.numero_casa) ? `Casa ${u.numero_casa}` : u.numero_casa}
+                          </span>
+                        ) : '—'}
                       </td>
                       <td style={{ padding: '0.9rem 1rem', textAlign: 'right' }}>
                         <button onClick={() => handleEdit(u)}
