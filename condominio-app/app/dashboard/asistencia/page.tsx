@@ -23,6 +23,8 @@ export default function AsistenciaPage() {
   const [employees, setEmployees] = useState<{id: string, nombre_completo: string}[]>([]);
   const [adminHistory, setAdminHistory] = useState<any[]>([]);
   const [filterEmployee, setFilterEmployee] = useState<string>('all');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any | null>(null);
 
   useEffect(() => {
     fetchStatus();
@@ -47,9 +49,12 @@ export default function AsistenciaPage() {
 
       if (!user) return;
 
-      // Obtener rol
-      const { data: profile } = await supabase.from('usuarios').select('rol').eq('id', user.id).single();
-      if (profile) setUserRole(profile.rol);
+      // Obtener rol y verificar super-admin
+      const { data: profile } = await supabase.from('usuarios').select('rol, email').eq('id', user.id).single();
+      if (profile) {
+        setUserRole(profile.rol);
+        setIsSuperAdmin(user.email === 'admin@florida.com');
+      }
 
       // Buscar registro activo del usuario actual
       const { data: active } = await supabase
@@ -133,6 +138,44 @@ export default function AsistenciaPage() {
       fetchAdminData();
     } catch (err) {
       console.error('Error al eliminar:', err);
+    }
+  };
+
+  const handleUpdateRecord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRecord) return;
+    
+    setSaving(true);
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      const entry = new Date(editingRecord.hora_entrada);
+      const exit = editingRecord.hora_salida ? new Date(editingRecord.hora_salida) : null;
+      let total = null;
+      
+      if (exit) {
+        const diffMs = exit.getTime() - entry.getTime();
+        total = parseFloat((diffMs / (1000 * 60 * 60)).toFixed(2));
+      }
+
+      const { error } = await supabase
+        .from('asistencia')
+        .update({ 
+          hora_entrada: entry.toISOString(),
+          hora_salida: exit ? exit.toISOString() : null,
+          total_horas: total 
+        })
+        .eq('id', editingRecord.id);
+
+      if (error) throw error;
+      setEditingRecord(null);
+      fetchAdminData();
+    } catch (err) {
+      alert('Error al actualizar registro');
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -293,12 +336,12 @@ export default function AsistenciaPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.01)' }}>
-                <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Empleado</th>
-                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Fecha</th>
-                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Entrada</th>
-                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Salida</th>
-                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}>Horas</th>
-                        <th style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase' }}></th>
+                        <th style={thStyle}>Empleado</th>
+                        <th style={thStyle}>Fecha</th>
+                        <th style={thStyle}>Entrada</th>
+                        <th style={thStyle}>Salida</th>
+                        <th style={{...thStyle, textAlign: 'right'}}>Horas</th>
+                        <th style={{...thStyle, textAlign: 'right'}}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -310,15 +353,27 @@ export default function AsistenciaPage() {
                         <td style={{ padding: '0.9rem 1.5rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>{record.hora_salida ? formatTime(record.hora_salida) : '--:--'}</td>
                         <td style={{ padding: '0.9rem 1.5rem', textAlign: 'right', color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700 }}>{record.total_horas || 0}h</td>
                         <td style={{ padding: '0.9rem 0.75rem', textAlign: 'right' }}>
-                          <button
-                            onClick={() => handleDeleteRecord(record.id)}
-                            title="Eliminar registro"
-                            style={{ background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: 'rgba(248,113,113,0.6)', padding: '0.25rem 0.6rem', fontSize: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.06em', transition: 'all 0.15s' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#f87171'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(248,113,113,0.6)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; }}
-                          >
-                            ✕
-                          </button>
+                          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                            {isSuperAdmin && (
+                              <button 
+                                onClick={() => setEditingRecord({...record})}
+                                style={{ background: 'transparent', border: '1px solid rgba(251,191,36,0.25)', color: 'rgba(251,191,36,0.6)', padding: '0.25rem 0.6rem', fontSize: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.06em', transition: 'all 0.15s' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.1)'; e.currentTarget.style.color = '#fbbf24'; e.currentTarget.style.borderColor = '#fbbf24'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(251,191,36,0.6)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.25)'; }}
+                              >
+                                EDITAR
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteRecord(record.id)}
+                              title="Eliminar registro"
+                              style={{ background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: 'rgba(248,113,113,0.6)', padding: '0.25rem 0.6rem', fontSize: '0.6rem', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.06em', transition: 'all 0.15s' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#f87171'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(248,113,113,0.6)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; }}
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -381,6 +436,84 @@ export default function AsistenciaPage() {
       </div>
         </>
       )}
+      {/* Modal de Edición (Solo SuperAdmin) */}
+      {editingRecord && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1.5rem'
+        }}>
+          <div style={{ background: '#111', border: '1px solid #333', padding: '2.5rem', width: '100%', maxWidth: '500px' }}>
+            <h3 style={{ color: '#fff', marginTop: 0, marginBottom: '1.5rem', fontSize: '1.2rem' }}>Modificar Asistencia</h3>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '2rem' }}>Editando registro de: <b style={{ color: '#fff' }}>{editingRecord.nombre_completo}</b></p>
+            
+            <form onSubmit={handleUpdateRecord} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora de Entrada (ISO)</label>
+                <input 
+                  type="datetime-local" 
+                  value={new Date(new Date(editingRecord.hora_entrada).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} 
+                  onChange={e => setEditingRecord({...editingRecord, hora_entrada: new Date(e.target.value).toISOString()})}
+                  style={inputStyle} 
+                />
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora de Salida (ISO)</label>
+                <input 
+                  type="datetime-local" 
+                  value={editingRecord.hora_salida ? new Date(new Date(editingRecord.hora_salida).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''} 
+                  onChange={e => setEditingRecord({...editingRecord, hora_salida: e.target.value ? new Date(e.target.value).toISOString() : null})}
+                  style={inputStyle} 
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="submit" disabled={saving} style={{ 
+                  flex: 1, background: '#fbbf24', color: '#000', border: 'none', padding: '0.8rem', 
+                  fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.75rem' 
+                }}>
+                  {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
+                </button>
+                <button type="button" onClick={() => setEditingRecord(null)} style={{ 
+                  background: 'transparent', color: '#fff', border: '1px solid #333', padding: '0.8rem 1.5rem', 
+                  cursor: 'pointer', fontSize: '0.75rem' 
+                }}>
+                  CANCELAR
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  padding: '0.8rem',
+  color: '#fff',
+  fontSize: '0.85rem',
+  fontFamily: 'inherit',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+  colorScheme: 'dark',
+};
+
+const thStyle: React.CSSProperties = {
+  padding: '1.2rem 1.5rem',
+  textAlign: 'left',
+  color: 'rgba(255,255,255,0.4)',
+  fontSize: '0.65rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.15em',
+  fontWeight: 700
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: '1.2rem 1.5rem',
+  color: '#fff',
+  fontSize: '0.85rem'
+};

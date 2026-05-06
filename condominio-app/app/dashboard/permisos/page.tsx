@@ -20,6 +20,11 @@ type Permit = {
   estado: 'pendiente' | 'aprobado' | 'rechazado';
 };
 
+type Trabajador = {
+  id: string;
+  nombre_completo: string;
+};
+
 export default function PermisosPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,6 +32,7 @@ export default function PermisosPage() {
   const [history, setHistory] = useState<Permit[]>([]);
   const [visible, setVisible] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [trabajadores, setTrabajadores] = useState<Trabajador[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -37,7 +43,9 @@ export default function PermisosPage() {
     tipo_duracion: 'medio_dia' as 'medio_dia' | 'un_dia',
     motivo: '',
     categoria: 'personal' as 'personal' | 'salud',
-    intent_retorno: 'si'
+    intent_retorno: 'si',
+    cargo: '',
+    trabajador_id: ''
   });
 
   useEffect(() => {
@@ -62,7 +70,14 @@ export default function PermisosPage() {
       
       setUserProfile(profile);
 
-      // Admin ve todos los permisos, trabajador/residente solo los suyos
+      if (profile?.rol === 'admin') {
+        const { data: users } = await supabase
+          .from('usuarios')
+          .select('id, nombre_completo')
+          .in('rol', ['trabajador', 'admin']);
+        setTrabajadores(users || []);
+      }
+
       const permisosQuery = supabase
         .from('permisos')
         .select('*')
@@ -79,6 +94,17 @@ export default function PermisosPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatAMPM = (time: string) => {
+    if (!time || time === 'SIN RETORNO') return time;
+    const [hours, minutes] = time.split(':');
+    let h = parseInt(hours);
+    const m = minutes;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12; 
+    return `${h.toString().padStart(2, '0')}:${m} ${ampm}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,9 +124,11 @@ export default function PermisosPage() {
       const { error } = await supabase
         .from('permisos')
         .insert([{
-          usuario_id: user?.id,
-          nombre_completo: userProfile?.nombre_completo,
-          cargo: userProfile?.cargo,
+          usuario_id: userProfile?.rol === 'admin' && formData.trabajador_id ? formData.trabajador_id : user?.id,
+          nombre_completo: userProfile?.rol === 'admin' && formData.trabajador_id 
+            ? trabajadores.find(t => t.id === formData.trabajador_id)?.nombre_completo 
+            : userProfile?.nombre_completo,
+          cargo: formData.cargo || userProfile?.cargo,
           fecha: finalData.fecha,
           horas: finalData.horas,
           hora_salida: finalData.hora_salida,
@@ -137,11 +165,28 @@ export default function PermisosPage() {
     }
   };
 
+  const handleUpdateStatus = async (id: number, status: 'aprobado' | 'rechazado') => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('permisos')
+        .update({ estado: status })
+        .eq('id', id);
+
+      if (error) throw error;
+      loadData();
+    } catch (err) {
+      alert('Error al actualizar estado');
+      console.error(err);
+    }
+  };
+
   const generatePDF = async (permit: Permit) => {
     const doc = new jsPDF();
-    
-    // Configuración de fuentes y colores (Premium)
     const primaryColor = '#1e293b';
+    const secondaryColor = '#64748b';
+    const accentColor = '#334155';
 
     // Logo del condominio
     try {
@@ -152,77 +197,130 @@ export default function PermisosPage() {
       await new Promise<void>(resolve => {
         reader.onloadend = () => {
           try {
-            doc.addImage(reader.result as string, 'PNG', 15, 10, 30, 30);
-          } catch { /* Si falla la imagen, continuar */ }
+            doc.addImage(reader.result as string, 'PNG', 15, 12, 28, 28);
+          } catch { /* continuar */ }
           resolve();
         };
       });
-    } catch {
-      // Si no carga la imagen, solo mostramos texto
-    }
+    } catch { }
 
-    // Encabezado
-    doc.setFontSize(10);
+    // Encabezado Formal
+    doc.setFontSize(11);
     doc.setTextColor(primaryColor);
-    doc.text('CONDOMINIO CAMPESTRE LA FLORIDA', 105, 20, { align: 'center' });
-    doc.text('NIT 900.588.163 - 1', 105, 25, { align: 'center' });
-    
-    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('FORMATO DE PERMISO', 105, 40, { align: 'center' });
-
-    // Campos del formulario (Simulando el formato manuscrito)
-    doc.setFontSize(10);
+    doc.text('CONDOMINIO CAMPESTRE LA FLORIDA', 110, 22, { align: 'center' });
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
+    doc.text('NIT 900.588.163 - 1', 110, 27, { align: 'center' });
+    doc.text('Documento Interno de Control de Personal', 110, 32, { align: 'center' });
     
-    const startY = 55;
-    const lineHeight = 10;
+    // Título con línea decorativa
+    doc.setDrawColor(primaryColor);
+    doc.setLineWidth(0.5);
+    doc.line(15, 45, 195, 45);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FORMATO ÚNICO DE PERMISO LABORAL', 105, 55, { align: 'center' });
+    doc.line(15, 60, 195, 60);
 
-    const drawField = (label: string, value: string, y: number) => {
+    // Grid de Datos
+    doc.setFontSize(10);
+    const startY = 75;
+    const col1 = 20;
+    const col2 = 70;
+    const rowH = 10;
+
+    const drawRow = (label: string, value: string, y: number, isLast = false) => {
+      // Fondo sutil para la etiqueta
+      doc.setFillColor(248, 250, 252);
+      doc.rect(col1 - 2, y - 6, 48, rowH, 'F');
+      
       doc.setFont('helvetica', 'bold');
-      doc.text(`${label}:`, 20, y);
+      doc.setTextColor(accentColor);
+      doc.text(label, col1, y);
+      
       doc.setFont('helvetica', 'normal');
-      doc.text(value || '_______________________', 65, y);
-      doc.line(65, y + 1, 185, y + 1); // Línea simulada
+      doc.setTextColor(primaryColor);
+      doc.text(value || 'N/A', col2, y);
+      
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.1);
+      doc.line(col1 - 2, y + 3, 190, y + 3);
     };
 
-    drawField('NOMBRES Y APELLIDOS', permit.nombre_completo, startY);
-    drawField('CARGO', permit.cargo, startY + lineHeight);
-    drawField('FECHA', permit.fecha, startY + lineHeight * 2);
-    drawField('HORAS', permit.horas, startY + lineHeight * 3);
-    drawField('HORA SALIDA', permit.hora_salida, startY + lineHeight * 4);
-    drawField('HORA RETORNO', permit.hora_retorno || 'SIN RETORNO', startY + lineHeight * 5);
+    drawRow('NOMBRES Y APELLIDOS', permit.nombre_completo.toUpperCase(), startY);
+    drawRow('CARGO / FUNCIÓN', (permit.cargo || 'NO ASIGNADO').toUpperCase(), startY + rowH);
+    drawRow('FECHA SOLICITADA', permit.fecha, startY + rowH * 2);
+    drawRow('DURACIÓN ESTIMADA', permit.horas, startY + rowH * 3);
+    drawRow('HORA DE SALIDA', formatAMPM(permit.hora_salida), startY + rowH * 4);
+    drawRow('HORA DE RETORNO', formatAMPM(permit.hora_retorno), startY + rowH * 5);
+
+    // Sección de Opciones (Checkbox Profesionales)
+    const optionsY = startY + rowH * 7;
     
-    // Duración Checks
+    // Duración
     doc.setFont('helvetica', 'bold');
-    doc.text('DURACIÓN:', 20, startY + lineHeight * 6.5);
+    doc.text('TIPO DE DURACIÓN:', col1, optionsY);
     doc.setFont('helvetica', 'normal');
-    doc.text(`[${permit.tipo_duracion === 'medio_dia' ? 'X' : ' '}] MEDIO DÍA`, 65, startY + lineHeight * 6.5);
-    doc.text(`[${permit.tipo_duracion === 'un_dia' ? 'X' : ' '}] UN DÍA`, 110, startY + lineHeight * 6.5);
+    
+    // Checkboxes
+    const drawCheck = (x: number, y: number, label: string, checked: boolean) => {
+      doc.setDrawColor(primaryColor);
+      doc.rect(x, y - 4, 4, 4);
+      if (checked) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('X', x + 1, y - 1);
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.text(label, x + 7, y - 1);
+    };
 
-    // Motivo
-    doc.setFont('helvetica', 'bold');
-    doc.text('MOTIVO:', 20, startY + lineHeight * 8);
-    doc.setFont('helvetica', 'normal');
-    doc.rect(20, startY + lineHeight * 8 + 3, 170, 30);
-    doc.text(doc.splitTextToSize(permit.motivo || '', 160), 25, startY + lineHeight * 8 + 10);
+    drawCheck(70, optionsY, 'MEDIO DÍA', permit.tipo_duracion === 'medio_dia');
+    drawCheck(125, optionsY, 'UN DÍA COMPLETO', permit.tipo_duracion === 'un_dia');
 
-    // Categoria
+    // Categoría
+    const catY = optionsY + 10;
     doc.setFont('helvetica', 'bold');
-    doc.text('TIPO:', 20, startY + lineHeight * 12);
+    doc.text('MOTIVO DEL PERMISO:', col1, catY);
+    drawCheck(70, catY, 'ASUNTO PERSONAL', permit.categoria === 'personal');
+    drawCheck(125, catY, 'SALUD / MÉDICA', permit.categoria === 'salud');
+
+    // Motivo Caja
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESCRIPCIÓN DEL MOTIVO:', col1, catY + 12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`[${permit.categoria === 'personal' ? 'X' : ' '}] PERSONAL`, 65, startY + lineHeight * 12);
-    doc.text(`[${permit.categoria === 'salud' ? 'X' : ' '}] SALUD`, 110, startY + lineHeight * 12);
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(20, catY + 16, 170, 35);
+    const splitMotivo = doc.splitTextToSize(permit.motivo || 'Sin descripción detallada.', 160);
+    doc.text(splitMotivo, 25, catY + 23);
 
     // Firmas
-    const footerY = 240;
-    doc.line(20, footerY, 80, footerY);
-    doc.text('FIRMA PERSONAL', 20, footerY + 5);
+    const footerY = 245;
+    doc.setDrawColor(primaryColor);
+    doc.setLineWidth(0.5);
     
-    doc.line(120, footerY, 180, footerY);
-    doc.text('V.B. ADMINISTRADORA', 120, footerY + 5);
+    doc.line(25, footerY, 85, footerY);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FIRMA DEL SOLICITANTE', 55, footerY + 6, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(permit.nombre_completo, 55, footerY + 11, { align: 'center' });
 
-    doc.save(`Permiso_${permit.nombre_completo}_${permit.fecha}.pdf`);
+    doc.setFontSize(10);
+    doc.line(125, footerY, 185, footerY);
+    doc.setFont('helvetica', 'bold');
+    doc.text('AUTORIZACIÓN ADMIN.', 155, footerY + 6, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('GERENCIA / RRHH', 155, footerY + 11, { align: 'center' });
+
+    // Pie de página
+    doc.setFontSize(7);
+    doc.setTextColor(secondaryColor);
+    const now = new Date().toLocaleString();
+    doc.text(`Generado electrónicamente el: ${now} - UrbanFlowRS Security Module`, 105, 285, { align: 'center' });
+
+    doc.save(`Permiso_${permit.nombre_completo.replace(' ', '_')}_${permit.fecha}.pdf`);
   };
 
   return (
@@ -271,6 +369,23 @@ export default function PermisosPage() {
           </h2>
           
           <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+            {userProfile?.rol === 'admin' && (
+              <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Escoger Trabajador</label>
+                <select required value={formData.trabajador_id} onChange={e => setFormData({...formData, trabajador_id: e.target.value})} style={selectStyle}>
+                  <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>-- Seleccionar Empleado --</option>
+                  {trabajadores.map(t => (
+                    <option key={t.id} value={t.id} style={{ background: '#0a0a0f', color: '#fff' }}>{t.nombre_completo}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Cargo / Función</label>
+              <input type="text" placeholder="Ej: Vigilante, Jardinero..." value={formData.cargo} onChange={e => setFormData({...formData, cargo: e.target.value})} style={inputStyle} />
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Fecha de la Falta</label>
               <input type="date" required value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} style={inputStyle} />
@@ -346,6 +461,7 @@ export default function PermisosPage() {
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <th style={thStyle}>Fecha</th>
+                <th style={thStyle}>Solicitante</th>
                 <th style={thStyle}>Categoría</th>
                 <th style={thStyle}>Motivo</th>
                 <th style={thStyle}>Estado</th>
@@ -357,6 +473,10 @@ export default function PermisosPage() {
                 <tr key={permit.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                   <td style={tdStyle}>{permit.fecha}</td>
                   <td style={tdStyle}>
+                    <div style={{ fontSize: '0.85rem', color: '#fff' }}>{permit.nombre_completo}</div>
+                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{permit.cargo}</div>
+                  </td>
+                  <td style={tdStyle}>
                     <span style={{ 
                       fontSize: '0.65rem', padding: '0.2rem 0.5rem', 
                       background: permit.categoria === 'salud' ? 'rgba(96,165,250,0.1)' : 'rgba(167,139,250,0.1)',
@@ -366,7 +486,7 @@ export default function PermisosPage() {
                       {permit.categoria === 'salud' ? 'Salud' : 'Personal'}
                     </span>
                   </td>
-                  <td style={{ ...tdStyle, maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{permit.motivo}</td>
+                  <td style={{ ...tdStyle, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{permit.motivo}</td>
                   <td style={tdStyle}>
                     {permit.estado === 'aprobado' ? <CheckCircle2 size={16} color="#4ade80" /> : permit.estado === 'rechazado' ? <XCircle size={16} color="#f87171" /> : <Clock size={16} color="#fbbf24" />}
                   </td>
@@ -378,13 +498,31 @@ export default function PermisosPage() {
                       >
                         <Download size={14} /> PDF
                       </button>
-                      {userProfile?.rol === 'admin' && (
-                        <button 
-                          onClick={() => handleDelete(permit.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
-                        >
-                          <XCircle size={14} /> Borrar
-                        </button>
+                      {(userProfile?.rol === 'admin' || userProfile?.email === 'admin@florida.com') && (
+                        <>
+                          {permit.estado === 'pendiente' && (
+                            <>
+                              <button 
+                                onClick={() => handleUpdateStatus(permit.id, 'aprobado')}
+                                style={{ background: 'transparent', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                              >
+                                <CheckCircle2 size={14} /> Aprobar
+                              </button>
+                              <button 
+                                onClick={() => handleUpdateStatus(permit.id, 'rechazado')}
+                                style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                              >
+                                <XCircle size={14} /> Rechazar
+                              </button>
+                            </>
+                          )}
+                          <button 
+                            onClick={() => handleDelete(permit.id)}
+                            style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                          >
+                            <XCircle size={14} /> Borrar
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
