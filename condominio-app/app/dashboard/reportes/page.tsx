@@ -59,13 +59,40 @@ export default function ReportesPage() {
   const [mesFin, setMesFin] = useState(new Date().getMonth() + 1);
   const [anioFin, setAnioFin] = useState(new Date().getFullYear());
 
+  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([new Date().getFullYear()]);
+
   // Inicializar el rango (6 meses atrás por defecto)
   useEffect(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 5);
     setMesInicio(d.getMonth() + 1);
     setAnioInicio(d.getFullYear());
+    fetchAniosDisponibles();
   }, []);
+
+  const fetchAniosDisponibles = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      
+      // Consultar años en ambas tablas para estar seguros
+      const [lecturasRes, asistenciaRes] = await Promise.all([
+        supabase.from('lecturas_agua').select('fecha'),
+        supabase.from('asistencia').select('hora_entrada')
+      ]);
+      
+      const aniosSet = new Set<number>();
+      aniosSet.add(new Date().getFullYear());
+      
+      (lecturasRes.data || []).forEach((l: any) => aniosSet.add(new Date(l.fecha).getFullYear()));
+      (asistenciaRes.data || []).forEach((a: any) => aniosSet.add(new Date(a.hora_entrada).getFullYear()));
+      
+      const sorted = Array.from(aniosSet).sort((a, b) => a - b);
+      setAniosDisponibles(sorted);
+    } catch (err) {
+      console.log('Error cargando años:', err);
+    }
+  };
 
   /**
    * Hook inicial para cargar el reporte al montar el componente o cuando cambian los filtros.
@@ -378,7 +405,7 @@ export default function ReportesPage() {
               onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
               style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
             >
-              {ANIOS.map((y: any) => (
+              {aniosDisponibles.map((y) => (
                 <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>
               ))}
             </select>
@@ -590,7 +617,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioInicio} onChange={e => setAnioInicio(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                   <div style={{ width: '1px', height: '15px', background: 'rgba(255,255,255,0.1)' }} />
@@ -602,7 +629,7 @@ export default function ReportesPage() {
                     </select>
                     <select value={anioFin} onChange={e => setAnioFin(Number(e.target.value))}
                       style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
-                      {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                      {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                 </div>

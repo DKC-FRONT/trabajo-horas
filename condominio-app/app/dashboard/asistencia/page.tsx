@@ -25,6 +25,12 @@ export default function AsistenciaPage() {
   const [filterEmployee, setFilterEmployee] = useState<string>('all');
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  
+  // Filtros temporales
+  const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
+  const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
+  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([new Date().getFullYear()]);
+  const [stats, setStats] = useState({ promedio: 0, total: 0 });
 
   useEffect(() => {
     fetchStatus();
@@ -36,9 +42,24 @@ export default function AsistenciaPage() {
   useEffect(() => {
     if (userRole === 'admin') {
       fetchAdminData();
+      fetchAniosDisponibles();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userRole, filterEmployee]);
+  }, [userRole, filterEmployee, mesSeleccionado, anioSeleccionado]);
+
+  const fetchAniosDisponibles = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('asistencia').select('hora_entrada');
+      const years = new Set<number>();
+      years.add(new Date().getFullYear());
+      (data || []).forEach((r: any) => years.add(new Date(r.hora_entrada).getFullYear()));
+      setAniosDisponibles(Array.from(years).sort((a, b) => a - b));
+    } catch (err) {
+      console.error('Error fetching years:', err);
+    }
+  };
 
   const fetchStatus = async () => {
     setLoading(true);
@@ -98,19 +119,28 @@ export default function AsistenciaPage() {
         .order('nombre_completo');
       setEmployees(users || []);
 
-      // 2. Obtener registros de asistencia
+      // 2. Obtener registros de asistencia filtrados por mes/año
+      const startDate = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01T00:00:00`;
+      const endDate = new Date(anioSeleccionado, mesSeleccionado, 0).toISOString().split('T')[0] + 'T23:59:59';
+
       let query = supabase
         .from('asistencia')
         .select('*')
+        .gte('hora_entrada', startDate)
+        .lte('hora_entrada', endDate)
         .order('hora_entrada', { ascending: false });
 
       if (filterEmployee !== 'all') {
         query = query.eq('usuario_id', filterEmployee);
-      } else {
-        query = query.limit(50);
       }
 
       const { data: records } = await query;
+      
+      // Calcular estadísticas
+      const validRecords = (records || []).filter((r: any) => r.total_horas !== null);
+      const total = validRecords.reduce((s: number, r: any) => s + (Number(r.total_horas) || 0), 0);
+      const promedio = validRecords.length > 0 ? total / validRecords.length : 0;
+      setStats({ total, promedio });
       
       // 3. Cruzar datos manualmente
       const mapped = (records || []).map((r: any) => {
@@ -316,20 +346,58 @@ export default function AsistenciaPage() {
           {/* Panel de Administrador (Solo Admin) */}
           {userRole === 'admin' && (
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <Activity size={18} style={{ color: '#a78bfa' }} />
                   <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>SEGUIMIENTO DE PERSONAL</h3>
                 </div>
                 
-                <select 
-                  value={filterEmployee} 
-                  onChange={(e) => setFilterEmployee(e.target.value)}
-                  style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.8rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
-                >
-                  <option value="all" style={{ background: '#0a0a0f', color: '#fff' }}>Todos los empleados</option>
-                  {employees.map((e: any) => <option key={e.id} value={e.id} style={{ background: '#0a0a0f', color: '#fff' }}>{e.nombre_completo}</option>)}
-                </select>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <select 
+                    value={mesSeleccionado} 
+                    onChange={(e) => setMesSeleccionado(Number(e.target.value))}
+                    style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                  >
+                    {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m, i) => (
+                      <option key={m} value={i + 1}>{m}</option>
+                    ))}
+                  </select>
+
+                  <select 
+                    value={anioSeleccionado} 
+                    onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
+                    style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                  >
+                    {aniosDisponibles.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+
+                  <select 
+                    value={filterEmployee} 
+                    onChange={(e) => setFilterEmployee(e.target.value)}
+                    style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.8rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="all">Todos los empleados</option>
+                    {employees.map((e: any) => <option key={e.id} value={e.id}>{e.nombre_completo}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Stats Bar */}
+              <div style={{ background: 'rgba(255,255,255,0.01)', padding: '0.75rem 1.5rem', display: 'flex', gap: '2rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Horas</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#fbbf24' }}>{stats.total.toFixed(1)}h</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Promedio por Turno</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#a78bfa' }}>{stats.promedio.toFixed(1)}h</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registros</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#60a5fa' }}>{adminHistory.length}</span>
+                </div>
               </div>
 
               <div style={{ overflowX: 'auto' }}>

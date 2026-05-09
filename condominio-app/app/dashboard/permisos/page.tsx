@@ -13,7 +13,7 @@ type Permit = {
   fecha: string;
   horas: string;
   hora_salida: string;
-  hora_retorno: string;
+  hora_retorno: string | null;
   tipo_duracion: 'medio_dia' | 'un_dia';
   motivo: string;
   categoria: 'personal' | 'salud';
@@ -96,8 +96,8 @@ export default function PermisosPage() {
     }
   };
 
-  const formatAMPM = (time: string) => {
-    if (!time || time === 'SIN RETORNO') return time;
+  const formatAMPM = (time: string | null) => {
+    if (!time || time === 'SIN RETORNO') return 'SIN RETORNO';
     const [hours, minutes] = time.split(':');
     let h = parseInt(hours);
     const m = minutes;
@@ -118,25 +118,29 @@ export default function PermisosPage() {
       // Ajustar hora_retorno si dice que no retorna
       const finalData = { ...formData };
       if (formData.intent_retorno === 'no') {
-        finalData.hora_retorno = 'SIN RETORNO';
+        finalData.hora_retorno = null as any;
       }
+
+      const insertData = {
+        usuario_id: (userProfile?.rol === 'admin' && formData.trabajador_id) ? formData.trabajador_id : user?.id,
+        nombre_completo: (userProfile?.rol === 'admin' && formData.trabajador_id) 
+          ? trabajadores.find(t => t.id === formData.trabajador_id)?.nombre_completo 
+          : userProfile?.nombre_completo,
+        cargo: formData.cargo || userProfile?.cargo,
+        fecha: finalData.fecha,
+        horas: finalData.horas,
+        hora_salida: finalData.hora_salida,
+        hora_retorno: finalData.hora_retorno,
+        tipo_duracion: finalData.tipo_duracion,
+        motivo: finalData.motivo,
+        categoria: finalData.categoria
+      };
+
+      console.log('Inserting permit data:', insertData);
 
       const { error } = await supabase
         .from('permisos')
-        .insert([{
-          usuario_id: userProfile?.rol === 'admin' && formData.trabajador_id ? formData.trabajador_id : user?.id,
-          nombre_completo: userProfile?.rol === 'admin' && formData.trabajador_id 
-            ? trabajadores.find(t => t.id === formData.trabajador_id)?.nombre_completo 
-            : userProfile?.nombre_completo,
-          cargo: formData.cargo || userProfile?.cargo,
-          fecha: finalData.fecha,
-          horas: finalData.horas,
-          hora_salida: finalData.hora_salida,
-          hora_retorno: finalData.hora_retorno,
-          tipo_duracion: finalData.tipo_duracion,
-          motivo: finalData.motivo,
-          categoria: finalData.categoria
-        }])
+        .insert([insertData])
         .select()
         .single();
 
@@ -144,9 +148,9 @@ export default function PermisosPage() {
       
       setShowForm(false);
       loadData();
-    } catch (err) {
-      alert('Error al guardar el permiso');
-      console.error(err);
+    } catch (err: any) {
+      alert(`Error al guardar el permiso: ${err.message || 'Error desconocido'}`);
+      console.error('Full Error Object:', err);
     } finally {
       setSaving(false);
     }
@@ -190,14 +194,15 @@ export default function PermisosPage() {
 
     // Logo del condominio
     try {
-      const response = await fetch('/logo.png');
+      const response = await fetch('/logo_florida.png');
       const blob = await response.blob();
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       await new Promise<void>(resolve => {
         reader.onloadend = () => {
           try {
-            doc.addImage(reader.result as string, 'PNG', 15, 12, 28, 28);
+            // Dimensiones para un logo horizontal
+            doc.addImage(reader.result as string, 'PNG', 15, 12, 65, 20);
           } catch { /* continuar */ }
           resolve();
         };
@@ -208,11 +213,11 @@ export default function PermisosPage() {
     doc.setFontSize(11);
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
-    doc.text('CONDOMINIO CAMPESTRE LA FLORIDA', 110, 22, { align: 'center' });
+    doc.text('CONDOMINIO CAMPESTRE LA FLORIDA', 135, 22, { align: 'center' });
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('NIT 900.588.163 - 1', 110, 27, { align: 'center' });
-    doc.text('Documento Interno de Control de Personal', 110, 32, { align: 'center' });
+    doc.text('NIT 900.588.163 - 1', 135, 27, { align: 'center' });
+    doc.text('Documento Interno de Control de Personal', 135, 32, { align: 'center' });
     
     // Título con línea decorativa
     doc.setDrawColor(primaryColor);
@@ -243,8 +248,8 @@ export default function PermisosPage() {
       doc.setTextColor(primaryColor);
       doc.text(value || 'N/A', col2, y);
       
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(0.1);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.3);
       doc.line(col1 - 2, y + 3, 190, y + 3);
     };
 
@@ -289,7 +294,8 @@ export default function PermisosPage() {
     doc.setFont('helvetica', 'bold');
     doc.text('DESCRIPCIÓN DEL MOTIVO:', col1, catY + 12);
     doc.setFont('helvetica', 'normal');
-    doc.setDrawColor(203, 213, 225);
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
     doc.rect(20, catY + 16, 170, 35);
     const splitMotivo = doc.splitTextToSize(permit.motivo || 'Sin descripción detallada.', 160);
     doc.text(splitMotivo, 25, catY + 23);
@@ -335,7 +341,7 @@ export default function PermisosPage() {
       {/* Header */}
       <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <Image src="/logo.png" alt="Logo" width={64} height={64} style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
+          <Image src="/logo_florida.png" alt="Logo" width={160} height={50} style={{ objectFit: 'contain' }} />
           <div>
             <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>

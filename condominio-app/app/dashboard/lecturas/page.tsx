@@ -36,7 +36,7 @@ export default function LecturasPage() {
 
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
-  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([]);
+  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([new Date().getFullYear()]);
   const [importing, setImporting] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [syncQueue, setSyncQueue] = useState<any[]>([]);
@@ -150,6 +150,8 @@ export default function LecturasPage() {
       if (error) throw error;
       
       const aniosSet = new Set<number>();
+      aniosSet.add(new Date().getFullYear()); // Asegurar año actual
+      
       (data || []).forEach((l: any) => {
         const anio = new Date(l.fecha).getFullYear();
         aniosSet.add(anio);
@@ -828,9 +830,9 @@ export default function LecturasPage() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-            <span style={{ fontSize: '1rem' }}>↓</span> Exportar a Excel
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 180px)', alignItems: 'center', gap: '1rem' }}>
+          <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+            <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
           </button>
           
           <input
@@ -840,14 +842,14 @@ export default function LecturasPage() {
             accept=".xlsx,.xls,.csv"
             style={{ display: 'none' }}
           />
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
             {importing ? '◌ Importando...' : '↑ Importar Excel'}
           </button>
-          
-          <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '0.08em', textTransform: 'capitalize' }}>
-            {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </span>
         </div>
+        
+        <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '0.08em', textTransform: 'capitalize' }}>
+          {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </span>
       </nav>
 
       {/* Banner de Sincronización / Offline */}
@@ -956,7 +958,7 @@ export default function LecturasPage() {
                 onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
               >
-                {ANIOS.map((y: any) => (
+                {aniosDisponibles.map((y: number) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
