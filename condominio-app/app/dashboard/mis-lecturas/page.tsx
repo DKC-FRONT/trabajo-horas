@@ -29,7 +29,6 @@ const ACCENT = '#60a5fa';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const currY = new Date().getFullYear();
-const ANIOS = Array.from({ length: currY - 2024 + 2 }, (_, i) => 2024 + i);
 
 export default function MisLecturasPage() {
   const [user, setUser]           = useState<UserSession | null>(null);
@@ -38,6 +37,7 @@ export default function MisLecturasPage() {
   const [errorMsg, setErrorMsg]   = useState('');
   const [visible, setVisible]     = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [aniosDisponibles, setAniosDisponibles] = useState<number[]>([new Date().getFullYear()]);
 
   const [mes, setMes]   = useState('');
   const [anio, setAnio] = useState(String(new Date().getFullYear()));
@@ -77,8 +77,23 @@ export default function MisLecturasPage() {
     };
 
     init();
+    fetchAniosDisponibles();
     setTimeout(() => setVisible(true), 50);
   }, []);
+
+  const fetchAniosDisponibles = async () => {
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('lecturas_agua').select('fecha');
+      const yearsSet = new Set<number>();
+      yearsSet.add(new Date().getFullYear());
+      (data || []).forEach(r => yearsSet.add(new Date(r.fecha).getFullYear()));
+      setAniosDisponibles(Array.from(yearsSet).sort((a, b) => a - b));
+    } catch (err) {
+      console.log('Error años:', err);
+    }
+  };
 
   /**
    * Hook que re-carga las lecturas cuando cambia el usuario o los filtros.
@@ -200,10 +215,10 @@ export default function MisLecturasPage() {
             <div>
               <label style={{ display: 'block', fontSize: '0.55rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.35rem' }}>Mes</label>
               <select value={mes} onChange={e => setMes(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: mes ? '#ffffff' : 'rgba(255,255,255,0.4)', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '120px', transition: 'border 0.2s' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '120px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
-                <option value="" style={{ background: '#0a0a0f' }}>Todos</option>
-                {MESES.map((m, i) => <option key={i+1} value={i+1} style={{ background: '#0a0a0f' }}>{m}</option>)}
+                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todos</option>
+                {MESES.map((m, i) => <option key={i+1} value={i+1} style={{ background: '#0a0a0f', color: '#fff' }}>{m}</option>)}
               </select>
             </div>
             <div>
@@ -211,8 +226,8 @@ export default function MisLecturasPage() {
               <select value={anio} onChange={e => setAnio(e.target.value)}
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '90px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
-                <option value="" style={{ background: '#0a0a0f' }}>Todos</option>
-                {ANIOS.map((y: any) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
+                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todos</option>
+                {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>)}
               </select>
             </div>
             {(mes || anio !== String(new Date().getFullYear())) && (
@@ -320,7 +335,7 @@ export default function MisLecturasPage() {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        select option { background: #0a0a0f; }
+        select option { background: #0a0a0f; color: #fff; }
         ::placeholder { color: rgba(255,255,255,0.18) !important; }
       `}</style>
     </div>

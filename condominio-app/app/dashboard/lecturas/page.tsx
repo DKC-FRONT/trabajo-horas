@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const currY = new Date().getFullYear();
-const ANIOS = Array.from({ length: currY - 2024 + 2 }, (_, i) => 2024 + i);
 
 type Casa = { id: number; numero_casa: string };
 type Lectura = {
