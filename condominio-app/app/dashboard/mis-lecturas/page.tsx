@@ -28,7 +28,7 @@ type Lectura = {
 const ACCENT = '#60a5fa';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const currY = new Date().getFullYear();
+
 
 export default function MisLecturasPage() {
   const [user, setUser]           = useState<UserSession | null>(null);
