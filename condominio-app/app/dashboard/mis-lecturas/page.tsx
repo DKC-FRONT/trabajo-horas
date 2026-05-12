@@ -88,7 +88,7 @@ export default function MisLecturasPage() {
       const { data } = await supabase.from('lecturas_agua').select('fecha');
       const yearsSet = new Set<number>();
       yearsSet.add(new Date().getFullYear());
-      (data || []).forEach(r => yearsSet.add(new Date(r.fecha).getFullYear()));
+      (data || []).forEach((r: any) => yearsSet.add(new Date(r.fecha).getFullYear()));
       setAniosDisponibles(Array.from(yearsSet).sort((a, b) => a - b));
     } catch (err) {
       console.log('Error años:', err);
