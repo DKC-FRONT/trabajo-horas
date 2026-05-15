@@ -32,6 +32,7 @@ export default function LecturasPage() {
   const [focused, setFocused] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
 
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
@@ -248,6 +249,33 @@ export default function LecturasPage() {
   };
 
   /**
+   * Carga los datos de una lectura en el formulario para editarla
+   */
+  const handleEditStart = (l: Lectura) => {
+    setEditId(l.id);
+    const casa = casas.find(c => c.numero_casa === l.numero_casa);
+    setForm({
+      casa_id: casa ? String(casa.id) : '',
+      lectura_anterior: String(l.lectura_anterior),
+      lectura_actual: String(l.lectura_actual),
+      fecha: l.fecha
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSuccess('Editando registro #' + l.id);
+  };
+
+  const handleCancelEdit = () => {
+    setEditId(null);
+    setForm({
+      casa_id: '',
+      lectura_anterior: '',
+      lectura_actual: '',
+      fecha: new Date().toISOString().split('T')[0],
+    });
+    setFormErrors({});
+  };
+
+  /**
    * Carga inicial de datos: casas (para el select) y lecturas (para la tabla)
    */
   const loadData = async () => {
@@ -392,6 +420,22 @@ export default function LecturasPage() {
         // MODO OFFLINE: Guardar en cola local
         setSyncQueue(prev => [...prev, nuevaLectura]);
         setSuccess('¡Guardado LOCALMENTE! No tienes internet. Sincroniza cuando tengas señal.');
+      } else if (editId) {
+        // MODO ONLINE: Actualizar en Supabase
+        const { error } = await supabase
+          .from('lecturas_agua')
+          .update({
+            casa_id: nuevaLectura.casa_id,
+            lectura_anterior: nuevaLectura.lectura_anterior,
+            lectura_actual: nuevaLectura.lectura_actual,
+            consumo_cobrar: nuevaLectura.consumo_cobrar,
+            valor: nuevaLectura.valor,
+            fecha: nuevaLectura.fecha
+          })
+          .eq('id', editId);
+
+        if (error) throw error;
+        setSuccess('Lectura actualizada correctamente.');
       } else {
         // MODO ONLINE: Guardar en Supabase
         const { error } = await supabase
@@ -409,16 +453,10 @@ export default function LecturasPage() {
         setSuccess('Lectura guardada en Supabase correctamente.');
       }
 
-      setForm({
-        casa_id: '',
-        lectura_anterior: '',
-        lectura_actual: '',
-        fecha: new Date().toISOString().split('T')[0],
-      });
-      setFormErrors({});
+      handleCancelEdit();
       await fetchLecturas();
     } catch (err: any) {
-      setError('Error al guardar: ' + err.message);
+      setError('Error al procesar: ' + err.message);
     } finally {
       setSaving(false);
     }
@@ -1010,10 +1048,10 @@ export default function LecturasPage() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '1rem', gap: '0.5rem' }}>
                 <div>
                   <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
-                    Formulario
+                    {editId ? `Modificando registro #${editId}` : 'Formulario'}
                   </p>
                   <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
-                    Nueva Lectura
+                    {editId ? 'ACTUALIZAR LECTURA' : 'Nueva Lectura'}
                   </h2>
                 </div>
                 <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa', padding: '0.1rem 0.3rem', border: '1px solid rgba(96,165,250,0.3)' }}>
@@ -1098,11 +1136,17 @@ export default function LecturasPage() {
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={handleSubmit} disabled={saving} style={{ padding: '0.5rem 1.5rem', fontSize: '0.7rem', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', background: saving ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, rgba(96,165,250,0.15) 0%, rgba(147,51,234,0.15) 100%)', border: saving ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(96,165,250,0.35)', color: saving ? 'rgba(255,255,255,0.25)' : '#ffffff' }}>
                   {saving ? (
-                    <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Guardando...</>
+                    <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Procesando...</>
                   ) : (
-                    <>→ Guardar lectura</>
+                    <>{editId ? '💾 GUARDAR CAMBIOS' : '→ Guardar lectura'}</>
                   )}
                 </button>
+
+                {editId && (
+                  <button onClick={handleCancelEdit} style={{ marginLeft: '1rem', padding: '0.5rem 1.5rem', fontSize: '0.7rem', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff' }}>
+                    ✕ Cancelar Edición
+                  </button>
+                )}
               </div>
             </section>
 
@@ -1157,8 +1201,11 @@ export default function LecturasPage() {
                               {cell.val}
                             </td>
                           ))}
-                          <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>
-                            <button onClick={() => eliminar(l.id)} disabled={deletingId === l.id} style={{ background: 'rgba(248,113,113,0.2)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.2rem 0.5rem', fontSize: '0.6rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
+                          <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                            <button onClick={() => handleEditStart(l)} style={{ background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.2rem 0.5rem', fontSize: '0.6rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
+                              ✎
+                            </button>
+                            <button onClick={() => eliminar(l.id)} disabled={deletingId === l.id} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.2rem 0.5rem', fontSize: '0.6rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
                               {deletingId === l.id ? '◌' : '✕'}
                             </button>
                           </td>

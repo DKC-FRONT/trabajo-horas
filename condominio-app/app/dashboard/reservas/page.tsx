@@ -136,6 +136,7 @@ export default function ReservasPage() {
   const [filtroTablaCasa, setFiltroTablaCasa] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
 
   const reservasFiltradas = reservas.filter((r: any) => {
     if (!filtroTablaCasa) return true;
@@ -271,6 +272,32 @@ export default function ReservasPage() {
   const valorEstimado = calcularValor(area, fecha, horaInicio, horaFin);
 
   /**
+   * Carga los datos de una reserva en el formulario para editarla
+   */
+  const handleEditStart = (r: Reserva) => {
+    setEditId(r.id);
+    setArea(r.area);
+    setFecha(r.fecha_reserva);
+    // Parsear horas de "HH:MM" a number
+    setHoraInicio(parseInt(r.hora_inicio.split(':')[0]));
+    setHoraFin(parseInt(r.hora_fin.split(':')[0]));
+    setCasaSeleccionada(String(r.casa_id));
+    
+    // Hacer scroll suave hacia arriba para ver el formulario
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    notify('Editando reserva #' + r.id);
+  };
+
+  const handleCancelEdit = () => {
+    setEditId(null);
+    setArea(AREAS[0]);
+    setFecha('');
+    setHoraInicio(10);
+    setHoraFin(12);
+    if (user?.rol === 'admin') setCasaSeleccionada('');
+  };
+
+  /**
    * Crea una nueva solicitud de reserva en la tabla 'reservations'
    */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,34 +317,44 @@ export default function ReservasPage() {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
 
-      await supabase
-      .from('reservas')
-      .select('id')
-      .eq('area', area)
-      .eq('fecha', fecha)
-      .eq('estado', 'aprobada')
-      .maybeSingle();
+      if (editId) {
+        // ACTUALIZAR EXISTENTE
+        const { error } = await supabase
+          .from('reservas')
+          .update({
+            casa_id: casaId,
+            area: area,
+            fecha: fecha,
+            hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
+            hora_fin: horaFin.toString().padStart(2, '0') + ':00',
+            valor: valorEstimado,
+          })
+          .eq('id', editId);
 
-      const { error } = await supabase
-        .from('reservas')
-        .insert([{
-          casa_id: casaId,
-          area: area,
-          fecha: fecha,
-          hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
-          hora_fin: horaFin.toString().padStart(2, '0') + ':00',
-          valor: valorEstimado,
-          estado: 'pendiente'
-        }]);
+        if (error) throw error;
+        notify('Reserva actualizada exitosamente');
+      } else {
+        // CREAR NUEVA
+        const { error } = await supabase
+          .from('reservas')
+          .insert([{
+            casa_id: casaId,
+            area: area,
+            fecha: fecha,
+            hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
+            hora_fin: horaFin.toString().padStart(2, '0') + ':00',
+            valor: valorEstimado,
+            estado: 'pendiente'
+          }]);
 
-      if (error) throw error;
+        if (error) throw error;
+        notify('Solicitud de reserva enviada a Supabase');
+      }
       
-      notify('Solicitud de reserva enviada a Supabase');
-      setFecha(''); setHoraInicio(10); setHoraFin(12);
-      if (user?.rol === 'admin') setCasaSeleccionada('');
+      handleCancelEdit();
       await fetchReservas();
     } catch (err: any) {
-      notify('Error al reservar: ' + err.message, true);
+      notify('Error al procesar: ' + err.message, true);
     } finally {
       setFormLoading(false);
     }
@@ -445,8 +482,12 @@ export default function ReservasPage() {
 
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Nueva solicitud</p>
-              <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>RESERVAR ÁREA COMÚN</h2>
+              <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>
+                {editId ? `Modificando ID #${editId}` : 'Nueva solicitud'}
+              </p>
+              <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                {editId ? 'ACTUALIZAR DATOS' : 'RESERVAR ÁREA COMÚN'}
+              </h2>
             </div>
             <div style={{ textAlign: 'right' }}>
                <span style={{ fontSize: '1rem', fontWeight: 700, color: valorEstimado > 0 ? ACCENT : '#ffffff' }}>
@@ -537,10 +578,28 @@ export default function ReservasPage() {
                 onMouseLeave={e => { if (!formLoading && valorEstimado > 0) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}25, ${ACCENT}10)`; }}
               >
                 {formLoading
-                  ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Enviando...</>
-                  : <>→ Solicitar</>}
+                  ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Procesando...</>
+                  : <>{editId ? '💾 Guardar Cambios' : '→ Solicitar'}</>}
               </button>
             </div>
+
+            {editId && (
+              <div>
+                <button type="button" onClick={handleCancelEdit}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#fff',
+                    padding: '0.65rem 1.5rem', fontSize: '0.75rem', letterSpacing: '0.1em',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit', fontWeight: 600,
+                    height: '100%',
+                  }}
+                >
+                  Cancelar Edición
+                </button>
+              </div>
+            )}
           </form>
         </div>
       )}
@@ -610,7 +669,7 @@ export default function ReservasPage() {
                   const fechaFmt = new Date(r.fecha_reserva + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
                   // Verificar si es propietario de la reserva
                   const esPropietario = user?.rol === 'residente' && user?.casa_id === r.casa_id;
-                  const canCancel = r.estado === 'pendiente' && (user?.rol === 'admin' || esPropietario);
+                  const canDelete = user?.rol === 'admin' || (esPropietario && r.estado === 'pendiente');
 
                   return (
                     <tr key={r.id}
@@ -660,12 +719,21 @@ export default function ReservasPage() {
                               </button>
                             </>
                           )}
-                          {canCancel && (
+                          {/* Botón Editar para Admin o Propietario si está pendiente */}
+                          {(user?.rol === 'admin' || (esPropietario && r.estado === 'pendiente')) && (
+                            <button onClick={() => handleEditStart(r)}
+                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#ffffff', padding: '0.3rem 0.65rem', fontSize: '0.62rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                              onMouseEnter={e => { e.currentTarget.style.color = ACCENT; e.currentTarget.style.borderColor = ACCENT; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}>
+                              Editar
+                            </button>
+                          )}
+                          {canDelete && (
                             <button onClick={() => handleDelete(r.id)}
-                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255, 255, 255, 1)', padding: '0.3rem 0.65rem', fontSize: '0.62rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255, 255, 255, 1)', padding: '0.3rem 0.65rem', fontSize: '0.62rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', textTransform: 'uppercase' }}
                               onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.5)'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
                               onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'transparent'; }}>
-                              Cancelar
+                              Eliminar
                             </button>
                           )}
                         </div>
