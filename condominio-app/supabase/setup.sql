@@ -62,7 +62,20 @@ CREATE TABLE avisos (
     creado_el TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. Tabla de Reservas de Áreas Comunes
+-- 8. Tabla de Tareas Semanales
+CREATE TABLE tareas_semana (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    semana_key TEXT NOT NULL,
+    dia TEXT NOT NULL,
+    hora TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
+    usuario_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    usuario_nombre TEXT,
+    completado BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Tabla de Reservas de Áreas Comunes
 CREATE TABLE reservas (
     id SERIAL PRIMARY KEY,
     casa_id INTEGER NOT NULL REFERENCES casas(id) ON DELETE CASCADE,
