@@ -45,6 +45,9 @@ export default function ReportesPage() {
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [data, setData]       = useState<ReporteData | null>(null);
+  const [casas, setCasas]     = useState<any[]>([]);
+  const [filtroCasa, setFiltroCasa] = useState('');
+  const [casaComparativo, setCasaComparativo] = useState('');
   const [limiteBasico, setLimiteBasico] = useState(60);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
@@ -100,7 +103,7 @@ export default function ReportesPage() {
     fetchReporte();
     setTimeout(() => setVisible(true), 50);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mesSeleccionado, anioSeleccionado, mesInicio, anioInicio, mesFin, anioFin]);
+  }, [mesSeleccionado, anioSeleccionado, mesInicio, anioInicio, mesFin, anioFin, casaComparativo]);
 
   /**
    * Genera el reporte completo consultando Supabase y procesando los datos localmente.
@@ -122,6 +125,7 @@ export default function ReportesPage() {
       if (configRes.data && configRes.data.length > 0) {
         setLimiteBasico(Number(configRes.data[0].valor) || 60);
       }
+      setCasas(casasData || []);
 
       // 2. Obtener lecturas del mes actual seleccionado
       const inicioMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01`;
@@ -137,17 +141,29 @@ export default function ReportesPage() {
         .lte('fecha', finMes);
       if (lecturasErr) throw lecturasErr;
 
-      // 3. Procesar datos del mes (Ordenados numéricamente)
-      const porCasa: LecturaRow[] = (lecturasMes || []).map((l: any) => ({
-        // Usamos el ID de la casa si el Join falla por alguna razón
-        numero_casa: l.casas?.numero_casa || `Casa ${l.casa_id}`,
-        lectura_anterior: Number(l.lectura_anterior) || 0,
-        lectura_actual: Number(l.lectura_actual) || 0,
-        consumo: Number(l.consumo) || Math.max(0, Number(l.lectura_actual || 0) - Number(l.lectura_anterior || 0)),
-        consumo_cobrar: Number(l.consumo_cobrar) || 0,
-        valor: Number(l.valor) || 0,
-        fecha: l.fecha
-      })).sort((a: any, b: any) => {
+      // 3. Procesar datos del mes y asegurar que aparezcan todas las casas en la base
+      const lecturasPorCasa: Record<string, any> = {};
+      (lecturasMes || []).forEach((l: any) => {
+        lecturasPorCasa[l.casa_id] = l;
+      });
+
+      const porCasa: LecturaRow[] = (casasData || []).map((c: any) => {
+        const lectura = lecturasPorCasa[c.id];
+        const lecturaAnterior = lectura ? Number(lectura.lectura_anterior) || 0 : 0;
+        const lecturaActual = lectura ? Number(lectura.lectura_actual) || 0 : 0;
+        const consumo = lectura
+          ? Number(lectura.consumo) || Math.max(0, lecturaActual - lecturaAnterior)
+          : 0;
+        return {
+          numero_casa: c.numero_casa,
+          lectura_anterior: lecturaAnterior,
+          lectura_actual: lecturaActual,
+          consumo,
+          consumo_cobrar: lectura ? Number(lectura.consumo_cobrar) || 0 : 0,
+          valor: lectura ? Number(lectura.valor) || 0 : 0,
+          fecha: lectura?.fecha || ''
+        };
+      }).sort((a: any, b: any) => {
         const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
         const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
         return numA - numB;
@@ -167,12 +183,19 @@ export default function ReportesPage() {
       const ultimoDiaFin = new Date(anioFin, mesFin, 0).getDate();
       const fechaFinComp = `${anioFin}-${String(mesFin).padStart(2, '0')}-${ultimoDiaFin}`;
       
-      const { data: lecturasHistorico } = await supabase
+      const query = supabase
         .from('lecturas_agua')
         .select('*')
         .gte('fecha', fechaInicioComp)
-        .lte('fecha', fechaFinComp)
-        .order('fecha', { ascending: true });
+        .lte('fecha', fechaFinComp);
+
+      const finalQuery = casaComparativo
+        ? query.eq('casa_id', Number(casaComparativo))
+        : query;
+
+      const { data: lecturasHistorico } = await finalQuery.order('fecha', { ascending: true });
+
+      const totalCasasHistorico = casaComparativo ? 1 : resumen.total_casas;
 
       // Agrupar por mes/año para el comparativo
       const historicoMap: Record<string, Comparativo> = {};
@@ -334,6 +357,13 @@ export default function ReportesPage() {
       alert('Error al generar el Excel');
     }
   };
+
+  const filteredPorCasa = data
+    ? data.porCasa.filter((l) => {
+        if (!filtroCasa.trim()) return true;
+        return l.numero_casa?.toString().toLowerCase().includes(filtroCasa.toLowerCase());
+      })
+    : [];
 
   const maxConsumo = data
     ? Math.max(...data.comparativo.map((c) => Number(c.consumo_total)), 1)
@@ -538,13 +568,32 @@ export default function ReportesPage() {
           {/* ── Tab: Todas las casas ── */}
           {tab === 'detalle' && (
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
-                  TODAS LAS CASAS — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]}</span>
-                </h2>
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{data.porCasa.length} registros</span>
+              <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
+                    TODAS LAS CASAS — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]}</span>
+                  </h2>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Filtrar casa</span>
+                    <select
+                      value={filtroCasa}
+                      onChange={(e) => setFiltroCasa(e.target.value)}
+                      style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todas las casas</option>
+                      {casas.map((c: any) => (
+                        <option key={c.id} value={c.numero_casa} style={{ background: '#0a0a0f', color: '#fff' }}>
+                          Casa {c.numero_casa}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{filteredPorCasa.length} registros</span>
+                </div>
               </div>
-              {data.porCasa.length === 0 ? (
+              {filteredPorCasa.length === 0 ? (
                 <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.85rem' }}>
                   Sin lecturas registradas este mes
                 </div>
@@ -559,7 +608,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.porCasa.map((l, i) => (
+                      {filteredPorCasa.map((l, i) => (
                         <tr key={i}
                           style={{
                             background: hoveredRow === i + 100 ? `${ACCENT}08` : i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.012)',
@@ -631,6 +680,16 @@ export default function ReportesPage() {
                       {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
+                  <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Casa</span>
+                  <select value={casaComparativo} onChange={(e) => setCasaComparativo(e.target.value)}
+                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', padding: '0.35rem 0.65rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}>
+                    <option value="" style={{ background: '#0a0a0f' }}>Todas las casas</option>
+                    {casas.map((c: any) => (
+                      <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>Casa {c.numero_casa}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

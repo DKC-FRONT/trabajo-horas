@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Droplets,      label: 'Lecturas',      route: '/dashboard/lecturas',      roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
   { icon: Home,          label: 'Casas',         route: '/dashboard/casas',         roles: ['admin', 'trabajador'],  accent: '#f472b6' },
   { icon: FileBarChart2, label: 'Reportes',      route: '/dashboard/reportes',      roles: ['admin', 'trabajador'],  accent: '#fb923c' },
+  { icon: CalendarCheck, label: 'Semana',        route: '/dashboard/semana',        roles: ['admin', 'trabajador'],  accent: '#38bdf8' },
   { icon: Clock,         label: 'Asistencia',    route: '/dashboard/asistencia',    roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
   { icon: FileText,      label: 'Permisos',      route: '/dashboard/permisos',      roles: ['admin', 'trabajador'],  accent: '#a78bfa' },
   { icon: Shield,        label: 'Dotación',      route: '/dashboard/dotacion',      roles: ['admin'],                accent: '#2b7a2b' },

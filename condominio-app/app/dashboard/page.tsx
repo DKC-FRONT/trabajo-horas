@@ -29,6 +29,7 @@ const NAV_MODULES: NavModule[] = [
   { icon: Droplets,      label: 'Lecturas de Agua', desc: 'Registro y seguimiento de consumo',      route: '/dashboard/lecturas',      accent: '#60a5fa', roles: ['admin','trabajador'] as Rol[] },
   { icon: Home,          label: 'Casas',            desc: 'Directorio de unidades residenciales',  route: '/dashboard/casas',         accent: '#f472b6', roles: ['admin','trabajador'] as Rol[] },
   { icon: FileBarChart2, label: 'Reportes',         desc: 'Análisis histórico y exportación',   route: '/dashboard/reportes',      accent: '#fb923c', roles: ['admin','trabajador'] as Rol[] },
+  { icon: CalendarCheck, label: 'Semana',           desc: 'Plan y tareas semanales',            route: '/dashboard/semana',        accent: '#38bdf8', roles: ['admin','trabajador'] as Rol[] },
   { icon: Clock,         label: 'Asistencia',       desc: 'Registro de entrada y salida',           route: '/dashboard/asistencia',    accent: '#60a5fa', roles: ['admin','trabajador'] as Rol[] },
   { icon: FileText,      label: 'Permisos',         desc: 'Gestión de inasistencias y permisos',    route: '/dashboard/permisos',      accent: '#a78bfa', roles: ['admin','trabajador'] as Rol[] },
   { icon: Shield,        label: 'Dotación',         desc: 'Entrega de elementos de protección',     route: '/dashboard/dotacion',      accent: '#2b7a2b', roles: ['admin'] as Rol[] },
