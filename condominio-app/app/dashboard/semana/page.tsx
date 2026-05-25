@@ -23,10 +23,16 @@ type UserProfile = {
 };
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-const HORAS = Array.from({ length: 8 }, (_, i) => {
-  const h = 6 + i;
-  return `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
-});
+
+function getHoraStart(horaStr: string) {
+  const parts = horaStr.split('-')[0].trim().split(':');
+  if (parts.length > 0 && parts[0]) {
+    const h = parts[0].padStart(2, '0');
+    const m = (parts[1] || '00').padEnd(2, '0');
+    return `${h}:${m}`;
+  }
+  return '06:00';
+}
 
 function getMonday(date: Date) {
   const d = new Date(date);
@@ -56,6 +62,45 @@ export default function SemanaPage() {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
+  // Horas del Cronograma
+  const [horas, setHoras] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('semana_horas');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      }
+    }
+    return Array.from({ length: 8 }, (_, i) => {
+      const h = 6 + i;
+      return `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
+    });
+  });
+
+  // Persistir horas
+  useEffect(() => {
+    localStorage.setItem('semana_horas', JSON.stringify(horas));
+  }, [horas]);
+
+  // Edición de horas
+  const [editingHoraIndex, setEditingHoraIndex] = useState<number | null>(null);
+  const [editingHoraValue, setEditingHoraValue] = useState('');
+
+  // Cola de sincronización offline
+  const [semanaSyncQueue, setSemanaSyncQueue] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('semana_sync_queue');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      }
+    }
+    return [];
+  });
+
+  // Persistir cola
+  useEffect(() => {
+    localStorage.setItem('semana_sync_queue', JSON.stringify(semanaSyncQueue));
+  }, [semanaSyncQueue]);
+
   const semanaKey = getSemanaKey(weekStart);
 
   useEffect(() => {
@@ -76,6 +121,73 @@ export default function SemanaPage() {
     };
   }, []);
 
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSincronizarSemana = async () => {
+    if (semanaSyncQueue.length === 0 || syncing) return;
+    setSyncing(true);
+    setStatusMessage('Sincronizando tareas...');
+
+    const tempIdMap: Record<string, string> = {}; // Mapeo de tempId a ID real
+    const remainingQueue = [...semanaSyncQueue];
+
+    try {
+      while (remainingQueue.length > 0) {
+        const action = remainingQueue[0];
+
+        if (action.type === 'create') {
+          const response = await fetch('/api/semana', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(action.data),
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(data?.error || 'Fallo al sincronizar creación.');
+
+          if (data && data.id) {
+            tempIdMap[action.tempId] = data.id;
+          }
+        }
+        else if (action.type === 'toggle') {
+          const realId = action.id.startsWith('temp-') ? tempIdMap[action.id] : action.id;
+          if (realId) {
+            const response = await fetch('/api/semana', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: realId, completado: action.completado }),
+            });
+            if (!response.ok) throw new Error('Fallo al sincronizar completado.');
+          }
+        }
+        else if (action.type === 'delete') {
+          const realId = action.id.startsWith('temp-') ? tempIdMap[action.id] : action.id;
+          if (realId) {
+            const response = await fetch('/api/semana', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: realId }),
+            });
+            if (!response.ok) throw new Error('Fallo al sincronizar eliminación.');
+          }
+        }
+
+        remainingQueue.shift(); // Quitar el elemento exitoso
+      }
+
+      setSemanaSyncQueue([]);
+      localStorage.removeItem('semana_sync_queue');
+      setStatusMessage('¡Sincronización exitosa!');
+      await fetchTasks();
+    } catch (err: any) {
+      console.error('Error durante la sincronización:', err);
+      setSemanaSyncQueue(remainingQueue);
+      setStatusMessage(`Error al sincronizar: ${err.message}. Volviendo a encolar.`);
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setStatusMessage(''), 4000);
+    }
+  };
+
   const fetchTasks = useCallback(async () => {
     if (!user) return;
     try {
@@ -85,7 +197,7 @@ export default function SemanaPage() {
         const errorMessage = data?.error || data?.message || response.statusText || 'Error al cargar tareas.';
         throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error al cargar tareas.');
       }
-      setTareas((data || []).map((item: any) => ({
+      const loaded = (data || []).map((item: any) => ({
         id: item.id,
         semanaKey: item.semana_key,
         dia: item.dia,
@@ -95,9 +207,23 @@ export default function SemanaPage() {
         usuarioNombre: item.usuario_nombre,
         completado: item.completado ?? false,
         createdAt: item.created_at,
-      })));
+      }));
+      setTareas(loaded);
+
+      // Guardar en caché
+      localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(loaded));
     } catch (err: any) {
       console.error('Error fetchTasks:', err);
+
+      // Cargar desde caché en caso de fallo (offline)
+      const cached = localStorage.getItem(`semana_tasks_cache_${semanaKey}`);
+      if (cached) {
+        try {
+          setTareas(JSON.parse(cached));
+          setStatusMessage('Cargado desde caché local (sin conexión).');
+          return;
+        } catch { }
+      }
       setStatusMessage(err.message || 'No se pudieron cargar las tareas.');
     }
   }, [semanaKey, user]);
@@ -135,8 +261,35 @@ export default function SemanaPage() {
   const handleGuardarTarea = async () => {
     if (!selectedCell || !newTaskDesc.trim() || !user) return;
 
-    const [horaStart] = selectedCell.hora.split(' - ')[0].split(':');
-    const hora = `${horaStart}:00`;
+    const start = getHoraStart(selectedCell.hora);
+    const hora = `${start}:00`;
+
+    const tempId = `temp-${Date.now()}`;
+    const nuevaTarea: SemanaTarea = {
+      id: tempId,
+      semanaKey,
+      dia: selectedCell.dia,
+      hora,
+      descripcion: newTaskDesc.trim(),
+      usuarioId: user.id,
+      usuarioNombre: user.nombre_completo || 'Trabajador',
+      completado: false,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!isOnline) {
+      const action = { type: 'create', tempId, data: { semanaKey, dia: selectedCell.dia, hora, descripcion: newTaskDesc.trim() } };
+      setSemanaSyncQueue(prev => [...prev, action]);
+
+      const nuevasTareas = [...tareas, nuevaTarea];
+      setTareas(nuevasTareas);
+      localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
+
+      setNewTaskDesc('');
+      setSelectedCell(null);
+      setStatusMessage('Guardado localmente. Se sincronizará al recuperar conexión.');
+      return;
+    }
 
     try {
       setStatusMessage('Guardando tarea...');
@@ -160,20 +313,21 @@ export default function SemanaPage() {
         throw new Error('No se recibieron datos de la tarea creada.');
       }
 
-      setTareas((prev) => [
-        ...prev,
-        {
-          id: data.id,
-          semanaKey: data.semana_key,
-          dia: data.dia,
-          hora: data.hora,
-          descripcion: data.descripcion,
-          usuarioId: data.usuario_id,
-          usuarioNombre: data.usuario_nombre,
-          completado: data.completado ?? false,
-          createdAt: data.created_at,
-        },
-      ]);
+      const savedTask = {
+        id: data.id,
+        semanaKey: data.semana_key,
+        dia: data.dia,
+        hora: data.hora,
+        descripcion: data.descripcion,
+        usuarioId: data.usuario_id,
+        usuarioNombre: data.usuario_nombre,
+        completado: data.completado ?? false,
+        createdAt: data.created_at,
+      };
+
+      const nuevasTareas = [...tareas, savedTask];
+      setTareas(nuevasTareas);
+      localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
 
       setNewTaskDesc('');
       setSelectedCell(null);
@@ -188,19 +342,36 @@ export default function SemanaPage() {
     const tarea = tareas.find((t) => t.id === id);
     if (!tarea) return;
 
+    const nuevoEstado = !tarea.completado;
+
+    const nuevasTareas = tareas.map((item) => item.id === id ? { ...item, completado: nuevoEstado } : item);
+    setTareas(nuevasTareas);
+    localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
+
+    if (!isOnline) {
+      if (id.startsWith('temp-')) {
+        setSemanaSyncQueue(prev => prev.map(item => item.tempId === id ? { ...item, data: { ...item.data, completado: nuevoEstado } } : item));
+      } else {
+        setSemanaSyncQueue(prev => {
+          const filtrado = prev.filter(item => !(item.type === 'toggle' && item.id === id));
+          return [...filtrado, { type: 'toggle', id, completado: nuevoEstado }];
+        });
+      }
+      setStatusMessage('Cambio guardado localmente (sin conexión).');
+      return;
+    }
+
     try {
       const response = await fetch('/api/semana', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, completado: !tarea.completado }),
+        body: JSON.stringify({ id, completado: nuevoEstado }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         const errorMessage = data?.error || data?.message || response.statusText || 'Error al actualizar.';
         throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error al actualizar.');
       }
-
-      setTareas((prev) => prev.map((item) => item.id === id ? { ...item, completado: !item.completado } : item));
     } catch (err: any) {
       console.error('Error actualizando tarea:', err);
       setStatusMessage(err.message || 'No se pudo actualizar la tarea.');
@@ -208,6 +379,25 @@ export default function SemanaPage() {
   };
 
   const handleEliminar = async (id: string) => {
+    if (!confirm('¿Seguro quieres eliminar esta tarea?')) return;
+
+    const nuevasTareas = tareas.filter((t) => t.id !== id);
+    setTareas(nuevasTareas);
+    localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
+
+    if (!isOnline) {
+      if (id.startsWith('temp-')) {
+        setSemanaSyncQueue(prev => prev.filter(item => item.tempId !== id));
+      } else {
+        setSemanaSyncQueue(prev => {
+          const filtrado = prev.filter(item => item.id !== id);
+          return [...filtrado, { type: 'delete', id }];
+        });
+      }
+      setStatusMessage('Eliminación guardada localmente (sin conexión).');
+      return;
+    }
+
     try {
       const response = await fetch('/api/semana', {
         method: 'DELETE',
@@ -219,8 +409,6 @@ export default function SemanaPage() {
         const errorMessage = data?.error || data?.message || response.statusText || 'Error al eliminar.';
         throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error al eliminar.');
       }
-
-      setTareas((prev) => prev.filter((t) => t.id !== id));
     } catch (err: any) {
       console.error('Error eliminando tarea:', err);
       setStatusMessage(err.message || 'No se pudo eliminar la tarea.');
@@ -238,7 +426,8 @@ export default function SemanaPage() {
     tareas
       .filter((t) => t.semanaKey === semanaKey)
       .forEach((t) => {
-        const key = `${t.dia}|${t.hora}`;
+        const normalizedHora = t.hora.substring(0, 5);
+        const key = `${t.dia}|${normalizedHora}`;
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(t);
       });
@@ -289,10 +478,29 @@ export default function SemanaPage() {
     const tarea = tareas.find((t) => t.id === draggedTaskId);
     if (!tarea) return;
 
-    const [horaStart] = hora.split(' - ')[0].split(':');
-    const newHora = `${horaStart}:00`;
+    const start = getHoraStart(hora);
+    const newHora = `${start}:00`;
 
     if (tarea.dia === dia && tarea.hora === newHora) {
+      setDraggedTaskId(null);
+      return;
+    }
+
+    // Actualizar localmente de inmediato
+    const nuevasTareas = tareas.map((t) => t.id === draggedTaskId ? { ...t, dia, hora: newHora } : t);
+    setTareas(nuevasTareas);
+    localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
+
+    if (!isOnline) {
+      if (draggedTaskId.startsWith('temp-')) {
+        setSemanaSyncQueue(prev => prev.map(item => item.tempId === draggedTaskId ? { ...item, data: { ...item.data, dia, hora: newHora } } : item));
+      } else {
+        setSemanaSyncQueue(prev => {
+          const filtrado = prev.filter(item => !(item.type === 'move' && item.id === draggedTaskId));
+          return [...filtrado, { type: 'move', id: draggedTaskId, dia, hora: newHora }];
+        });
+      }
+      setStatusMessage('Tarea movida localmente (sin conexión).');
       setDraggedTaskId(null);
       return;
     }
@@ -307,12 +515,6 @@ export default function SemanaPage() {
       if (!response.ok) {
         throw new Error('Error al mover la tarea');
       }
-
-      setTareas((prev) =>
-        prev.map((t) =>
-          t.id === draggedTaskId ? { ...t, dia, hora: newHora } : t
-        )
-      );
     } catch (err) {
       console.error('Error al mover tarea:', err);
       setStatusMessage('No se pudo mover la tarea');
@@ -391,6 +593,50 @@ export default function SemanaPage() {
         </div>
       </div>
 
+      {/* Sync Banner for Semana */}
+      {semanaSyncQueue.length > 0 && (
+        <div style={{
+          background: 'rgba(251,191,36,0.1)',
+          border: '1px solid rgba(251,191,36,0.3)',
+          borderRadius: '0.75rem',
+          padding: '1rem 1.25rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          animation: 'fadeIn 0.3s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.2rem', animation: 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
+            <div>
+              <div style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700 }}>Sincronización pendiente (Semana)</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+                Tienes {semanaSyncQueue.length} acciones guardadas localmente esperando conexión.
+              </div>
+            </div>
+          </div>
+          {isOnline && (
+            <button
+              onClick={handleSincronizarSemana}
+              disabled={syncing}
+              style={{
+                background: '#fbbf24',
+                border: 'none',
+                color: '#0b0f1a',
+                padding: '0.45rem 1rem',
+                borderRadius: '0.35rem',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {syncing ? 'Sincronizando...' : 'Sincronizar Ahora'}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Grid Table */}
       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', overflow: 'hidden' }}>
         <div
@@ -420,184 +666,329 @@ export default function SemanaPage() {
           </div>
 
           {/* Time Rows */}
-          {HORAS.map((hora) => (
-            <div key={`row-${hora}`} style={{ display: 'contents' }}>
-              {/* Time Label */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa' }}>
-                {hora}
-              </div>
+          {horas.map((hora, index) => {
+            const isEditing = editingHoraIndex === index;
 
-              {/* Day Cells */}
-              {DIAS.map((dia) => {
-                const horaStart = hora.split(' - ')[0];
-                const key = `${dia}|${horaStart}`;
-                const cellTareas = tareasPorCelda.get(key) || [];
-                const isSelected = selectedCell?.dia === dia && selectedCell?.hora === hora;
-
-                return (
-                  <div
-                    key={`${dia}-${hora}`}
-                    onDragOver={(e) => handleDragOver(e as any)}
-                    onDrop={(e) => handleDrop(e as any, dia, hora)}
-                    onClick={() => {
-                      if (!selectedCell) {
-                        setSelectedCell({ dia, hora });
-                      }
-                    }}
-                    style={{
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      padding: '0.75rem',
-                      minHeight: '100px',
-                      background: isSelected ? 'rgba(56,189,248,0.1)' : draggedTaskId ? 'rgba(56,189,248,0.05)' : 'rgba(255,255,255,0.01)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {cellTareas.length === 0 && !isSelected ? (
-                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        —
+            return (
+              <div key={`row-${index}`} style={{ display: 'contents' }}>
+                {/* Time Label */}
+                <div style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  padding: '0.75rem 0.5rem',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#60a5fa',
+                  position: 'relative'
+                }}>
+                  {isEditing ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', width: '100%' }}>
+                      <input
+                        type="text"
+                        value={editingHoraValue}
+                        onChange={(e) => setEditingHoraValue(e.target.value)}
+                        style={{
+                          background: 'rgba(0,0,0,0.4)',
+                          border: '1px solid #38bdf8',
+                          color: '#fff',
+                          fontSize: '0.7rem',
+                          padding: '0.25rem',
+                          borderRadius: '0.25rem',
+                          textAlign: 'center',
+                          width: '100%',
+                          outline: 'none',
+                        }}
+                        autoFocus
+                      />
+                      <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => {
+                            if (editingHoraValue.trim()) {
+                              const nuevasHoras = [...horas];
+                              nuevasHoras[index] = editingHoraValue.trim();
+                              setHoras(nuevasHoras);
+                            }
+                            setEditingHoraIndex(null);
+                          }}
+                          style={{
+                            background: '#34d399',
+                            border: 'none',
+                            borderRadius: '0.2rem',
+                            color: '#0b0f1a',
+                            fontSize: '0.65rem',
+                            padding: '0.15rem 0.4rem',
+                            cursor: 'pointer',
+                            fontWeight: 700
+                          }}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => setEditingHoraIndex(null)}
+                          style={{
+                            background: 'rgba(255,255,255,0.1)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '0.2rem',
+                            color: '#fff',
+                            fontSize: '0.65rem',
+                            padding: '0.15rem 0.4rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✕
+                        </button>
                       </div>
-                    ) : (
-                      <div style={{ display: 'grid', gap: '0.5rem' }}>
-                        {cellTareas.map((t) => (
-                          <div
-                            key={t.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e as any, t.id)}
-                            style={{
-                              background: t.completado ? 'rgba(52,211,153,0.15)' : 'rgba(251,191,36,0.15)',
-                              border: `1px solid ${t.completado ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'}`,
-                              borderRadius: '0.4rem',
-                              padding: '0.5rem',
-                              fontSize: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '0.5rem',
-                              cursor: draggedTaskId === t.id ? 'grabbing' : 'grab',
-                              opacity: draggedTaskId === t.id ? 0.5 : 1,
-                              transition: 'all 0.2s ease',
-                              transform: draggedTaskId === t.id ? 'scale(0.95)' : 'scale(1)',
-                            }}
-                          >
-                            <input
-                              type='checkbox'
-                              checked={t.completado}
-                              onChange={() => handleToggleCompletado(t.id)}
-                              style={{ marginTop: '0.15rem', cursor: 'pointer', accentColor: '#34d399' }}
-                            />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ textDecoration: t.completado ? 'line-through' : 'none', color: '#fff' }}>
-                                {t.descripcion}
-                              </div>
-                              {user?.rol === 'admin' && t.usuarioNombre && (
-                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
-                                  {t.usuarioNombre}
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEliminar(t.id);
-                              }}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                      <span style={{ cursor: 'pointer', borderBottom: '1px dashed rgba(96,165,250,0.3)', paddingBottom: '2px' }}
+                        onClick={() => {
+                          setEditingHoraIndex(index);
+                          setEditingHoraValue(hora);
+                        }}
+                        title="Haz clic para editar"
+                      >
+                        {hora}
+                      </span>
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Seguro quieres eliminar la fila del horario ${hora}?`)) {
+                            setHoras(horas.filter((_, i) => i !== index));
+                          }
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#f87171',
+                          fontSize: '0.6rem',
+                          marginTop: '0.35rem',
+                          cursor: 'pointer',
+                          opacity: 0.4,
+                          transition: 'opacity 0.2s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Day Cells */}
+                {DIAS.map((dia) => {
+                  const horaStart = getHoraStart(hora).substring(0, 5);
+                  const key = `${dia}|${horaStart}`;
+                  const cellTareas = tareasPorCelda.get(key) || [];
+                  const isSelected = selectedCell?.dia === dia && selectedCell?.hora === hora;
+
+                  return (
+                    <div
+                      key={`${dia}-${hora}`}
+                      onDragOver={(e) => handleDragOver(e as any)}
+                      onDrop={(e) => handleDrop(e as any, dia, hora)}
+                      onClick={() => {
+                        if (!selectedCell) {
+                          setSelectedCell({ dia, hora });
+                        }
+                      }}
+                      style={{
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        padding: '0.75rem',
+                        minHeight: '100px',
+                        background: isSelected ? 'rgba(56,189,248,0.1)' : draggedTaskId ? 'rgba(56,189,248,0.05)' : 'rgba(255,255,255,0.01)',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {cellTareas.length === 0 && !isSelected ? (
+                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          —
+                        </div>
+                      ) : (
+                        <div style={{ display: 'grid', gap: '0.5rem' }}>
+                          {cellTareas.map((t) => (
+                            <div
+                              key={t.id}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e as any, t.id)}
                               style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#f87171',
-                                cursor: 'pointer',
-                                padding: 0,
+                                background: t.completado ? 'rgba(52,211,153,0.15)' : 'rgba(251,191,36,0.15)',
+                                border: `1px solid ${t.completado ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'}`,
+                                borderRadius: '0.4rem',
+                                padding: '0.5rem',
+                                fontSize: '0.75rem',
                                 display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '0.5rem',
+                                cursor: draggedTaskId === t.id ? 'grabbing' : 'grab',
+                                opacity: draggedTaskId === t.id ? 0.5 : 1,
+                                transition: 'all 0.2s ease',
+                                transform: draggedTaskId === t.id ? 'scale(0.95)' : 'scale(1)',
+                              }}
+                            >
+                              <input
+                                type='checkbox'
+                                checked={t.completado}
+                                onChange={() => handleToggleCompletado(t.id)}
+                                style={{ marginTop: '0.15rem', cursor: 'pointer', accentColor: '#34d399' }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ textDecoration: t.completado ? 'line-through' : 'none', color: '#fff' }}>
+                                  {t.descripcion}
+                                </div>
+                                {user?.rol === 'admin' && t.usuarioNombre && (
+                                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
+                                    {t.usuarioNombre}
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEliminar(t.id);
+                                }}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#f87171',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  display: 'flex',
+                                  transition: 'all 0.2s',
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add New Task Form */}
+                      {isSelected && (
+                        <div
+                          style={{
+                            background: '#0b0f1a',
+                            border: '2px solid #38bdf8',
+                            borderRadius: '0.4rem',
+                            padding: '0.75rem',
+                            display: 'grid',
+                            gap: '0.5rem',
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <textarea
+                            value={newTaskDesc}
+                            onChange={(e) => setNewTaskDesc(e.target.value)}
+                            placeholder='Nueva tarea...'
+                            style={{
+                              fontSize: '0.75rem',
+                              padding: '0.5rem',
+                              borderRadius: '0.3rem',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              fontFamily: 'inherit',
+                              background: 'rgba(255,255,255,0.05)',
+                              color: '#fff',
+                              resize: 'vertical',
+                              minHeight: '50px',
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              onClick={handleGuardarTarea}
+                              style={{
+                                flex: 1,
+                                background: '#34d399',
+                                color: '#0b0f1a',
+                                border: 'none',
+                                borderRadius: '0.3rem',
+                                padding: '0.5rem',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
                                 transition: 'all 0.2s',
                               }}
                             >
-                              <Trash2 size={14} />
+                              Guardar
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedCell(null);
+                                setNewTaskDesc('');
+                              }}
+                              style={{
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                borderRadius: '0.3rem',
+                                padding: '0.5rem 1rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff',
+                              }}
+                            >
+                              <X size={14} />
                             </button>
                           </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Add New Task Form */}
-                    {isSelected && (
-                      <div
-                        style={{
-                          background: '#0b0f1a',
-                          border: '2px solid #38bdf8',
-                          borderRadius: '0.4rem',
-                          padding: '0.75rem',
-                          display: 'grid',
-                          gap: '0.5rem',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <textarea
-                          value={newTaskDesc}
-                          onChange={(e) => setNewTaskDesc(e.target.value)}
-                          placeholder='Nueva tarea...'
-                          style={{
-                            fontSize: '0.75rem',
-                            padding: '0.5rem',
-                            borderRadius: '0.3rem',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            fontFamily: 'inherit',
-                            background: 'rgba(255,255,255,0.05)',
-                            color: '#fff',
-                            resize: 'vertical',
-                            minHeight: '50px',
-                          }}
-                        />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button
-                            onClick={handleGuardarTarea}
-                            style={{
-                              flex: 1,
-                              background: '#34d399',
-                              color: '#0b0f1a',
-                              border: 'none',
-                              borderRadius: '0.3rem',
-                              padding: '0.5rem',
-                              cursor: 'pointer',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              transition: 'all 0.2s',
-                            }}
-                          >
-                            Guardar
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedCell(null);
-                              setNewTaskDesc('');
-                            }}
-                            style={{
-                              background: 'rgba(255,255,255,0.08)',
-                              border: '1px solid rgba(255,255,255,0.15)',
-                              borderRadius: '0.3rem',
-                              padding: '0.5rem 1rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#fff',
-                            }}
-                          >
-                            <X size={14} />
-                          </button>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      )}
+                    </div>
+                  );
+                })}
 
-              {/* Observations Cell */}
-              <div style={{ border: '1px solid rgba(255,255,255,0.08)', padding: '0.75rem', minHeight: '100px', background: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                —
+                {/* Observations Cell */}
+                <div style={{ border: '1px solid rgba(255,255,255,0.08)', padding: '0.75rem', minHeight: '100px', background: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  —
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      </div>
+
+      {/* Botones de acción del horario */}
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '1rem', gap: '1rem' }}>
+        <button
+          onClick={() => {
+            let nuevoHorario = '14:00 - 15:00';
+            if (horas.length > 0) {
+              const ultimaHora = horas[horas.length - 1];
+              const parts = ultimaHora.split('-')[1]?.trim().split(':') || ['14', '00'];
+              const h = parseInt(parts[0]) || 14;
+              nuevoHorario = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
+            }
+            setHoras([...horas, nuevoHorario]);
+            setEditingHoraIndex(horas.length);
+            setEditingHoraValue(nuevoHorario);
+          }}
+          style={{
+            background: 'rgba(56,189,248,0.1)',
+            border: '1px solid rgba(56,189,248,0.4)',
+            color: '#38bdf8',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(56,189,248,0.2)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(56,189,248,0.1)';
+          }}
+        >
+          ➕ Agregar Horario
+        </button>
       </div>
 
       {/* Status Message */}
@@ -675,7 +1066,7 @@ export default function SemanaPage() {
           </div>
         </div>
 
-        {/* Completion Rate */}
+        {/* Connection Rate */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.4s backwards' }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Tasa de completación

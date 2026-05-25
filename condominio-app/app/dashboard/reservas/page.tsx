@@ -126,6 +126,20 @@ export default function ReservasPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [visible, setVisible]   = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [showTarifasModal, setShowTarifasModal] = useState(false);
+
+  // Offline support
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+  const [syncing, setSyncing] = useState(false);
+  const [reservasSyncQueue, setReservasSyncQueue] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('reservas_sync_queue');
+      if (saved) { try { return JSON.parse(saved); } catch { return []; } }
+    }
+    return [];
+  });
 
   // Form
   const [area, setArea]           = useState(AREAS[0]);
@@ -142,6 +156,58 @@ export default function ReservasPage() {
     if (!filtroTablaCasa) return true;
     return String(r.casa_id) === filtroTablaCasa;
   });
+
+  // Persistir cola de sync
+  useEffect(() => {
+    localStorage.setItem('reservas_sync_queue', JSON.stringify(reservasSyncQueue));
+  }, [reservasSyncQueue]);
+
+  // Monitor online/offline
+  useEffect(() => {
+    const handleOnline  = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online',  handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online',  handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Sincronizar cola al recuperar conexión
+  const handleSincronizarReservas = async () => {
+    if (reservasSyncQueue.length === 0 || syncing) return;
+    setSyncing(true);
+    notify('Sincronizando reservas pendientes...');
+    const remaining = [...reservasSyncQueue];
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      while (remaining.length > 0) {
+        const action = remaining[0];
+        if (action.type === 'create') {
+          const { error } = await supabase.from('reservas').insert([action.data]);
+          if (error) throw error;
+        } else if (action.type === 'delete') {
+          const { error } = await supabase.from('reservas').delete().eq('id', action.id);
+          if (error) throw error;
+        } else if (action.type === 'estado') {
+          const { error } = await supabase.from('reservas').update({ estado: action.estado }).eq('id', action.id);
+          if (error) throw error;
+        }
+        remaining.shift();
+      }
+      setReservasSyncQueue([]);
+      localStorage.removeItem('reservas_sync_queue');
+      notify('¡Sincronización exitosa!');
+      await fetchReservas();
+    } catch (err: any) {
+      setReservasSyncQueue(remaining);
+      notify('Error al sincronizar: ' + err.message, true);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   /**
    * Hook inicial: Carga la sesión del usuario y los datos necesarios.
@@ -211,7 +277,7 @@ export default function ReservasPage() {
   };
 
   /**
-   * Obtiene el historial de reservas de Supabase.
+   * Obtiene el historial de reservas de Supabase (con caché offline).
    */
   const fetchReservas = async () => {
     try {
@@ -234,7 +300,18 @@ export default function ReservasPage() {
       }));
 
       setReservas(adapted);
+      // Guardar en caché local
+      localStorage.setItem('reservas_cache', JSON.stringify(adapted));
     } catch (err: any) {
+      // Intentar cargar desde caché si hay error de conexión
+      const cached = localStorage.getItem('reservas_cache');
+      if (cached) {
+        try {
+          setReservas(JSON.parse(cached));
+          notify('Cargado desde caché local (sin conexión).');
+          return;
+        } catch {}
+      }
       notify('Error al cargar reservas: ' + err.message, true);
     } finally {
       setLoading(false);
@@ -298,7 +375,7 @@ export default function ReservasPage() {
   };
 
   /**
-   * Crea una nueva solicitud de reserva en la tabla 'reservations'
+   * Crea/actualiza una reserva — con soporte offline
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,45 +389,61 @@ export default function ReservasPage() {
     if (!fecha) { notify('Elige una fecha.', true); return; }
     if (horaInicio >= horaFin) { notify('Fin debe ser después de inicio.', true); return; }
 
+    const payload = {
+      casa_id: casaId,
+      area,
+      fecha,
+      hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
+      hora_fin: horaFin.toString().padStart(2, '0') + ':00',
+      valor: valorEstimado,
+      estado: 'pendiente' as EstadoReserva,
+    };
+
+    // ── OFFLINE: guardar localmente y encolar ──
+    if (!isOnline) {
+      const tempId = Date.now();
+      if (!editId) {
+        const localReserva: Reserva = {
+          ...payload,
+          id: tempId,
+          numero_casa: casas.find(c => c.id === casaId)?.numero_casa || '?',
+          fecha_reserva: fecha,
+        };
+        const nuevas = [localReserva, ...reservas];
+        setReservas(nuevas);
+        localStorage.setItem('reservas_cache', JSON.stringify(nuevas));
+        setReservasSyncQueue(prev => [...prev, { type: 'create', data: payload }]);
+        notify('Reserva guardada localmente. Se sincronizará al recuperar conexión.');
+      } else {
+        notify('No puedes actualizar reservas sin conexión.', true);
+      }
+      handleCancelEdit();
+      return;
+    }
+
+    // ── ONLINE: enviar a Supabase ──
     try {
       setFormLoading(true);
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
 
       if (editId) {
-        // ACTUALIZAR EXISTENTE
         const { error } = await supabase
           .from('reservas')
-          .update({
-            casa_id: casaId,
-            area: area,
-            fecha: fecha,
-            hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
-            hora_fin: horaFin.toString().padStart(2, '0') + ':00',
-            valor: valorEstimado,
-          })
+          .update({ casa_id: casaId, area, fecha,
+            hora_inicio: payload.hora_inicio,
+            hora_fin: payload.hora_fin,
+            valor: valorEstimado })
           .eq('id', editId);
-
         if (error) throw error;
         notify('Reserva actualizada exitosamente');
       } else {
-        // CREAR NUEVA
         const { error } = await supabase
           .from('reservas')
-          .insert([{
-            casa_id: casaId,
-            area: area,
-            fecha: fecha,
-            hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
-            hora_fin: horaFin.toString().padStart(2, '0') + ':00',
-            valor: valorEstimado,
-            estado: 'pendiente'
-          }]);
-
+          .insert([{ ...payload }]);
         if (error) throw error;
-        notify('Solicitud de reserva enviada a Supabase');
+        notify('Solicitud de reserva enviada');
       }
-      
       handleCancelEdit();
       await fetchReservas();
     } catch (err: any) {
@@ -361,35 +454,52 @@ export default function ReservasPage() {
   };
 
   /**
-   * Actualiza el estado (Pendiente/Aprobada/Rechazada) de una reserva
+   * Actualiza el estado (Pendiente/Aprobada/Rechazada) de una reserva — con soporte offline
    */
   const cambiarEstado = async (id: number, estado: EstadoReserva) => {
+    // Actualizar localmente de inmediato
+    const actualizadas = reservas.map(r => r.id === id ? { ...r, estado } : r);
+    setReservas(actualizadas);
+    localStorage.setItem('reservas_cache', JSON.stringify(actualizadas));
+
+    if (!isOnline) {
+      setReservasSyncQueue(prev => {
+        const filtrado = prev.filter(a => !(a.type === 'estado' && a.id === id));
+        return [...filtrado, { type: 'estado', id, estado }];
+      });
+      notify(`Estado cambiado a ${estado} (sin conexión, se sincronizará).`);
+      return;
+    }
     try {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
       const { error } = await supabase
-        .from('reservas')
-        .update({ estado: estado })
-        .eq('id', id);
-      
+        .from('reservas').update({ estado }).eq('id', id);
       if (error) throw error;
       notify(`La reserva ahora está ${estado}`);
-      await fetchReservas();
     } catch (err: any) { notify('Fallo al cambiar estado: ' + err.message, true); }
   };
 
   /**
-   * Borra un registro de reserva
+   * Borra un registro de reserva — con soporte offline
    */
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Seguro quieres cancelar esta reserva en Supabase?')) return;
+    if (!confirm('¿Seguro quieres cancelar esta reserva?')) return;
+    const filtradas = reservas.filter(r => r.id !== id);
+    setReservas(filtradas);
+    localStorage.setItem('reservas_cache', JSON.stringify(filtradas));
+
+    if (!isOnline) {
+      setReservasSyncQueue(prev => [...prev, { type: 'delete', id }]);
+      notify('Reserva eliminada localmente (sin conexión, se sincronizará).');
+      return;
+    }
     try {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
       const { error } = await supabase.from('reservas').delete().eq('id', id);
       if (error) throw error;
       notify('Reserva cancelada exitosamente');
-      await fetchReservas();
     } catch (err: any) { notify('Error al borrar: ' + err.message, true); }
   };
 
@@ -444,6 +554,34 @@ export default function ReservasPage() {
                   ? 'Reserva zonas comunes para tu casa'
                   : 'Vincula tu cuenta a una casa para reservar'}
           </p>
+          <button
+            onClick={() => setShowTarifasModal(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              padding: '0.4rem 0.8rem',
+              fontSize: '0.7rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontFamily: 'inherit',
+              fontWeight: 600,
+              marginTop: '0.65rem',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.borderColor = ACCENT;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+            }}
+          >
+            📋 Ver Tarifas Vigentes
+          </button>
         </div>
         {!loading && (
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -461,6 +599,60 @@ export default function ReservasPage() {
               ))}
           </div>
         )}
+      </div>
+
+      {/* ── Banner Offline Sync ── */}
+      {reservasSyncQueue.length > 0 && (
+        <div style={{
+          background: 'rgba(251,191,36,0.08)',
+          border: '1px solid rgba(251,191,36,0.3)',
+          borderLeft: '3px solid #fbbf24',
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+          animation: 'fadeIn 0.3s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.1rem', animation: isOnline ? 'none' : 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
+            <div>
+              <div style={{ color: '#fbbf24', fontSize: '0.8rem', fontWeight: 700 }}>Sincronización pendiente</div>
+              <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                {reservasSyncQueue.length} acción{reservasSyncQueue.length !== 1 ? 'es' : ''} guardada{reservasSyncQueue.length !== 1 ? 's' : ''} localmente esperando conexión.
+              </div>
+            </div>
+          </div>
+          {isOnline && (
+            <button
+              onClick={handleSincronizarReservas}
+              disabled={syncing}
+              style={{
+                background: '#fbbf24',
+                border: 'none',
+                color: '#0a0a0f',
+                padding: '0.4rem 1rem',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {syncing ? 'Sincronizando...' : 'Sincronizar Ahora'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Indicador de conexión ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isOnline ? '#4ade80' : '#f87171', animation: isOnline ? 'pulse 2s infinite' : 'none' }} />
+        <span style={{ fontSize: '0.65rem', color: isOnline ? '#4ade80' : '#f87171', letterSpacing: '0.06em' }}>
+          {isOnline ? 'EN LÍNEA' : 'SIN CONEXIÓN — Cambios guardados localmente'}
+        </span>
       </div>
 
       {/* ── Alertas ── */}
@@ -747,11 +939,127 @@ export default function ReservasPage() {
         </div>
       </div>
 
+      {/* ── Modal de Tarifas ── */}
+      {showTarifasModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1.5rem',
+          animation: 'fadeIn 0.25s ease forwards',
+        }}
+        onClick={() => setShowTarifasModal(false)}
+        >
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            maxWidth: '650px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            position: 'relative',
+            padding: '1.5rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            animation: 'zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+          }}
+          onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontSize: '0.9rem', color: '#ffffff', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>
+                📋 VALORES TARIFAS - ZONA SOCIAL
+              </h3>
+              <button 
+                onClick={() => setShowTarifasModal(false)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  color: 'rgba(255, 255, 255, 0.6)', 
+                  fontSize: '1.1rem', 
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              background: '#ffffff', 
+              padding: '0.75rem', 
+              borderRadius: '4px',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+            }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/Valores sonas sociales.jpeg" 
+                alt="Valores Tarifa U Otros Zona Social" 
+                style={{ maxWidth: '100%', height: 'auto', maxHeight: '68vh', objectFit: 'contain' }} 
+              />
+            </div>
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', margin: 0, fontStyle: 'italic' }}>
+                * Valores vigentes para el año 2026.
+              </p>
+              <button 
+                onClick={() => setShowTarifasModal(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#ffffff',
+                  padding: '0.4rem 1rem',
+                  fontSize: '0.68rem',
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.borderColor = ACCENT;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeSlideIn {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
         }
         select option { background: #0a0a0f; color: #ffffff; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
