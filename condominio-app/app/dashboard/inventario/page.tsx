@@ -45,14 +45,22 @@ export default function InventarioPage() {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
 
-  // Formulario Nuevo Empleado
+  // Filtro por categoría
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+
+  // Edición inline de artículos
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editFields, setEditFields] = useState({ nombre: '', categoria: '', unidad_medida: '' });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Formulario Nuevo Artículo
   const [showNewForm, setShowNewForm] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemCat, setNewItemCat] = useState('herramienta');
   const [newItemUnit, setNewItemUnit] = useState('unidad');
   const [creating, setCreating] = useState(false);
 
-  // Selector interactivo
+  // Selector interactivo de movimientos
   const [actionItem, setActionItem] = useState<{ id: number, type: 'entrada' | 'salida' | 'baja' } | null>(null);
   const [actionAmount, setActionAmount] = useState<number | string>('');
   const [actionNotes, setActionNotes] = useState('');
@@ -245,6 +253,42 @@ export default function InventarioPage() {
     }
   };
 
+  const handleStartEdit = (item: Item) => {
+    setEditingItemId(item.id);
+    setEditFields({ nombre: item.nombre, categoria: item.categoria, unidad_medida: item.unidad_medida });
+    // Cerrar cualquier acción de movimiento abierta
+    setActionItem(null);
+    setActionAmount('');
+    setActionNotes('');
+  };
+
+  const handleSaveEdit = async (itemId: number) => {
+    if (!editFields.nombre.trim()) return;
+    setSavingEdit(true);
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('inventario_items')
+        .update({
+          nombre: editFields.nombre.toUpperCase().trim(),
+          categoria: editFields.categoria,
+          unidad_medida: editFields.unidad_medida,
+        })
+        .eq('id', itemId);
+      if (error) throw error;
+      setItems(items.map(i => i.id === itemId
+        ? { ...i, nombre: editFields.nombre.toUpperCase().trim(), categoria: editFields.categoria, unidad_medida: editFields.unidad_medida }
+        : i
+      ));
+      setEditingItemId(null);
+    } catch (err: any) {
+      alert('Error al guardar cambios: ' + err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleEditObservation = async (movId: number, oldText: string) => {
     if (userEmail !== 'admin@florida.com') return;
     
@@ -324,6 +368,7 @@ export default function InventarioPage() {
             <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CATEGORÍA</label>
             <select value={newItemCat} onChange={e => setNewItemCat(e.target.value)} style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}>
               <option value="herramienta">Herramienta</option>
+              <option value="aseo">Aseo</option>
               <option value="consumible">Consumible</option>
               <option value="gasolina">Gasolina</option>
               <option value="epp">Protección (EPP)</option>
@@ -338,6 +383,10 @@ export default function InventarioPage() {
               <option value="litros">Litros</option>
               <option value="cajas">Cajas</option>
               <option value="pares">Pares</option>
+              <option value="bolsas">Bolsas</option>
+              <option value="rollos">Rollos</option>
+              <option value="frascos">Frascos</option>
+              <option value="kilos">Kilos</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -349,6 +398,62 @@ export default function InventarioPage() {
         </form>
       )}
 
+      {/* ── Filtro por Categoría ── */}
+      {!loadingItems && items.length > 0 && (() => {
+        const CATS = [
+          { key: '', label: 'Todas', emoji: '📦' },
+          { key: 'herramienta', label: 'Herramientas', emoji: '🔧' },
+          { key: 'aseo', label: 'Aseo', emoji: '🧹' },
+          { key: 'consumible', label: 'Consumibles', emoji: '🪣' },
+          { key: 'gasolina', label: 'Gasolina', emoji: '⛽' },
+          { key: 'epp', label: 'EPP', emoji: '🦺' },
+          { key: 'otro', label: 'Otros', emoji: '🗂' },
+        ];
+        return (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+            {CATS.map(cat => {
+              const count = cat.key === '' ? items.length : items.filter(i => i.categoria === cat.key).length;
+              if (cat.key !== '' && count === 0) return null;
+              const isActive = filtroCategoria === cat.key;
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => setFiltroCategoria(cat.key)}
+                  style={{
+                    background: isActive ? 'rgba(167,139,250,0.25)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${isActive ? '#a78bfa' : 'rgba(255,255,255,0.12)'}`,
+                    color: isActive ? '#a78bfa' : 'rgba(255,255,255,0.6)',
+                    padding: '0.4rem 0.85rem',
+                    fontSize: '0.72rem',
+                    fontWeight: isActive ? 700 : 400,
+                    cursor: 'pointer',
+                    borderRadius: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    transition: 'all 0.18s',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <span>{cat.emoji}</span>
+                  {cat.label}
+                  <span style={{
+                    background: isActive ? '#a78bfa' : 'rgba(255,255,255,0.1)',
+                    color: isActive ? '#000' : 'rgba(255,255,255,0.5)',
+                    borderRadius: '1rem',
+                    padding: '0 0.4rem',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    minWidth: '18px',
+                    textAlign: 'center',
+                  }}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       {loadingItems ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: '#a78bfa' }}>
           <RefreshCw className="spin" size={32} style={{ margin: '0 auto 1rem' }} />
@@ -357,11 +462,19 @@ export default function InventarioPage() {
       ) : items.length === 0 ? (
         <div style={{ border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', padding: '4rem', color: 'rgba(255,255,255,0.4)' }}>
           <Layers size={48} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
-          El almacén está vacío. Agregue herramientas usando el botón superior.
+          El almacén está vacío. Agregue herramientas o productos usando el botón superior.
         </div>
-      ) : (
+      ) : (() => {
+        const itemsFiltrados = filtroCategoria ? items.filter(i => i.categoria === filtroCategoria) : items;
+        if (itemsFiltrados.length === 0) return (
+          <div style={{ border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.4)', borderRadius: '0.5rem' }}>
+            <Layers size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} />
+            No hay artículos en esta categoría.
+          </div>
+        );
+        return (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1rem' }}>
-          {items.map(item => {
+          {itemsFiltrados.map(item => {
             const isCritical = item.stock_actual <= 0;
             const isWarning = item.stock_actual > 0 && item.stock_actual <= 2;
             const statusColor = isCritical ? '#f87171' : isWarning ? '#fbbf24' : '#4ade80';
@@ -375,25 +488,85 @@ export default function InventarioPage() {
               }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: statusColor }} />
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <h3 style={{ margin: '0 0 0.2rem', color: '#fff', fontSize: '1.1rem', fontWeight: 'bold' }}>{item.nombre}</h3>
-                      {userEmail === 'admin@florida.com' && (
-                        <button onClick={() => handleDeleteItem(item.id, item.nombre)} title="Eliminar Producto del Catálogo" style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0 }}>
-                          <XCircle size={14} />
+                {/* ── Cabecera tarjeta: nombre + acciones de edición ── */}
+                {editingItemId === item.id ? (
+                  // ── Formulario edición inline ──
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.6rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem', fontWeight: 700 }}>✏️ Editando artículo</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <input
+                        type="text"
+                        value={editFields.nombre}
+                        onChange={e => setEditFields(f => ({ ...f, nombre: e.target.value }))}
+                        placeholder="Nombre del artículo"
+                        style={{ background: '#0a0a0f', border: '1px solid #a78bfa', color: '#fff', padding: '0.5rem 0.75rem', fontFamily: 'inherit', fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                        autoFocus
+                      />
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <select value={editFields.categoria} onChange={e => setEditFields(f => ({ ...f, categoria: e.target.value }))}
+                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.75rem', outline: 'none' }}>
+                          <option value="herramienta">Herramienta</option>
+                          <option value="aseo">Aseo</option>
+                          <option value="consumible">Consumible</option>
+                          <option value="gasolina">Gasolina</option>
+                          <option value="epp">EPP</option>
+                          <option value="otro">Otro</option>
+                        </select>
+                        <select value={editFields.unidad_medida} onChange={e => setEditFields(f => ({ ...f, unidad_medida: e.target.value }))}
+                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.75rem', outline: 'none' }}>
+                          <option value="unidad">Unidades</option>
+                          <option value="galones">Galones</option>
+                          <option value="litros">Litros</option>
+                          <option value="cajas">Cajas</option>
+                          <option value="pares">Pares</option>
+                          <option value="bolsas">Bolsas</option>
+                          <option value="rollos">Rollos</option>
+                          <option value="frascos">Frascos</option>
+                          <option value="kilos">Kilos</option>
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => setEditingItemId(null)}
+                          style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', padding: '0.4rem', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>Cancelar</button>
+                        <button onClick={() => handleSaveEdit(item.id)} disabled={savingEdit}
+                          style={{ flex: 1, background: '#a78bfa', color: '#000', fontWeight: 700, border: 'none', padding: '0.4rem', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>
+                          {savingEdit ? '...' : '💾 Guardar'}
                         </button>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                      C/ {item.categoria}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: statusColor, lineHeight: 1 }}>{item.stock_actual}</div>
-                    <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{item.unidad_medida}</div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <h3 style={{ margin: '0 0 0.2rem', color: '#fff', fontSize: '1.05rem', fontWeight: 'bold', wordBreak: 'break-word' }}>{item.nombre}</h3>
+                        {/* Editar: todos los usuarios con acceso */}
+                        <button onClick={() => handleStartEdit(item)} title="Editar artículo"
+                          style={{ background: 'transparent', border: 'none', color: 'rgba(167,139,250,0.6)', cursor: 'pointer', padding: 0, transition: 'color 0.2s' }}
+                          onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
+                          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(167,139,250,0.6)')}>
+                          <Edit2 size={13} />
+                        </button>
+                        {/* Eliminar: solo admin */}
+                        {userEmail === 'admin@florida.com' && (
+                          <button onClick={() => handleDeleteItem(item.id, item.nombre)} title="Eliminar Producto del Catálogo"
+                            style={{ background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.5)', cursor: 'pointer', padding: 0, transition: 'color 0.2s' }}
+                            onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+                            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(248,113,113,0.5)')}>
+                            <XCircle size={13} />
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.1rem' }}>
+                        {item.categoria === 'aseo' ? '🧹' : item.categoria === 'herramienta' ? '🔧' : item.categoria === 'gasolina' ? '⛽' : item.categoria === 'epp' ? '🦺' : item.categoria === 'consumible' ? '🪣' : '🗂'} {item.categoria}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '0.75rem' }}>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: statusColor, lineHeight: 1 }}>{item.stock_actual}</div>
+                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{item.unidad_medida}</div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Acciones Rápidas */}
                 {!isActiveItem ? (
@@ -431,7 +604,8 @@ export default function InventarioPage() {
             );
           })}
         </div>
-      )}
+        );
+      })()}
 
       {/* HISTORIAL TABULAR */}
       {!loadingItems && movimientos.length > 0 && (
