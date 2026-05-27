@@ -615,7 +615,7 @@ export default function InventarioPage() {
             REGISTRO CRONOLÓGICO DE MOVIMIENTOS
           </h2>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', minWidth: '700px' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
                   <th style={{ padding: '0.75rem', fontWeight: 600 }}>Fecha y Hora</th>

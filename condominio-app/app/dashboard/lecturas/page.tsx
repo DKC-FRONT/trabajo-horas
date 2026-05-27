@@ -1177,7 +1177,7 @@ export default function LecturasPage() {
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '800px' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       {['#', 'Casa', 'Anterior', 'Actual', 'Consumo', 'Exceso', 'Valor', 'Fecha', ''].map((h) => (
