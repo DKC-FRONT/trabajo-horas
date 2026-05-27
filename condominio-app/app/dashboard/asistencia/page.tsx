@@ -289,23 +289,23 @@ export default function AsistenciaPage() {
       ) : (
         <>
           {/* Header */}
-          <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
             <div>
               <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Operatividad</p>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+              <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
                 Registro de <span style={{ color: '#60a5fa' }}>Asistencia</span>
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem', fontSize: '0.9rem' }}>Control horario de entrada y salida del personal.</p>
             </div>
             
             {userRole === 'admin' && (
-              <div style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', padding: '0.5rem 1rem', borderRadius: '4px' }}>
+              <div style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', padding: '0.5rem 1rem', borderRadius: '4px', flexShrink: 0 }}>
                 <span style={{ color: '#a78bfa', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em' }}>● MODO ADMINISTRADOR</span>
               </div>
             )}
           </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: userRole === 'admin' ? '1fr' : '1fr 350px', gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: userRole === 'admin' ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
         
         {/* Sección Personal (Entrada/Salida) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
@@ -352,7 +352,7 @@ export default function AsistenciaPage() {
                   <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>SEGUIMIENTO DE PERSONAL</h3>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <select 
                     value={mesSeleccionado} 
                     onChange={(e) => setMesSeleccionado(Number(e.target.value))}

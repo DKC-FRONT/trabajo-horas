@@ -762,7 +762,12 @@ export default function ReportesPage() {
                               </span>
                             )}
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>{c.total_casas}</td>
+                          <td style={{ padding: '1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>
+                            {casaComparativo 
+                              ? `Casa ${casas.find(h => h.id?.toString() === casaComparativo)?.numero_casa || ''}`
+                              : c.total_casas
+                            }
+                          </td>
                           <td style={{ padding: '1rem', fontSize: '0.82rem', color: '#60a5fa', fontWeight: 600 }}>{Math.round(c.consumo_total)} m³</td>
                           <td style={{ padding: '1rem', fontSize: '0.8rem' }}>
                             {c.casas_excedidas > 0 ? (

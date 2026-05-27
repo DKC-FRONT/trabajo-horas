@@ -389,6 +389,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         minHeight: '100vh',
         position: 'relative',
         zIndex: 1,
+        width: isMobile ? '100%' : `calc(100% - ${sidebarW}px)`,
+        maxWidth: '100%',
+        overflowX: 'hidden',
       }}>
         <div style={{
           opacity: mounted ? 1 : 0,

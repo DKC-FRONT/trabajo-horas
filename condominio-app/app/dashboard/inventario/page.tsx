@@ -330,11 +330,11 @@ export default function InventarioPage() {
   return (
     <div style={{ padding: '2.5rem', fontFamily: "'Courier New', monospace", maxWidth: '1200px', margin: '0 auto' }}>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
              <PackageOpen size={24} color="#a78bfa" />
-             <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
+             <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
                KARDEX DE ALMACÉN
              </h1>
           </div>
@@ -346,7 +346,8 @@ export default function InventarioPage() {
           <button onClick={() => setShowNewForm(true)} style={{
             background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', 
             padding: '0.75rem 1.25rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', 
-            display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', textTransform: 'uppercase'
+            display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', textTransform: 'uppercase',
+            flexShrink: 0
           }}
           onMouseEnter={e => e.currentTarget.style.background='rgba(167,139,250,0.2)'}
           onMouseLeave={e => e.currentTarget.style.background='rgba(167,139,250,0.1)'}>

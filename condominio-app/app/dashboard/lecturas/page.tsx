@@ -856,9 +856,19 @@ export default function LecturasPage() {
       ))}
 
       {/* Navbar */}
-      <nav style={{ position: 'relative', zIndex: 5, borderBottom: '2px solid rgba(255, 255, 255, 0.06)', padding: '0.5rem 1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 1)', fontSize: '2rem', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Courier New', monospace", padding: 0 }} onMouseEnter={(e) => (e.currentTarget.style.color = '#a78bfa')} onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 1)')}>
+      <nav style={{ 
+        position: 'relative', 
+        zIndex: 5, 
+        borderBottom: '2px solid rgba(255, 255, 255, 0.06)', 
+        padding: '1rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 1)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Courier New', monospace", padding: 0 }} onMouseEnter={(e) => (e.currentTarget.style.color = '#a78bfa')} onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 1)')}>
             ← Dashboard
           </button>
           <span style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem' }}> / </span>
@@ -867,7 +877,7 @@ export default function LecturasPage() {
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 180px)', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', maxWidth: '360px', alignItems: 'center', gap: '1rem' }}>
           <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
             <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
           </button>

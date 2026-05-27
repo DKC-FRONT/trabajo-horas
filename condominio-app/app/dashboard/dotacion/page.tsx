@@ -96,11 +96,11 @@ export default function DotacionPage() {
           ZONA DE INTERFAZ DEL SISTEMA (No se imprime)
           ======================================================== */}
       <div className="no-print" style={{ padding: '2.5rem', maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                <Shield size={24} color={ACCENT} />
-               <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
+               <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
                  ENTREGA DE DOTACIONES
                </h1>
             </div>
@@ -111,7 +111,7 @@ export default function DotacionPage() {
           <button onClick={handleImprimir} style={{
             background: ACCENT, color: '#000', border: 'none', padding: '0.75rem 1.5rem',
             fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
-            transition: 'all 0.2s', borderRadius: '2px'
+            transition: 'all 0.2s', borderRadius: '2px', flexShrink: 0
           }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
@@ -184,46 +184,48 @@ export default function DotacionPage() {
             </button>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>N°</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Producto</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '100px' }}>Talla</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '120px' }}>Marca</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '80px' }}>Cant.</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '140px' }}>Fecha</th>
-                <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '60px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr key={item.id} style={{ borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>{index + 1}</td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <input type="text" value={item.producto} onChange={e => updateItem(item.id, 'producto', e.target.value.toUpperCase())} placeholder="Ej. Botas de seguridad" style={inputRowObj} />
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <input type="text" value={item.talla} onChange={e => updateItem(item.id, 'talla', e.target.value.toUpperCase())} placeholder="Ej. 40" style={inputRowObj} />
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <input type="text" value={item.marca} onChange={e => updateItem(item.id, 'marca', e.target.value.toUpperCase())} placeholder="Marca" style={inputRowObj} />
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <input type="number" value={item.cantidad} onChange={e => updateItem(item.id, 'cantidad', Number(e.target.value))} style={inputRowObj} min={1} />
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <input type="date" value={item.fechaEntrega} onChange={e => updateItem(item.id, 'fechaEntrega', e.target.value)} style={inputRowObj} />
-                  </td>
-                  <td style={{ padding: '0.5rem' }}>
-                    <button onClick={() => removeItem(item.id)} title="Eliminar fila" style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.4rem', opacity: items.length > 1 ? 1 : 0.2 }}>
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '650px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>N°</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>Producto</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '100px' }}>Talla</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '120px' }}>Marca</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '80px' }}>Cant.</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '140px' }}>Fecha</th>
+                  <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600, width: '60px' }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={item.id} style={{ borderBottom: '1px dashed rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>{index + 1}</td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <input type="text" value={item.producto} onChange={e => updateItem(item.id, 'producto', e.target.value.toUpperCase())} placeholder="Ej. Botas de seguridad" style={inputRowObj} />
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <input type="text" value={item.talla} onChange={e => updateItem(item.id, 'talla', e.target.value.toUpperCase())} placeholder="Ej. 40" style={inputRowObj} />
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <input type="text" value={item.marca} onChange={e => updateItem(item.id, 'marca', e.target.value.toUpperCase())} placeholder="Marca" style={inputRowObj} />
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <input type="number" value={item.cantidad} onChange={e => updateItem(item.id, 'cantidad', Number(e.target.value))} style={inputRowObj} min={1} />
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <input type="date" value={item.fechaEntrega} onChange={e => updateItem(item.id, 'fechaEntrega', e.target.value)} style={inputRowObj} />
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <button onClick={() => removeItem(item.id)} title="Eliminar fila" style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.4rem', opacity: items.length > 1 ? 1 : 0.2 }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

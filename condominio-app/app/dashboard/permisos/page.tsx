@@ -339,12 +339,12 @@ export default function PermisosPage() {
       transition: 'all 0.6s ease',
     }}>
       {/* Header */}
-      <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <Image src="/logo_florida.png" alt="Logo" width={160} height={50} style={{ objectFit: 'contain' }} />
+      <div style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Image src="/logo_florida.png" alt="Logo" width={160} height={50} style={{ objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
               Formato de <span style={{ color: '#a78bfa' }}>Permisos</span>
             </h1>
           </div>
@@ -355,7 +355,8 @@ export default function PermisosPage() {
             style={{
               background: '#a78bfa', color: '#fff', border: 'none', padding: '0.8rem 1.5rem',
               fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.1em',
-              textTransform: 'uppercase', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem'
+              textTransform: 'uppercase', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem',
+              flexShrink: 0
             }}
           >
             <Plus size={16} /> Solicitar Permiso
@@ -463,84 +464,86 @@ export default function PermisosPage() {
             <History size={18} style={{ color: '#a78bfa' }} />
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>HISTORIAL DE SOLICITUDES</h3>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <th style={thStyle}>Fecha</th>
-                <th style={thStyle}>Solicitante</th>
-                <th style={thStyle}>Categoría</th>
-                <th style={thStyle}>Motivo</th>
-                <th style={thStyle}>Estado</th>
-                <th style={{ ...thStyle, textAlign: 'right' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((permit) => (
-                <tr key={permit.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                  <td style={tdStyle}>{permit.fecha}</td>
-                  <td style={tdStyle}>
-                    <div style={{ fontSize: '0.85rem', color: '#fff' }}>{permit.nombre_completo}</div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{permit.cargo}</div>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ 
-                      fontSize: '0.65rem', padding: '0.2rem 0.5rem', 
-                      background: permit.categoria === 'salud' ? 'rgba(96,165,250,0.1)' : 'rgba(167,139,250,0.1)',
-                      color: permit.categoria === 'salud' ? '#60a5fa' : '#a78bfa',
-                      border: `1px solid ${permit.categoria === 'salud' ? '#60a5fa20' : '#a78bfa20'}`
-                    }}>
-                      {permit.categoria === 'salud' ? 'Salud' : 'Personal'}
-                    </span>
-                  </td>
-                  <td style={{ ...tdStyle, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{permit.motivo}</td>
-                  <td style={tdStyle}>
-                    {permit.estado === 'aprobado' ? <CheckCircle2 size={16} color="#4ade80" /> : permit.estado === 'rechazado' ? <XCircle size={16} color="#f87171" /> : <Clock size={16} color="#fbbf24" />}
-                  </td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
-                      <button 
-                        onClick={() => generatePDF(permit)}
-                        style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
-                      >
-                        <Download size={14} /> PDF
-                      </button>
-                      {(userProfile?.rol === 'admin' || userProfile?.email === 'admin@florida.com') && (
-                        <>
-                          {permit.estado === 'pendiente' && (
-                            <>
-                              <button 
-                                onClick={() => handleUpdateStatus(permit.id, 'aprobado')}
-                                style={{ background: 'transparent', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
-                              >
-                                <CheckCircle2 size={14} /> Aprobar
-                              </button>
-                              <button 
-                                onClick={() => handleUpdateStatus(permit.id, 'rechazado')}
-                                style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
-                              >
-                                <XCircle size={14} /> Rechazar
-                              </button>
-                            </>
-                          )}
-                          <button 
-                            onClick={() => handleDelete(permit.id)}
-                            style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
-                          >
-                            <XCircle size={14} /> Borrar
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th style={thStyle}>Fecha</th>
+                  <th style={thStyle}>Solicitante</th>
+                  <th style={thStyle}>Categoría</th>
+                  <th style={thStyle}>Motivo</th>
+                  <th style={thStyle}>Estado</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Acciones</th>
                 </tr>
-              ))}
-              {history.length === 0 && !loading && (
-                <tr>
-                  <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.2)' }}>No tienes solicitudes registradas.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {history.map((permit) => (
+                  <tr key={permit.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <td style={tdStyle}>{permit.fecha}</td>
+                    <td style={tdStyle}>
+                      <div style={{ fontSize: '0.85rem', color: '#fff' }}>{permit.nombre_completo}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{permit.cargo}</div>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ 
+                        fontSize: '0.65rem', padding: '0.2rem 0.55rem', 
+                        background: permit.categoria === 'salud' ? 'rgba(96,165,250,0.1)' : 'rgba(167,139,250,0.1)',
+                        color: permit.categoria === 'salud' ? '#60a5fa' : '#a78bfa',
+                        border: `1px solid ${permit.categoria === 'salud' ? '#60a5fa20' : '#a78bfa20'}`
+                      }}>
+                        {permit.categoria === 'salud' ? 'Salud' : 'Personal'}
+                      </span>
+                    </td>
+                    <td style={{ ...tdStyle, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{permit.motivo}</td>
+                    <td style={tdStyle}>
+                      {permit.estado === 'aprobado' ? <CheckCircle2 size={16} color="#4ade80" /> : permit.estado === 'rechazado' ? <XCircle size={16} color="#f87171" /> : <Clock size={16} color="#fbbf24" />}
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
+                        <button 
+                          onClick={() => generatePDF(permit)}
+                          style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                        >
+                          <Download size={14} /> PDF
+                        </button>
+                        {(userProfile?.rol === 'admin' || userProfile?.email === 'admin@florida.com') && (
+                          <>
+                            {permit.estado === 'pendiente' && (
+                              <>
+                                <button 
+                                  onClick={() => handleUpdateStatus(permit.id, 'aprobado')}
+                                  style={{ background: 'transparent', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                                >
+                                  <CheckCircle2 size={14} /> Aprobar
+                                </button>
+                                <button 
+                                  onClick={() => handleUpdateStatus(permit.id, 'rechazado')}
+                                  style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                                >
+                                  <XCircle size={14} /> Rechazar
+                                </button>
+                              </>
+                            )}
+                            <button 
+                              onClick={() => handleDelete(permit.id)}
+                              style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                            >
+                              <XCircle size={14} /> Borrar
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {history.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.2)' }}>No tienes solicitudes registradas.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

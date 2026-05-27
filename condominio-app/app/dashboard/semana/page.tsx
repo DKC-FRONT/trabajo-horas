@@ -565,7 +565,7 @@ export default function SemanaPage() {
           padding: '1rem',
           marginBottom: '1.5rem',
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
           gap: '1rem',
         }}
       >
@@ -638,12 +638,13 @@ export default function SemanaPage() {
       )}
 
       {/* Grid Table */}
-      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', overflowX: 'auto' }}>
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: '120px repeat(6, 1fr) 120px',
             gap: 0,
+            minWidth: '1000px',
           }}
         >
           {/* Header Row */}
