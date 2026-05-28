@@ -889,7 +889,7 @@ export default function LecturasPage() {
             accept=".xlsx,.xls,.csv"
             style={{ display: 'none' }}
           />
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
             {importing ? '◌ Importando...' : '↑ Importar Excel'}
           </button>
         </div>
@@ -964,23 +964,24 @@ export default function LecturasPage() {
                 onClick={prepareOfflineMode}
                 disabled={isPreparingOffline}
                 style={{
-                  background: 'rgba(96,165,250,0.1)',
-                  border: '1px solid rgba(96,165,250,0.3)',
+                  background: isPreparingOffline ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)',
+                  border: '1px solid rgba(96,165,250,0.4)',
                   color: '#60a5fa',
-                  padding: '0.4rem 0.8rem',
-                  fontSize: '0.6rem',
-                  fontWeight: 700,
+                  padding: '0.6rem 1.2rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  fontFamily: "'Courier New', monospace",
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
                   cursor: isPreparingOffline ? 'not-allowed' : 'pointer',
-                  letterSpacing: '0.05em',
+                  transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '0.5rem',
-                  transition: 'all 0.2s',
-                  height: '2.1rem',
-                  minHeight: '2.1rem'
                 }}
-                onMouseEnter={e => { if(!isPreparingOffline) e.currentTarget.style.background = 'rgba(96,165,250,0.2)'; }}
-                onMouseLeave={e => { if(!isPreparingOffline) e.currentTarget.style.background = 'rgba(96,165,250,0.1)'; }}
+                onMouseEnter={e => { if(!isPreparingOffline) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                onMouseLeave={e => { if(!isPreparingOffline) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
               >
                 {isPreparingOffline ? '⌛ DESCARGANDO...' : '📥 PREPARAR OFFLINE'}
               </button>
@@ -1144,7 +1145,29 @@ export default function LecturasPage() {
               })()}
 
               <div style={{ marginTop: '1rem' }}>
-                <button onClick={handleSubmit} disabled={saving} style={{ padding: '0.5rem 1.5rem', fontSize: '0.7rem', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', background: saving ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, rgba(96,165,250,0.15) 0%, rgba(147,51,234,0.15) 100%)', border: saving ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(96,165,250,0.35)', color: saving ? 'rgba(255,255,255,0.25)' : '#ffffff' }}>
+                <button 
+                  onClick={handleSubmit} 
+                  disabled={saving} 
+                  style={{ 
+                    background: saving ? 'rgba(167,139,250,0.08)' : 'rgba(167,139,250,0.15)', 
+                    border: saving ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
+                    color: saving ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
+                    padding: '0.6rem 1.2rem', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    fontFamily: "'Courier New', monospace", 
+                    letterSpacing: '0.1em', 
+                    textTransform: 'uppercase', 
+                    cursor: saving ? 'not-allowed' : 'pointer', 
+                    transition: 'all 0.2s', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '0.5rem' 
+                  }}
+                  onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(167,139,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                  onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(167,139,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+                >
                   {saving ? (
                     <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Procesando...</>
                   ) : (
@@ -1153,7 +1176,29 @@ export default function LecturasPage() {
                 </button>
 
                 {editId && (
-                  <button onClick={handleCancelEdit} style={{ marginLeft: '1rem', padding: '0.5rem 1.5rem', fontSize: '0.7rem', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff' }}>
+                  <button 
+                    onClick={handleCancelEdit} 
+                    style={{ 
+                      marginLeft: '1rem', 
+                      background: 'rgba(248,113,113,0.15)', 
+                      border: '1px solid rgba(248,113,113,0.4)', 
+                      color: '#f87171', 
+                      padding: '0.6rem 1.2rem', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 'bold', 
+                      fontFamily: "'Courier New', monospace", 
+                      letterSpacing: '0.1em', 
+                      textTransform: 'uppercase', 
+                      cursor: 'pointer', 
+                      transition: 'all 0.2s', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      gap: '0.5rem' 
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
                     ✕ Cancelar Edición
                   </button>
                 )}

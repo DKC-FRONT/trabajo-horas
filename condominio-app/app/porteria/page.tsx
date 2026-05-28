@@ -221,14 +221,30 @@ export default function PorteriaPage() {
           />
           {errorPin && <div style={{ color: '#f87171', fontSize: '0.65rem', marginBottom: '1rem' }}>⚠ CÓDIGO INCORRECTO</div>}
 
-          <button type="submit" disabled={actionLoading === 'login'} style={{
-            width: '100%', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.5)',
-            color: ACCENT, padding: '0.8rem', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em',
-            cursor: actionLoading === 'login' ? 'not-allowed' : 'pointer', transition: 'all 0.2s', textTransform: 'uppercase',
-            opacity: actionLoading === 'login' ? 0.5 : 1
-          }}
-          onMouseEnter={e => { if(actionLoading !== 'login') e.currentTarget.style.background = 'rgba(74,222,128,0.2)'; }}
-          onMouseLeave={e => { if(actionLoading !== 'login') e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; }}>
+          <button 
+            type="submit" 
+            disabled={actionLoading === 'login'} 
+            style={{
+              width: '100%', 
+              background: actionLoading === 'login' ? 'rgba(74,222,128,0.08)' : 'rgba(74,222,128,0.15)', 
+              border: '1px solid rgba(74,222,128,0.4)',
+              color: ACCENT, 
+              padding: '0.6rem 1.2rem', 
+              fontSize: '0.8rem', 
+              fontWeight: 'bold', 
+              fontFamily: "'Courier New', monospace",
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              cursor: actionLoading === 'login' ? 'not-allowed' : 'pointer', 
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}
+            onMouseEnter={e => { if(actionLoading !== 'login') { e.currentTarget.style.background = 'rgba(74,222,128,0.25)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+            onMouseLeave={e => { if(actionLoading !== 'login') { e.currentTarget.style.background = 'rgba(74,222,128,0.15)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+          >
             {actionLoading === 'login' ? 'VERIFICANDO...' : 'ACCEDER AL SISTEMA'}
           </button>
         </form>
@@ -374,13 +390,25 @@ export default function PorteriaPage() {
                       <button 
                         onClick={() => marcarEntrada(trabajador.id)}
                         style={{
-                          width: '100%', background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.3)',
-                          color: '#60a5fa', padding: '0.7rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                          transition: 'all 0.2s', textTransform: 'uppercase'
+                          width: '100%', 
+                          background: 'rgba(96,165,250,0.15)', 
+                          border: '1px solid rgba(96,165,250,0.4)',
+                          color: '#60a5fa', 
+                          padding: '0.6rem 1.2rem', 
+                          fontSize: '0.8rem', 
+                          fontWeight: 'bold', 
+                          fontFamily: "'Courier New', monospace",
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '0.5rem',
+                          transition: 'all 0.2s', 
+                          textTransform: 'uppercase'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(96,165,250,0.2)'; e.currentTarget.style.borderColor = '#60a5fa'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(96,165,250,0.1)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.3)'; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                       >
                         <LogIn size={16} /> Marcar Entrada
                       </button>
@@ -388,13 +416,25 @@ export default function PorteriaPage() {
                       <button 
                         onClick={() => marcarSalida(regHoy.id, regHoy.hora_entrada, trabajador.id)}
                         style={{
-                          width: '100%', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)',
-                          color: '#f87171', padding: '0.7rem', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                          transition: 'all 0.2s', textTransform: 'uppercase'
+                          width: '100%', 
+                          background: 'rgba(248,113,113,0.15)', 
+                          border: '1px solid rgba(248,113,113,0.4)',
+                          color: '#f87171', 
+                          padding: '0.6rem 1.2rem', 
+                          fontSize: '0.8rem', 
+                          fontWeight: 'bold', 
+                          fontFamily: "'Courier New', monospace",
+                          letterSpacing: '0.1em',
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '0.5rem',
+                          transition: 'all 0.2s', 
+                          textTransform: 'uppercase'
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.2)'; e.currentTarget.style.borderColor = '#f87171'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.3)'; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                       >
                         <LogOut size={16} /> Marcar Salida
                       </button>

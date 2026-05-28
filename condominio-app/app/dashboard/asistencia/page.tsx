@@ -324,18 +324,18 @@ export default function AsistenciaPage() {
               {currentTime.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
               {!activeRecord ? (
-                <button onClick={handleEntry} disabled={saving} style={{ background: '#60a5fa', color: '#fff', border: 'none', padding: '1rem 2.5rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <button onClick={handleEntry} disabled={saving} style={{ background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: "'Courier New', monospace", fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                   <Play size={18} fill="currentColor" /> {saving ? '...' : 'MARCAR ENTRADA'}
                 </button>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <div style={{ textAlign: 'left' }}>
                     <p style={{ color: '#4ade80', fontSize: '0.6rem', textTransform: 'uppercase', margin: 0 }}>En turno desde</p>
                     <p style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{formatTime(activeRecord.hora_entrada)}</p>
                   </div>
-                  <button onClick={handleExit} disabled={saving} style={{ background: '#f87171', color: '#fff', border: 'none', padding: '1rem 2.5rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <button onClick={handleExit} disabled={saving} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: "'Courier New', monospace", fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                     <Square size={18} fill="currentColor" /> {saving ? '...' : 'MARCAR SALIDA'}
                   </button>
                 </div>
@@ -536,16 +536,56 @@ export default function AsistenciaPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" disabled={saving} style={{ 
-                  flex: 1, background: '#fbbf24', color: '#000', border: 'none', padding: '0.8rem', 
-                  fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.75rem' 
-                }}>
+                <button 
+                  type="submit" 
+                  disabled={saving} 
+                  style={{ 
+                    flex: 1, 
+                    background: saving ? 'rgba(251,191,36,0.08)' : 'rgba(251,191,36,0.15)', 
+                    border: saving ? '1px solid rgba(251,191,36,0.2)' : '1px solid rgba(251,191,36,0.4)', 
+                    color: saving ? 'rgba(251,191,36,0.5)' : '#fbbf24', 
+                    padding: '0.6rem 1.2rem', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    fontFamily: "'Courier New', monospace", 
+                    letterSpacing: '0.1em', 
+                    textTransform: 'uppercase', 
+                    cursor: saving ? 'not-allowed' : 'pointer', 
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                  onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+                >
                   {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
                 </button>
-                <button type="button" onClick={() => setEditingRecord(null)} style={{ 
-                  background: 'transparent', color: '#fff', border: '1px solid #333', padding: '0.8rem 1.5rem', 
-                  cursor: 'pointer', fontSize: '0.75rem' 
-                }}>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingRecord(null)} 
+                  style={{ 
+                    flex: 1,
+                    background: 'rgba(248,113,113,0.15)', 
+                    border: '1px solid rgba(248,113,113,0.4)', 
+                    color: '#f87171', 
+                    padding: '0.6rem 1.2rem', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    fontFamily: "'Courier New', monospace", 
+                    letterSpacing: '0.1em', 
+                    textTransform: 'uppercase', 
+                    cursor: 'pointer', 
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
                   CANCELAR
                 </button>
               </div>

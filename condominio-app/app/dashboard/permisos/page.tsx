@@ -353,11 +353,15 @@ export default function PermisosPage() {
           <button 
             onClick={() => setShowForm(true)}
             style={{
-              background: '#a78bfa', color: '#fff', border: 'none', padding: '0.8rem 1.5rem',
-              fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.1em',
-              textTransform: 'uppercase', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem',
+              background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
+              color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
+              letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+              fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
               flexShrink: 0
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             <Plus size={16} /> Solicitar Permiso
           </button>
@@ -443,16 +447,56 @@ export default function PermisosPage() {
             </div>
 
             <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" disabled={saving} style={{ 
-                flex: 1, background: '#a78bfa', color: '#fff', border: 'none', padding: '1rem', 
-                fontWeight: 700, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' 
-              }}>
+              <button 
+                type="submit" 
+                disabled={saving} 
+                style={{ 
+                  flex: 1, 
+                  background: saving ? 'rgba(167,139,250,0.08)' : 'rgba(167,139,250,0.15)', 
+                  border: saving ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
+                  color: saving ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
+                  padding: '0.6rem 1.2rem', 
+                  fontSize: '0.8rem', 
+                  fontWeight: 'bold', 
+                  fontFamily: "'Courier New', monospace", 
+                  letterSpacing: '0.1em', 
+                  textTransform: 'uppercase', 
+                  cursor: saving ? 'not-allowed' : 'pointer', 
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(167,139,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(167,139,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+              >
                 {saving ? 'Guardando...' : 'Enviar Solicitud'}
               </button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ 
-                background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', 
-                padding: '1rem 2rem', cursor: 'pointer' 
-              }}>
+              <button 
+                type="button" 
+                onClick={() => setShowForm(false)} 
+                style={{ 
+                  flex: 1,
+                  background: 'rgba(248,113,113,0.15)', 
+                  border: '1px solid rgba(248,113,113,0.4)', 
+                  color: '#f87171', 
+                  padding: '0.6rem 1.2rem', 
+                  fontSize: '0.8rem', 
+                  fontWeight: 'bold', 
+                  fontFamily: "'Courier New', monospace", 
+                  letterSpacing: '0.1em', 
+                  textTransform: 'uppercase', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
                 Cancelar
               </button>
             </div>

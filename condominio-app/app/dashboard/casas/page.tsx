@@ -227,17 +227,28 @@ export default function CasasPage() {
               style={inputStyle('nueva', !!fieldError)}
             />
           </div>
-          <button onClick={handleAgregar} disabled={saving}
+          <button 
+            onClick={handleAgregar} 
+            disabled={saving}
             style={{
-              background: saving ? 'rgba(255,255,255,0.04)' : `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}08)`,
-              border: `1px solid ${saving ? 'rgba(255,255,255,0.08)' : ACCENT + '50'}`,
-              color: saving ? 'rgba(255,255,255,0.3)' : ACCENT,
-              padding: '0.65rem 1.5rem', fontSize: '0.72rem', letterSpacing: '0.12em',
-              cursor: saving ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-              display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit', whiteSpace: 'nowrap',
+              background: saving ? 'rgba(244,114,182,0.08)' : 'rgba(244,114,182,0.15)',
+              border: saving ? '1px solid rgba(244,114,182,0.2)' : '1px solid rgba(244,114,182,0.4)',
+              color: saving ? 'rgba(244,114,182,0.5)' : '#f472b6',
+              padding: '0.6rem 1.2rem', 
+              fontSize: '0.8rem', 
+              fontWeight: 'bold',
+              fontFamily: "'Courier New', monospace",
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              cursor: saving ? 'not-allowed' : 'pointer', 
+              transition: 'all 0.2s',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { if (!saving) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}35, ${ACCENT}18)`; }}
-            onMouseLeave={e => { if (!saving) e.currentTarget.style.background = `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}08)`; }}
+            onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(244,114,182,0.25)'; e.currentTarget.style.borderColor = 'rgba(244,114,182,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+            onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(244,114,182,0.15)'; e.currentTarget.style.borderColor = 'rgba(244,114,182,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
           >
             {saving ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>◌</span> Guardando...</> : <>+ Agregar</>}
           </button>

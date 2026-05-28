@@ -971,21 +971,31 @@ export default function SemanaPage() {
             setEditingHoraValue(nuevoHorario);
           }}
           style={{
-            background: 'rgba(56,189,248,0.1)',
+            background: 'rgba(56,189,248,0.15)',
             border: '1px solid rgba(56,189,248,0.4)',
             color: '#38bdf8',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
+            padding: '0.6rem 1.2rem',
             fontSize: '0.8rem',
-            fontWeight: 600,
+            fontWeight: 'bold',
+            fontFamily: "'Courier New', monospace",
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
             cursor: 'pointer',
             transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(56,189,248,0.2)';
+            e.currentTarget.style.background = 'rgba(56,189,248,0.25)';
+            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.6)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(56,189,248,0.1)';
+            e.currentTarget.style.background = 'rgba(56,189,248,0.15)';
+            e.currentTarget.style.borderColor = 'rgba(56,189,248,0.4)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           ➕ Agregar Horario

@@ -387,19 +387,18 @@ export default function ReportesPage() {
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <button onClick={exportarExcel}
+           <button onClick={exportarExcel}
             style={{
-              background: '#16a34a', border: 'none',
-              color: '#ffffff', padding: '0.8rem 1.5rem', fontSize: '0.8rem',
+              background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
+              color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '0.8rem',
               letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-              fontFamily: 'inherit', fontWeight: 700, transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
-              display: 'flex', alignItems: 'center', gap: '0.6rem'
+              fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#15803d'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#16a34a'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            <span style={{ fontSize: '1.1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
+            <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
           </button>
 
           <div>

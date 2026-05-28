@@ -344,13 +344,15 @@ export default function InventarioPage() {
         </div>
         {!showNewForm && (
           <button onClick={() => setShowNewForm(true)} style={{
-            background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', 
-            padding: '0.75rem 1.25rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', 
-            display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', textTransform: 'uppercase',
+            background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
+            color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
+            letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+            fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
             flexShrink: 0
           }}
-          onMouseEnter={e => e.currentTarget.style.background='rgba(167,139,250,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background='rgba(167,139,250,0.1)'}>
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
             <Plus size={16} /> Alta al Catálogo
           </button>
         )}
@@ -391,8 +393,54 @@ export default function InventarioPage() {
             </select>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="button" onClick={() => setShowNewForm(false)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', padding: '0.75rem 1rem', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-            <button type="submit" disabled={creating} style={{ background: '#a78bfa', border: '1px solid #a78bfa', color: '#000', fontWeight: 'bold', padding: '0.75rem 1.5rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button 
+              type="button" 
+              onClick={() => setShowNewForm(false)} 
+              style={{ 
+                background: 'rgba(248,113,113,0.15)', 
+                border: '1px solid rgba(248,113,113,0.4)', 
+                color: '#f87171', 
+                padding: '0.6rem 1.2rem', 
+                fontSize: '0.8rem', 
+                fontWeight: 'bold', 
+                fontFamily: "'Courier New', monospace", 
+                letterSpacing: '0.1em', 
+                textTransform: 'uppercase', 
+                cursor: 'pointer', 
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              disabled={creating} 
+              style={{ 
+                background: creating ? 'rgba(167,139,250,0.08)' : 'rgba(167,139,250,0.15)', 
+                border: creating ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
+                color: creating ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
+                padding: '0.6rem 1.2rem', 
+                fontSize: '0.8rem', 
+                fontWeight: 'bold', 
+                fontFamily: "'Courier New', monospace", 
+                letterSpacing: '0.1em', 
+                textTransform: 'uppercase', 
+                cursor: creating ? 'not-allowed' : 'pointer', 
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={e => { if (!creating) { e.currentTarget.style.background = 'rgba(167,139,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { if (!creating) { e.currentTarget.style.background = 'rgba(167,139,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+            >
               {creating ? <RefreshCw className="spin" size={16} /> : 'Registrar'}
             </button>
           </div>
