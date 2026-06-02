@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserRole } from '@/lib/useUserRole';
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const currY = new Date().getFullYear();
 
@@ -58,6 +59,8 @@ export default function LecturasPage() {
     lectura_actual: '',
     fecha: new Date().toISOString().split('T')[0],
   });
+  const { role: userRole, loading: roleLoading } = useUserRole();
+  const canExportExcel = !roleLoading && userRole === 'admin';
 
   // Hook inicial para preparar el componente
   useEffect(() => {
@@ -878,9 +881,11 @@ export default function LecturasPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', maxWidth: '360px', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-            <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
-          </button>
+          {canExportExcel && (
+            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+              <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
+            </button>
+          )}
           
           <input
             type="file"

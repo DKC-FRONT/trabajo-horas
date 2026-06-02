@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUserRole } from '@/lib/useUserRole';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -54,6 +55,8 @@ export default function ReportesPage() {
   const [visible, setVisible] = useState(false);
   const [tab, setTab]         = useState<'resumen' | 'detalle' | 'comparativo'>('resumen');
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const { role: userRole, loading: roleLoading } = useUserRole();
+  const canExportExcel = !roleLoading && userRole === 'admin';
 
   // Estados para el rango del comparativo
   const [mesInicio, setMesInicio] = useState(1);
@@ -387,19 +390,21 @@ export default function ReportesPage() {
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
-           <button onClick={exportarExcel}
-            style={{
-              background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
-              color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '0.8rem',
-              letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-              fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >
-            <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
-          </button>
+           {canExportExcel && (
+            <button onClick={exportarExcel}
+              style={{
+                background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
+                color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '0.8rem',
+                letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+                fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
+            </button>
+          )}
 
           <div>
             <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>

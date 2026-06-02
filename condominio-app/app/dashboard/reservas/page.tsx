@@ -117,6 +117,25 @@ function parseHora(hora: string) {
   return `${h.toString().padStart(2, '0')}:${parts[1]}`;
 }
 
+function normalizeHourValue(value: number) {
+  return value >= 24 ? value - 24 : value;
+}
+
+function formatTimeForPayload(value: number) {
+  return `${normalizeHourValue(value).toString().padStart(2, '0')}:00`;
+}
+
+function isCrossMidnight(endValue: number) {
+  return endValue >= 24;
+}
+
+function loadEditableEndHour(startHour: number, endHour: number) {
+  if (endHour <= startHour) {
+    return endHour + 24;
+  }
+  return endHour;
+}
+
 export default function ReservasPage() {
   const [user, setUser]         = useState<UserSession | null>(null);
   const [reservas, setReservas] = useState<Reserva[]>([]);
@@ -289,7 +308,9 @@ export default function ReservasPage() {
       const { data, error } = await supabase
         .from('reservas')
         .select('*, casas(numero_casa)')
-        .order('fecha', { ascending: false });
+        .order('creado_el', { ascending: false })
+        .order('fecha', { ascending: false })
+        .order('hora_inicio', { ascending: false });
 
       if (error) throw error;
 
@@ -355,9 +376,10 @@ export default function ReservasPage() {
     setEditId(r.id);
     setArea(r.area);
     setFecha(r.fecha_reserva);
-    // Parsear horas de "HH:MM" a number
-    setHoraInicio(parseInt(r.hora_inicio.split(':')[0]));
-    setHoraFin(parseInt(r.hora_fin.split(':')[0]));
+    const inicio = parseInt(r.hora_inicio.split(':')[0]);
+    const fin = parseInt(r.hora_fin.split(':')[0]);
+    setHoraInicio(inicio);
+    setHoraFin(loadEditableEndHour(inicio, fin));
     setCasaSeleccionada(String(r.casa_id));
     
     // Hacer scroll suave hacia arriba para ver el formulario
@@ -387,14 +409,14 @@ export default function ReservasPage() {
       return;
     }
     if (!fecha) { notify('Elige una fecha.', true); return; }
-    if (horaInicio >= horaFin) { notify('Fin debe ser después de inicio.', true); return; }
+    if (horaInicio >= horaFin && !isCrossMidnight(horaFin)) { notify('Fin debe ser después de inicio.', true); return; }
 
     const payload = {
       casa_id: casaId,
       area,
       fecha,
-      hora_inicio: horaInicio.toString().padStart(2, '0') + ':00',
-      hora_fin: horaFin.toString().padStart(2, '0') + ':00',
+      hora_inicio: formatTimeForPayload(horaInicio),
+      hora_fin: formatTimeForPayload(horaFin),
       valor: valorEstimado,
       estado: 'pendiente' as EstadoReserva,
     };

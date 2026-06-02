@@ -26,7 +26,10 @@ export async function GET(req: NextRequest) {
       query = query.eq('casa_id', Number(casa_id));
     }
 
-    const { data, error } = await query.order('fecha', { ascending: false });
+    const { data, error } = await query
+      .order('creado_el', { ascending: false })
+      .order('fecha', { ascending: false })
+      .order('hora_inicio', { ascending: false });
 
     if (error) throw error;
 
@@ -52,20 +55,66 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Todos los campos son requeridos.' }, { status: 400 });
     }
 
-    // Verificar superposición de horarios en Postgres
+    const parseDateTime = (dateStr: string, timeStr: string) => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+    };
+
+    const buildInterval = (dateStr: string, startTime: string, endTime: string) => {
+      const start = parseDateTime(dateStr, startTime);
+      const end = parseDateTime(dateStr, endTime);
+      if (end <= start) {
+        end.setUTCDate(end.getUTCDate() + 1);
+      }
+      return { start, end };
+    };
+
+    const parseTimeParts = (timeStr: string) => {
+      const parts = timeStr.split(':').map(Number);
+      if (parts.length !== 2 || !Number.isInteger(parts[0]) || !Number.isInteger(parts[1])) {
+        return null;
+      }
+      const [hours, minutes] = parts;
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return null;
+      }
+      return { hours, minutes };
+    };
+
+    const horaInicioParts = parseTimeParts(hora_inicio);
+    const horaFinParts = parseTimeParts(hora_fin);
+    if (!horaInicioParts || !horaFinParts) {
+      return NextResponse.json({ error: 'Formato de hora inválido.' }, { status: 400 });
+    }
+
+    const newInterval = buildInterval(fecha_reserva, hora_inicio, hora_fin);
+    const datesToCheck = [fecha_reserva];
+    if (newInterval.end.getUTCDate() !== newInterval.start.getUTCDate()) {
+      const nextDate = new Date(newInterval.start);
+      nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+      datesToCheck.push(nextDate.toISOString().split('T')[0]);
+    }
+
     const { data: existing } = await supabase
       .from('reservas')
-      .select('id')
+      .select('id, fecha, hora_inicio, hora_fin')
       .eq('area', area)
-      .eq('fecha', fecha_reserva)
       .neq('estado', 'rechazada')
-      .or(`and(hora_inicio.lte.${hora_inicio},hora_fin.gt.${hora_inicio}),and(hora_inicio.lt.${hora_fin},hora_fin.gte.${hora_fin})`);
+      .in('fecha', datesToCheck);
 
     if (existing && existing.length > 0) {
-      return NextResponse.json(
-        { error: `El área "${area}" ya está reservada en ese horario. Por favor elige otro horario o fecha.` },
-        { status: 409 }
-      );
+      const overlap = (existing as any[]).some((item) => {
+        const existingInterval = buildInterval(item.fecha, item.hora_inicio, item.hora_fin);
+        return newInterval.start < existingInterval.end && existingInterval.start < newInterval.end;
+      });
+
+      if (overlap) {
+        return NextResponse.json(
+          { error: `El área "${area}" ya está reservada en ese horario. Por favor elige otro horario o fecha.` },
+          { status: 409 }
+        );
+      }
     }
 
     const { error: insertError } = await supabase

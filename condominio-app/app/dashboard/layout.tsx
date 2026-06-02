@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import {
   Droplets, Home, FileBarChart2, Megaphone, CalendarCheck,
-  Gauge, Users, Settings, ChevronLeft, LogOut, Clock, FileText, Shield, PackageOpen, LucideIcon
+  Gauge, Users, Settings, ChevronLeft, LogOut, Clock, FileText, Shield, PackageOpen, Scale, ClipboardEdit, LucideIcon
 } from 'lucide-react';
 
 type Rol = 'admin' | 'trabajador' | 'residente';
@@ -19,6 +19,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
+  { icon: ClipboardEdit, label: 'Act. Datos',    route: '/dashboard/actualizacion-datos', roles: ['admin', 'residente'], accent: '#38bdf8' },
   { icon: Droplets,      label: 'Lecturas',      route: '/dashboard/lecturas',      roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
   { icon: Home,          label: 'Casas',         route: '/dashboard/casas',         roles: ['admin', 'trabajador'],  accent: '#f472b6' },
   { icon: FileBarChart2, label: 'Reportes',      route: '/dashboard/reportes',      roles: ['admin', 'trabajador'],  accent: '#fb923c' },
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Megaphone,     label: 'Avisos',        route: '/dashboard/avisos',        roles: ['admin', 'residente', 'trabajador'],   accent: '#fbbf24' },
   { icon: CalendarCheck, label: 'Reservas',      route: '/dashboard/reservas',      roles: ['admin', 'residente', 'trabajador'],   accent: '#4ade80' },
   { icon: Gauge,         label: 'Mis lecturas',  route: '/dashboard/mis-lecturas',  roles: ['residente'],            accent: '#60a5fa' },
+  { icon: Scale,         label: 'Cobros',        route: '/dashboard/cobros-juridicos', roles: ['admin'],             accent: '#f87171' },
   { icon: Users,         label: 'Usuarios',      route: '/dashboard/usuarios',      roles: ['admin'],                accent: '#a78bfa' },
   { icon: Settings,      label: 'Configuración', route: '/dashboard/configuracion', roles: ['admin'],                accent: '#94a3b8' },
 ];
