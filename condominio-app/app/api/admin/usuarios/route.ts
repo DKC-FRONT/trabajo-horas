@@ -20,6 +20,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
     }
 
+    const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
+    if (!allowedRoles.includes(String(rol).trim())) {
+      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(String(correo).trim())) {
+      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+    }
+
+    if (String(password).length < 6) {
+      return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, { status: 400 });
+    }
+
     // 1. Crear el usuario en Supabase Auth con confirmación automática
     const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
       email: correo,
@@ -60,11 +74,35 @@ export async function PUT(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'ID de usuario requerido.' }, { status: 400 });
 
-    // 1. Actualizar datos en Auth (Correo y/o Contraseña)
     const updateData: any = {};
-    if (correo) updateData.email = correo;
-    if (password) updateData.password = password;
+    if (correo !== undefined) {
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(String(correo).trim())) {
+        return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+      }
+      updateData.email = String(correo).trim();
+    }
+    if (password !== undefined) {
+      if (String(password).length < 6) {
+        return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, { status: 400 });
+      }
+      updateData.password = String(password);
+    }
 
+    const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
+    if (rol !== undefined && !allowedRoles.includes(String(rol).trim())) {
+      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+    }
+
+    if (nombre !== undefined && String(nombre).trim() === '') {
+      return NextResponse.json({ error: 'Nombre inválido.' }, { status: 400 });
+    }
+
+    if (Object.keys(updateData).length === 0 && nombre === undefined && rol === undefined && casa_id === undefined) {
+      return NextResponse.json({ error: 'No hay datos para actualizar.' }, { status: 400 });
+    }
+
+    // 1. Actualizar datos en Auth (Correo y/o Contraseña)
     if (Object.keys(updateData).length > 0) {
       const { error: authError } = await adminSupabase.auth.admin.updateUserById(id, updateData);
       if (authError) throw authError;

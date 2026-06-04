@@ -381,7 +381,7 @@ export default function ReportesPage() {
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',
@@ -396,7 +396,7 @@ export default function ReportesPage() {
                 background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
                 color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '0.8rem',
                 letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-                fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+                fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}

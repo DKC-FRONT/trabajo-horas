@@ -531,7 +531,7 @@ export default function ReservasPage() {
     border: `1px solid ${focusedField === field ? ACCENT + '80' : 'rgba(255,255,255,0.12)'}`,
     boxShadow: focusedField === field ? `0 0 0 3px ${ACCENT}15` : 'none',
     color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
-    fontFamily: "'Courier New', monospace", outline: 'none', appearance: 'none' as any,
+    fontFamily: 'inherit', outline: 'none', appearance: 'none' as any,
     transition: 'border-color 0.2s, box-shadow 0.2s',
   });
 
@@ -554,7 +554,7 @@ export default function ReservasPage() {
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',

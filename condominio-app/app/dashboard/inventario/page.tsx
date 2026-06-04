@@ -316,7 +316,7 @@ export default function InventarioPage() {
 
   if (accessDenied) {
     return (
-      <div style={{ padding: '4rem 2rem', textAlign: 'center', fontFamily: "'Courier New', monospace" }}>
+      <div style={{ padding: '4rem 2rem', textAlign: 'center', fontFamily: 'inherit' }}>
         <ShieldAlert size={64} color="#f87171" style={{ margin: '0 auto 1.5rem' }} />
         <h1 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>SISTEMA CLASIFICADO</h1>
         <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
@@ -328,7 +328,7 @@ export default function InventarioPage() {
   }
 
   return (
-    <div style={{ padding: '2.5rem', fontFamily: "'Courier New', monospace", maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '2.5rem', fontFamily: 'inherit', maxWidth: '1200px', margin: '0 auto' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2.5rem' }}>
         <div>
@@ -347,7 +347,7 @@ export default function InventarioPage() {
             background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
             color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
             letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-            fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+            fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
             flexShrink: 0
           }}
@@ -403,7 +403,7 @@ export default function InventarioPage() {
                 padding: '0.6rem 1.2rem', 
                 fontSize: '0.8rem', 
                 fontWeight: 'bold', 
-                fontFamily: "'Courier New', monospace", 
+                fontFamily: 'inherit', 
                 letterSpacing: '0.1em', 
                 textTransform: 'uppercase', 
                 cursor: 'pointer', 
@@ -428,7 +428,7 @@ export default function InventarioPage() {
                 padding: '0.6rem 1.2rem', 
                 fontSize: '0.8rem', 
                 fontWeight: 'bold', 
-                fontFamily: "'Courier New', monospace", 
+                fontFamily: 'inherit', 
                 letterSpacing: '0.1em', 
                 textTransform: 'uppercase', 
                 cursor: creating ? 'not-allowed' : 'pointer', 

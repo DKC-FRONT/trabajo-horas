@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 
 export const dynamic = 'force-dynamic';
 
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const now = new Date();
@@ -91,4 +94,4 @@ export async function GET(req: NextRequest) {
     console.error('[GET /api/reportes]', error);
     return NextResponse.json({ error: 'Error al generar el reporte.' }, { status: 500 });
   }
-}
+}

@@ -12,8 +12,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'PIN requerido' }, { status: 400 });
     }
 
+    // Validar formato del PIN (solo dígitos, entre 3 y 8 caracteres)
+    const pinStr = String(pin).trim();
+    if (!/^\d{3,8}$/.test(pinStr)) {
+      return NextResponse.json({ success: false, error: 'Formato de PIN inválido' }, { status: 400 });
+    }
+
     // Comparamos el PIN enviado con el PIN seguro del servidor
-    if (pin.trim() === SERVER_PIN) {
+    if (pinStr === SERVER_PIN) {
       return NextResponse.json({ success: true }, { status: 200 });
     } else {
       // 🛡️ TRUCO DE DEFENSA: Hacemos que la respuesta tarde 1 segundo a propósito.

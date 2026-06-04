@@ -356,7 +356,7 @@ export default function PermisosPage() {
               background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
               color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
               letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-              fontFamily: "'Courier New', monospace", fontWeight: 'bold', transition: 'all 0.2s',
+              fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
               flexShrink: 0
             }}
@@ -458,7 +458,7 @@ export default function PermisosPage() {
                   padding: '0.6rem 1.2rem', 
                   fontSize: '0.8rem', 
                   fontWeight: 'bold', 
-                  fontFamily: "'Courier New', monospace", 
+                  fontFamily: 'inherit', 
                   letterSpacing: '0.1em', 
                   textTransform: 'uppercase', 
                   cursor: saving ? 'not-allowed' : 'pointer', 
@@ -484,7 +484,7 @@ export default function PermisosPage() {
                   padding: '0.6rem 1.2rem', 
                   fontSize: '0.8rem', 
                   fontWeight: 'bold', 
-                  fontFamily: "'Courier New', monospace", 
+                  fontFamily: 'inherit', 
                   letterSpacing: '0.1em', 
                   textTransform: 'uppercase', 
                   cursor: 'pointer', 

@@ -176,7 +176,7 @@ export default function PorteriaPage() {
     return (
       <div style={{
         minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'Courier New', monospace", padding: '1rem', position: 'relative'
+        fontFamily: 'inherit', padding: '1rem', position: 'relative'
       }}>
         {/* Grid animado sutil */}
         <div style={{
@@ -215,7 +215,7 @@ export default function PorteriaPage() {
             style={{
               width: '100%', background: '#000', border: `1px solid ${errorPin ? '#f87171' : 'rgba(74,222,128,0.3)'}`,
               color: errorPin ? '#f87171' : ACCENT, padding: '0.8rem', fontSize: '1rem', textAlign: 'center',
-              fontFamily: "'Courier New', monospace", outline: 'none', letterSpacing: '0.2em', marginBottom: '1rem'
+              fontFamily: 'inherit', outline: 'none', letterSpacing: '0.2em', marginBottom: '1rem'
             }}
             autoFocus
           />
@@ -232,7 +232,7 @@ export default function PorteriaPage() {
               padding: '0.6rem 1.2rem', 
               fontSize: '0.8rem', 
               fontWeight: 'bold', 
-              fontFamily: "'Courier New', monospace",
+              fontFamily: 'inherit',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
               cursor: actionLoading === 'login' ? 'not-allowed' : 'pointer', 
@@ -254,7 +254,7 @@ export default function PorteriaPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0a0a0f', fontFamily: "'Courier New', monospace",
+      minHeight: '100vh', background: '#0a0a0f', fontFamily: 'inherit',
       position: 'relative', overflowX: 'hidden'
     }}>
       {/* Navbar Superior Portería */}
@@ -397,7 +397,7 @@ export default function PorteriaPage() {
                           padding: '0.6rem 1.2rem', 
                           fontSize: '0.8rem', 
                           fontWeight: 'bold', 
-                          fontFamily: "'Courier New', monospace",
+                          fontFamily: 'inherit',
                           letterSpacing: '0.1em',
                           cursor: 'pointer', 
                           display: 'flex', 
@@ -423,7 +423,7 @@ export default function PorteriaPage() {
                           padding: '0.6rem 1.2rem', 
                           fontSize: '0.8rem', 
                           fontWeight: 'bold', 
-                          fontFamily: "'Courier New', monospace",
+                          fontFamily: 'inherit',
                           letterSpacing: '0.1em',
                           cursor: 'pointer', 
                           display: 'flex', 

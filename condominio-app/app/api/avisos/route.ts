@@ -33,9 +33,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Título y mensaje son requeridos.' }, { status: 400 });
     }
 
+    const allowedTipos = ['general', 'mantenimiento', 'emergencia', 'evento'];
+    const cleanedTipo = tipo ? String(tipo).trim() : 'general';
+    if (!allowedTipos.includes(cleanedTipo)) {
+      return NextResponse.json({ error: 'Tipo de aviso inválido.' }, { status: 400 });
+    }
+
+    const tituloTrim = String(titulo).trim();
+    const mensajeTrim = String(mensaje).trim();
+    if (tituloTrim.length < 3) {
+      return NextResponse.json({ error: 'El título debe tener al menos 3 caracteres.' }, { status: 400 });
+    }
+    if (mensajeTrim.length < 5) {
+      return NextResponse.json({ error: 'El mensaje debe tener al menos 5 caracteres.' }, { status: 400 });
+    }
+
     const { error: insertError } = await supabase
       .from('avisos')
-      .insert([{ titulo: titulo.trim(), mensaje: mensaje.trim(), tipo: tipo || 'general' }]);
+      .insert([{ titulo: tituloTrim, mensaje: mensajeTrim, tipo: cleanedTipo }]);
 
     if (insertError) throw insertError;
 
@@ -86,9 +101,24 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'ID, Título y mensaje son requeridos.' }, { status: 400 });
     }
 
+    const allowedTipos = ['general', 'mantenimiento', 'emergencia', 'evento'];
+    const cleanedTipo = tipo ? String(tipo).trim() : 'general';
+    if (!allowedTipos.includes(cleanedTipo)) {
+      return NextResponse.json({ error: 'Tipo de aviso inválido.' }, { status: 400 });
+    }
+
+    const tituloTrim = String(titulo).trim();
+    const mensajeTrim = String(mensaje).trim();
+    if (tituloTrim.length < 3) {
+      return NextResponse.json({ error: 'El título debe tener al menos 3 caracteres.' }, { status: 400 });
+    }
+    if (mensajeTrim.length < 5) {
+      return NextResponse.json({ error: 'El mensaje debe tener al menos 5 caracteres.' }, { status: 400 });
+    }
+
     const { error: updateError } = await supabase
       .from('avisos')
-      .update({ titulo: titulo.trim(), mensaje: mensaje.trim(), tipo: tipo || 'general' })
+      .update({ titulo: tituloTrim, mensaje: mensajeTrim, tipo: cleanedTipo })
       .eq('id', id);
 
     if (updateError) throw updateError;

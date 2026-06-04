@@ -834,7 +834,7 @@ export default function LecturasPage() {
   const valorTotal = Math.round(lecturas.reduce((s, l) => s + (Number(l.valor) || 0), 0));
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', fontFamily: "'Courier New', monospace", position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a0f', fontFamily: 'inherit', position: 'relative', overflow: 'hidden' }}>
       {/* Grid bg */}
       <div style={{ position: 'fixed', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`, backgroundSize: '40px 40px', pointerEvents: 'none', zIndex: 0 }} />
 
@@ -871,7 +871,7 @@ export default function LecturasPage() {
         gap: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 1)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Courier New', monospace", padding: 0 }} onMouseEnter={(e) => (e.currentTarget.style.color = '#a78bfa')} onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 1)')}>
+          <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 1)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }} onMouseEnter={(e) => (e.currentTarget.style.color = '#a78bfa')} onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 1)')}>
             ← Dashboard
           </button>
           <span style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem' }}> / </span>
@@ -882,7 +882,7 @@ export default function LecturasPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', maxWidth: '360px', alignItems: 'center', gap: '1rem' }}>
           {canExportExcel && (
-            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
               <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
             </button>
           )}
@@ -894,7 +894,7 @@ export default function LecturasPage() {
             accept=".xlsx,.xls,.csv"
             style={{ display: 'none' }}
           />
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: "'Courier New', monospace", letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
             {importing ? '◌ Importando...' : '↑ Importar Excel'}
           </button>
         </div>
@@ -975,7 +975,7 @@ export default function LecturasPage() {
                   padding: '0.6rem 1.2rem',
                   fontSize: '0.8rem',
                   fontWeight: 'bold',
-                  fontFamily: "'Courier New', monospace",
+                  fontFamily: 'inherit',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
                   cursor: isPreparingOffline ? 'not-allowed' : 'pointer',
@@ -997,7 +997,7 @@ export default function LecturasPage() {
               <select 
                 value={mesSeleccionado} 
                 onChange={(e) => setMesSeleccionado(Number(e.target.value))}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 {MESES.map((m, i) => (
                   <option key={m} value={i + 1}>{m}</option>
@@ -1009,7 +1009,7 @@ export default function LecturasPage() {
               <select 
                 value={anioSeleccionado} 
                 onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: "'Courier New', monospace" }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 {aniosDisponibles.map((y: number) => (
                   <option key={y} value={y}>{y}</option>
@@ -1053,7 +1053,7 @@ export default function LecturasPage() {
         )}
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 1)', fontFamily: "'Courier New', monospace", textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div style={{ textAlign: 'center', padding: '2rem 0', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 1)', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span>
             Cargando datos...
           </div>
@@ -1081,7 +1081,7 @@ export default function LecturasPage() {
                   <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'casa' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Casa {formErrors.casa_id && <span style={{ color: '#f87171' }}>· {formErrors.casa_id}</span>}
                   </label>
-                  <select value={form.casa_id} onChange={(e) => setForm({ ...form, casa_id: e.target.value })} onFocus={() => setFocused('casa')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.casa_id ? 'rgba(248,113,113,0.4)' : focused === 'casa' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: "'Courier New', monospace", outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'casa' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }}>
+                  <select value={form.casa_id} onChange={(e) => setForm({ ...form, casa_id: e.target.value })} onFocus={() => setFocused('casa')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.casa_id ? 'rgba(248,113,113,0.4)' : focused === 'casa' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'casa' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }}>
                     <option value="" style={{ background: '#0a0a0f' }}>Seleccionar...</option>
                     {casas.map((c) => (
                       <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>
@@ -1096,7 +1096,7 @@ export default function LecturasPage() {
                   <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'fecha' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Fecha {formErrors.fecha && <span style={{ color: '#f87171' }}>· {formErrors.fecha}</span>}
                   </label>
-                  <input type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} onFocus={() => setFocused('fecha')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.fecha ? 'rgba(248,113,113,0.4)' : focused === 'fecha' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: "'Courier New', monospace", outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'fecha' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} onFocus={() => setFocused('fecha')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.fecha ? 'rgba(248,113,113,0.4)' : focused === 'fecha' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'fecha' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
 
                 {/* Lectura anterior */}
@@ -1104,7 +1104,7 @@ export default function LecturasPage() {
                   <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'anterior' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Lectura anterior {formErrors.lectura_anterior && <span style={{ color: '#f87171' }}>· {formErrors.lectura_anterior}</span>}
                   </label>
-                  <input type="number" placeholder="0" value={form.lectura_anterior} onChange={(e) => setForm({ ...form, lectura_anterior: e.target.value })} onFocus={() => setFocused('anterior')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_anterior ? 'rgba(248,113,113,0.4)' : focused === 'anterior' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: "'Courier New', monospace", outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'anterior' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="number" placeholder="0" value={form.lectura_anterior} onChange={(e) => setForm({ ...form, lectura_anterior: e.target.value })} onFocus={() => setFocused('anterior')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_anterior ? 'rgba(248,113,113,0.4)' : focused === 'anterior' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'anterior' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
 
                 {/* Lectura actual */}
@@ -1112,7 +1112,7 @@ export default function LecturasPage() {
                   <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'actual' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Lectura actual {formErrors.lectura_actual && <span style={{ color: '#f87171' }}>· {formErrors.lectura_actual}</span>}
                   </label>
-                  <input type="number" placeholder="0" value={form.lectura_actual} onChange={(e) => setForm({ ...form, lectura_actual: e.target.value })} onFocus={() => setFocused('actual')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_actual ? 'rgba(248,113,113,0.4)' : focused === 'actual' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: "'Courier New', monospace", outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'actual' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="number" placeholder="0" value={form.lectura_actual} onChange={(e) => setForm({ ...form, lectura_actual: e.target.value })} onFocus={() => setFocused('actual')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_actual ? 'rgba(248,113,113,0.4)' : focused === 'actual' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'actual' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
               </div>
 
@@ -1160,7 +1160,7 @@ export default function LecturasPage() {
                     padding: '0.6rem 1.2rem', 
                     fontSize: '0.8rem', 
                     fontWeight: 'bold', 
-                    fontFamily: "'Courier New', monospace", 
+                    fontFamily: 'inherit', 
                     letterSpacing: '0.1em', 
                     textTransform: 'uppercase', 
                     cursor: saving ? 'not-allowed' : 'pointer', 
@@ -1191,7 +1191,7 @@ export default function LecturasPage() {
                       padding: '0.6rem 1.2rem', 
                       fontSize: '0.8rem', 
                       fontWeight: 'bold', 
-                      fontFamily: "'Courier New', monospace", 
+                      fontFamily: 'inherit', 
                       letterSpacing: '0.1em', 
                       textTransform: 'uppercase', 
                       cursor: 'pointer', 

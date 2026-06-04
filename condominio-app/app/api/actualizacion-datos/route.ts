@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin';
 import { createClient as createServerClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 
 // Función para ordenar casas numéricamente (1, 2, 3... en vez de 1, 10, 100...)
 function sortCasasNumerically(casas: any[]) {
@@ -17,25 +18,12 @@ function sortCasasNumerically(casas: any[]) {
 }
 
 export async function GET() {
+  const auth = await verifyRole(['admin', 'trabajador', 'residente']);
+  if (auth.error) return auth.error;
+
   try {
-    const authClient = await createServerClient();
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-    }
-
-    const profileResult = await authClient
-      .from('usuarios')
-      .select('rol, casa_id')
-      .eq('id', user.id)
-      .single();
-
-    if (profileResult.error) {
-      throw profileResult.error;
-    }
-
-    const { rol, casa_id } = profileResult.data as { rol: string; casa_id: number | null };
+    const perfil = auth.profile as { rol: string; casa_id: number | null };
+    const { rol, casa_id } = perfil;
     const supabase = createAdminClient();
 
     if (rol === 'residente') {
@@ -67,25 +55,12 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await verifyRole(['admin', 'trabajador', 'residente']);
+  if (auth.error) return auth.error;
+
   try {
-    const authClient = await createServerClient();
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-    }
-
-    const profileResult = await authClient
-      .from('usuarios')
-      .select('rol, casa_id')
-      .eq('id', user.id)
-      .single();
-
-    if (profileResult.error) {
-      throw profileResult.error;
-    }
-
-    const { rol, casa_id: userCasaId } = profileResult.data as { rol: string; casa_id: number | null };
+    const perfil = auth.profile as { rol: string; casa_id: number | null };
+    const { rol, casa_id: userCasaId } = perfil;
     const supabase = createAdminClient();
     const body = await req.json();
     const {

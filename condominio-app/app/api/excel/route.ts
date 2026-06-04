@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 import ExcelJS from 'exceljs';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     

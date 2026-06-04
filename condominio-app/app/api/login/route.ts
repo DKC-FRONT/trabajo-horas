@@ -13,6 +13,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correo)) {
+      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+    }
+
+    if (typeof password !== 'string' || password.length < 6) {
+      return NextResponse.json({ error: 'Contraseña inválida (mínimo 6 caracteres).' }, { status: 400 });
+    }
+
     // 1. Iniciar sesión con Supabase Auth
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: correo,
@@ -61,4 +70,4 @@ export async function DELETE() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return NextResponse.json({ message: 'Sesión cerrada.' });
-}
+}

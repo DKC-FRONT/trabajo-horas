@@ -146,6 +146,7 @@ export default function UsuariosPage() {
   const resetForm = () => {
     setIsEditing(false); setCurrentId(null);
     setNombre(''); setCorreo(''); setPassword(''); setRol('residente'); setCasaId('');
+    setIsNewCasa(false); setNewCasaName('');
   };
 
   /**
@@ -159,6 +160,8 @@ export default function UsuariosPage() {
     setRol(u.rol || 'residente');
     setCasaId(u.casa_id ? String(u.casa_id) : ''); 
     setPassword(''); 
+    setIsNewCasa(false);
+    setNewCasaName('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -250,14 +253,14 @@ export default function UsuariosPage() {
     border: `1px solid ${focusedField === field ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
     boxShadow: focusedField === field ? `0 0 0 3px ${ACCENT}10` : 'none',
     color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
-    fontFamily: "'Courier New', monospace", outline: 'none',
+    fontFamily: 'inherit', outline: 'none',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   });
 
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',

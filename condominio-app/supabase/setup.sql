@@ -147,43 +147,59 @@ ALTER TABLE asistencia ENABLE ROW LEVEL SECURITY;
 ALTER TABLE permisos ENABLE ROW LEVEL SECURITY;
 
 -- CASAS: Todos leen, admin/trabajador crean, admin edita/borra
-CREATE POLICY "casas_select" ON casas FOR SELECT USING (true);
+-- Restrict read access to authenticated users; creation by staff, edits/deletes by admin
+CREATE POLICY "casas_select" ON casas FOR SELECT USING (auth.uid() IS NOT NULL);
 CREATE POLICY "casas_insert" ON casas FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "casas_update" ON casas FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "casas_delete" ON casas FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- USUARIOS: Todos leen, trigger crea, admin/propio edita, admin borra
-CREATE POLICY "usuarios_select" ON usuarios FOR SELECT USING (true);
+-- Usuarios: only admin or the user themselves can SELECT; inserts via trigger; updates by owner or admin
+CREATE POLICY "usuarios_select" ON usuarios FOR SELECT USING (id = auth.uid() OR EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "usuarios_insert" ON usuarios FOR INSERT WITH CHECK (true);
 CREATE POLICY "usuarios_update" ON usuarios FOR UPDATE USING (id = auth.uid() OR EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "usuarios_delete" ON usuarios FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- LECTURAS: Todos leen, admin/trabajador insertan/editan, admin borra
-CREATE POLICY "lecturas_select" ON lecturas_agua FOR SELECT USING (true);
+-- Lecturas: allow staff/admin to access all; residents can access readings for their casa only
+CREATE POLICY "lecturas_select" ON lecturas_agua FOR SELECT USING (
+    EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador'))
+    OR casa_id = (SELECT casa_id FROM usuarios WHERE id = auth.uid())
+);
 CREATE POLICY "lecturas_insert" ON lecturas_agua FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "lecturas_update" ON lecturas_agua FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "lecturas_delete" ON lecturas_agua FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- AVISOS: Todos leen, admin publica/edita/borra
+-- Avisos: public notices can be read by anyone (including unauthenticated), but only admin can modify
 CREATE POLICY "avisos_select" ON avisos FOR SELECT USING (true);
 CREATE POLICY "avisos_insert" ON avisos FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "avisos_update" ON avisos FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "avisos_delete" ON avisos FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- RESERVAS: Todos leen, autenticados crean, admin aprueba/borra
-CREATE POLICY "reservas_select" ON reservas FOR SELECT USING (true);
+-- Reservas: staff/admin see all; residentes see reservas de su casa; authenticated users can create
+CREATE POLICY "reservas_select" ON reservas FOR SELECT USING (
+    EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador'))
+    OR casa_id = (SELECT casa_id FROM usuarios WHERE id = auth.uid())
+);
 CREATE POLICY "reservas_insert" ON reservas FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "reservas_update" ON reservas FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 CREATE POLICY "reservas_delete" ON reservas FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- ASISTENCIA: Todos leen/insertan/editan (portería), admin borra
-CREATE POLICY "asistencia_select" ON asistencia FOR SELECT USING (true);
-CREATE POLICY "asistencia_insert" ON asistencia FOR INSERT WITH CHECK (true);
-CREATE POLICY "asistencia_update" ON asistencia FOR UPDATE USING (true);
+-- Asistencia: only staff/admin can access (sensitive personnel data)
+CREATE POLICY "asistencia_select" ON asistencia FOR SELECT USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "asistencia_insert" ON asistencia FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "asistencia_update" ON asistencia FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "asistencia_delete" ON asistencia FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
 
 -- PERMISOS: Todos leen, admin/trabajador crean/editan, admin borra
-CREATE POLICY "permisos_select" ON permisos FOR SELECT USING (true);
+-- Permisos: staff and admin only; users can view their own permisos
+CREATE POLICY "permisos_select" ON permisos FOR SELECT USING (
+    EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador'))
+    OR usuario_id = auth.uid()
+);
 CREATE POLICY "permisos_insert" ON permisos FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "permisos_update" ON permisos FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
 CREATE POLICY "permisos_delete" ON permisos FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
@@ -210,6 +226,14 @@ CREATE TABLE inventario_movimientos (
 
 ALTER TABLE inventario_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventario_movimientos ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public full access" ON inventario_items FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access" ON inventario_movimientos FOR ALL USING (true) WITH CHECK (true);
+-- Inventario: only staff/admin can read and modify
+CREATE POLICY "inventario_items_select" ON inventario_items FOR SELECT USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_items_insert" ON inventario_items FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_items_update" ON inventario_items FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_items_delete" ON inventario_items FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
+
+CREATE POLICY "inventario_movimientos_select" ON inventario_movimientos FOR SELECT USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_movimientos_insert" ON inventario_movimientos FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_movimientos_update" ON inventario_movimientos FOR UPDATE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol IN ('admin','trabajador')));
+CREATE POLICY "inventario_movimientos_delete" ON inventario_movimientos FOR DELETE USING (EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol = 'admin'));
     

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
+import { verifyRole } from '@/lib/verifyRole';
 
 export async function GET() {
   try {
@@ -35,6 +36,10 @@ export async function GET() {
 // Nota: El registro se recomienda hacer vía Supabase Auth (RegisterPage). 
 // Este POST es para crear perfiles manualmente o por admin.
 export async function POST(req: NextRequest) {
+  // Solo admin puede crear perfiles manualmente
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { nombre, correo, rol, casa_id } = await req.json();
@@ -43,11 +48,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Todos los campos excepto la casa son requeridos.' }, { status: 400 });
     }
 
+    // Validaciones básicas
+    const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
+    if (!allowedRoles.includes(rol)) {
+      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(String(correo))) {
+      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+    }
+
     const { error: insertError } = await supabase
       .from('usuarios')
       .insert([{
-        nombre_completo: nombre.trim(),
-        email: correo.trim(),
+        nombre_completo: String(nombre).trim(),
+        email: String(correo).trim(),
         rol: rol,
         casa_id: casa_id ? Number(casa_id) : null
       }]);
@@ -62,6 +78,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  // Solo admin puede actualizar perfiles
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id, nombre, correo, rol, casa_id } = await req.json();
@@ -70,11 +90,21 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
     }
 
+    const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
+    if (!allowedRoles.includes(rol)) {
+      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+    }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(String(correo))) {
+      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+    }
+
     const { error: updateError } = await supabase
       .from('usuarios')
       .update({
-        nombre_completo: nombre.trim(),
-        email: correo.trim(),
+        nombre_completo: String(nombre).trim(),
+        email: String(correo).trim(),
         rol: rol,
         casa_id: casa_id ? Number(casa_id) : null
       })
@@ -90,6 +120,10 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Solo admin puede eliminar usuarios
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { id } = await req.json();

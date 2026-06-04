@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 import ExcelJS from 'exceljs';
+import { verifyRole } from '@/lib/verifyRole';
 
 export const runtime = 'nodejs';
 
@@ -9,6 +10,9 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
 
 export async function GET(req: NextRequest) {
   try {
+    // Proteger exportación: solo administradores pueden descargar reportes
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const now  = new Date();
@@ -154,4 +158,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}

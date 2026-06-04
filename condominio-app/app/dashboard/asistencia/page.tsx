@@ -283,7 +283,7 @@ export default function AsistenciaPage() {
       transition: 'all 0.6s ease',
     }}>
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#fff', fontFamily: "'Courier New', monospace" }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#fff', fontFamily: 'inherit' }}>
           Cargando sistema de asistencia...
         </div>
       ) : (
@@ -317,7 +317,7 @@ export default function AsistenciaPage() {
             position: 'relative'
           }}>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: activeRecord ? '#4ade80' : '#60a5fa' }} />
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', margin: '0 0 0.5rem', fontFamily: 'monospace' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', margin: '0 0 0.5rem', fontFamily: 'inherit' }}>
               {currentTime.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.7rem', marginBottom: '2rem' }}>
@@ -326,7 +326,7 @@ export default function AsistenciaPage() {
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
               {!activeRecord ? (
-                <button onClick={handleEntry} disabled={saving} style={{ background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: "'Courier New', monospace", fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <button onClick={handleEntry} disabled={saving} style={{ background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: 'inherit', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                   <Play size={18} fill="currentColor" /> {saving ? '...' : 'MARCAR ENTRADA'}
                 </button>
               ) : (
@@ -335,7 +335,7 @@ export default function AsistenciaPage() {
                     <p style={{ color: '#4ade80', fontSize: '0.6rem', textTransform: 'uppercase', margin: 0 }}>En turno desde</p>
                     <p style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{formatTime(activeRecord.hora_entrada)}</p>
                   </div>
-                  <button onClick={handleExit} disabled={saving} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: "'Courier New', monospace", fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                  <button onClick={handleExit} disabled={saving} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.8rem 2rem', fontSize: '0.85rem', fontFamily: 'inherit', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.6rem' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                     <Square size={18} fill="currentColor" /> {saving ? '...' : 'MARCAR SALIDA'}
                   </button>
                 </div>
@@ -547,7 +547,7 @@ export default function AsistenciaPage() {
                     padding: '0.6rem 1.2rem', 
                     fontSize: '0.8rem', 
                     fontWeight: 'bold', 
-                    fontFamily: "'Courier New', monospace", 
+                    fontFamily: 'inherit', 
                     letterSpacing: '0.1em', 
                     textTransform: 'uppercase', 
                     cursor: saving ? 'not-allowed' : 'pointer', 
@@ -573,7 +573,7 @@ export default function AsistenciaPage() {
                     padding: '0.6rem 1.2rem', 
                     fontSize: '0.8rem', 
                     fontWeight: 'bold', 
-                    fontFamily: "'Courier New', monospace", 
+                    fontFamily: 'inherit', 
                     letterSpacing: '0.1em', 
                     textTransform: 'uppercase', 
                     cursor: 'pointer', 

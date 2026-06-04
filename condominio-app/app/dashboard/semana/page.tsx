@@ -977,7 +977,7 @@ export default function SemanaPage() {
             padding: '0.6rem 1.2rem',
             fontSize: '0.8rem',
             fontWeight: 'bold',
-            fontFamily: "'Courier New', monospace",
+            fontFamily: 'inherit',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             cursor: 'pointer',

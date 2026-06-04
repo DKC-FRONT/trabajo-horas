@@ -5,9 +5,12 @@ export async function createClient() {
   const cookieStore = await cookies()
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // IMPORTANT: never use the Service Role key here — this client must respect
+  // the current user's session (cookies). Use the public/anon key for SSR.
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase server client misconfigured: ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.');
     return { auth: {}, from: () => ({ select: () => ({ eq: () => ({ single: () => ({}) }) }) }) } as any;
   }
 

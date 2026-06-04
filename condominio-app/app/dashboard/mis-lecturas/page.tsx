@@ -167,7 +167,7 @@ export default function MisLecturasPage() {
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',

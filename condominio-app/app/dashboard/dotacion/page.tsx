@@ -90,7 +90,7 @@ export default function DotacionPage() {
   }
 
   return (
-    <div style={{ minHeight: '100%', fontFamily: "'Courier New', monospace" }}>
+    <div style={{ minHeight: '100%', fontFamily: 'inherit' }}>
       
       {/* ========================================================
           ZONA DE INTERFAZ DEL SISTEMA (No se imprime)

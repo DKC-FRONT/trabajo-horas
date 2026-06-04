@@ -289,7 +289,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             border: '1px solid rgba(255,255,255,0.08)',
             padding: collapsed && !isMobile ? '0.45rem' : '0.4rem 0.75rem',
             color: 'rgba(255, 255, 255, 1)',
-            fontSize: '0.6rem', fontFamily: "'Courier New', monospace",
+            fontSize: '0.6rem', fontFamily: 'inherit',
             letterSpacing: '0.1em', textTransform: 'uppercase' as const,
             cursor: 'pointer', transition: 'all 0.2s',
             width: collapsed && !isMobile ? '36px' : '100%',
@@ -315,7 +315,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{
       minHeight: '100vh',
       background: '#0a0a0f',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       position: 'relative',
     }}>
       {/* Grid background */}
@@ -377,7 +377,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             border: '1px solid rgba(255,255,255,0.08)',
             color: 'rgba(255, 255, 255, 1)', padding: '0.5rem 0.6rem',
             cursor: 'pointer', fontSize: '1rem',
-            fontFamily: "'Courier New', monospace",
+            fontFamily: 'inherit',
           }}
         >
           ☰
@@ -394,6 +394,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         width: isMobile ? '100%' : `calc(100% - ${sidebarW}px)`,
         maxWidth: '100%',
         overflowX: 'hidden',
+        fontFamily: 'inherit',
       }}>
         <div style={{
           opacity: mounted ? 1 : 0,

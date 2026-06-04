@@ -95,7 +95,7 @@ export default function ConfiguracionPage() {
     <div style={{ 
       minHeight: '100vh', 
       background: '#0a0a0f', 
-      fontFamily: "'Courier New', monospace", 
+      fontFamily: 'inherit', 
       position: 'relative',
       paddingBottom: '4rem'
     }}>
@@ -110,7 +110,7 @@ export default function ConfiguracionPage() {
       <nav style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,10,15,0.8)', backdropFilter: 'blur(8px)' }}>
         <button 
           onClick={() => router.push('/dashboard')} 
-          style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'Courier New', monospace", display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} 
           onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
         >
@@ -162,7 +162,7 @@ export default function ConfiguracionPage() {
                       type="number"
                       value={configs.find(c => c.clave === 'tarifa_m3')?.valor || ''}
                       onChange={(e) => handleChange('tarifa_m3', e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fff', fontFamily: "'Courier New', monospace", fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
                     />
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default function ConfiguracionPage() {
                       type="number"
                       value={configs.find(c => c.clave === 'limite_basico')?.valor || ''}
                       onChange={(e) => handleChange('limite_basico', e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: "'Courier New', monospace", fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
                     />
                     <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem' }}>m3</span>
                   </div>
@@ -196,7 +196,7 @@ export default function ConfiguracionPage() {
                   value={configs.find(c => c.clave === 'nombre_condominio')?.valor || ''}
                   onChange={(e) => handleChange('nombre_condominio', e.target.value)}
                   placeholder="Ej: Condominio Campestre La Florida"
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: "'Courier New', monospace", fontSize: '0.9rem', borderRadius: '2px' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
                 />
               </div>
             </section>
@@ -211,7 +211,7 @@ export default function ConfiguracionPage() {
                   border: '1px solid #60a5fa40',
                   padding: '1rem 2.5rem',
                   color: '#fff',
-                  fontFamily: "'Courier New', monospace",
+                  fontFamily: 'inherit',
                   letterSpacing: '0.15em',
                   textTransform: 'uppercase',
                   fontWeight: 700,
@@ -250,4 +250,4 @@ export default function ConfiguracionPage() {
       `}</style>
     </div>
   );
-}
+}

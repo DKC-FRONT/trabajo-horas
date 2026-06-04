@@ -127,7 +127,7 @@ export default function DashboardHomePage() {
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.5s ease, transform 0.5s ease',
@@ -214,7 +214,7 @@ export default function DashboardHomePage() {
                 textAlign: 'left', transition: 'background 0.2s ease',
                 position: 'relative', display: 'flex', flexDirection: 'column', gap: '0.75rem',
                 animation: `fadeSlideIn 0.4s ease ${i * 0.06}s both`,
-                fontFamily: "'Courier New', monospace",
+                fontFamily: 'inherit',
               }}
             >
               {/* Accent top bar */}

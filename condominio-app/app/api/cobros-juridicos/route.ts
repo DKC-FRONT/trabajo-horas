@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin';
+import { verifyRole } from '@/lib/verifyRole';
 
 // Función para ordenar casas numéricamente
 function sortCasasNumerically(casas: any[]) {
@@ -18,6 +19,8 @@ function sortCasasNumerically(casas: any[]) {
 // ── GET — Listar todos los cobros jurídicos ──
 export async function GET(req: NextRequest) {
   try {
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
     const supabase = createAdminClient();
     const url = new URL(req.url);
     const tipo = url.searchParams.get('tipo'); // 'casas' para obtener lista de casas
@@ -67,6 +70,10 @@ export async function GET(req: NextRequest) {
 
 // ── POST — Crear nuevo(s) cobro(s) jurídico(s) ──
 export async function POST(req: NextRequest) {
+  // Solo admin puede crear cobros jurídicos
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = createAdminClient();
     const body = await req.json();
@@ -76,17 +83,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Debes enviar al menos un cobro.' }, { status: 400 });
     }
 
-    const registros = cobros.map((c: any) => ({
-      numero_casa: c.numero_casa,
-      propietario: c.propietario || null,
-      valor_mora: c.valor_mora || 0,
-      concepto: c.concepto || 'Cuota de administración',
-      meses_mora: c.meses_mora || null,
-      fecha_notificacion: c.fecha_notificacion || new Date().toISOString().split('T')[0],
-      fecha_limite: c.fecha_limite || null,
-      estado: 'activo',
-      notas: c.notas || null,
-    }));
+    const validateDate = (value: any) => {
+      if (!value) return false;
+      const dateStr = String(value).trim();
+      const date = new Date(dateStr);
+      return !Number.isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+    };
+
+    const registros = cobros.map((c: any, index: number) => {
+      const numero_casa = String(c.numero_casa || '').trim();
+      const valor_mora = Number(c.valor_mora);
+      const fecha_notificacion = c.fecha_notificacion ? String(c.fecha_notificacion).trim() : new Date().toISOString().split('T')[0];
+      const fecha_limite = c.fecha_limite ? String(c.fecha_limite).trim() : null;
+
+      if (!numero_casa) {
+        throw new Error(`Cobro ${index + 1}: numero_casa es requerido.`);
+      }
+      if (isNaN(valor_mora) || valor_mora < 0) {
+        throw new Error(`Cobro ${index + 1}: valor_mora inválido.`);
+      }
+      if (!validateDate(fecha_notificacion)) {
+        throw new Error(`Cobro ${index + 1}: fecha_notificacion debe ser YYYY-MM-DD.`);
+      }
+      if (fecha_limite && !validateDate(fecha_limite)) {
+        throw new Error(`Cobro ${index + 1}: fecha_limite debe ser YYYY-MM-DD.`);
+      }
+
+      return {
+        numero_casa,
+        propietario: c.propietario || null,
+        valor_mora,
+        concepto: c.concepto || 'Cuota de administración',
+        meses_mora: c.meses_mora || null,
+        fecha_notificacion,
+        fecha_limite,
+        estado: 'activo',
+        notas: c.notas || null,
+      };
+    });
 
     const { error } = await supabase
       .from('cobros_juridicos')
@@ -110,18 +144,33 @@ export async function POST(req: NextRequest) {
 
 // ── PUT — Actualizar estado de un cobro ──
 export async function PUT(req: NextRequest) {
+  // Solo admin puede actualizar cobros
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = createAdminClient();
     const body = await req.json();
     const { id, estado, notas } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID de cobro requerido.' }, { status: 400 });
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ error: 'ID de cobro inválido.' }, { status: 400 });
     }
 
     const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
-    if (estado !== undefined) updateData.estado = estado;
-    if (notas !== undefined) updateData.notas = notas;
+    if (estado !== undefined) {
+      if (typeof estado !== 'string' || String(estado).trim() === '') {
+        return NextResponse.json({ error: 'Estado inválido.' }, { status: 400 });
+      }
+      updateData.estado = String(estado).trim();
+    }
+    if (notas !== undefined) {
+      updateData.notas = String(notas).trim();
+    }
+
+    if (Object.keys(updateData).length === 1) {
+      return NextResponse.json({ error: 'No hay datos para actualizar.' }, { status: 400 });
+    }
 
     const { error } = await supabase
       .from('cobros_juridicos')
@@ -139,13 +188,17 @@ export async function PUT(req: NextRequest) {
 
 // ── DELETE — Eliminar un cobro ──
 export async function DELETE(req: NextRequest) {
+  // Solo admin puede eliminar cobros
+  const auth = await verifyRole(['admin']);
+  if (auth.error) return auth.error;
+
   try {
     const supabase = createAdminClient();
     const body = await req.json();
     const { id } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID de cobro requerido.' }, { status: 400 });
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ error: 'ID de cobro inválido.' }, { status: 400 });
     }
 
     const { error } = await supabase

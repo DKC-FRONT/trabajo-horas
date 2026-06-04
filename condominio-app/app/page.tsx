@@ -128,7 +128,7 @@ export default function Home() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -186,7 +186,7 @@ export default function Home() {
               border: '1px solid rgba(255,255,255,0.08)',
               padding: '0.3rem 0.75rem',
               color: 'rgba(255,255,255,0.3)',
-              fontSize: '0.6rem', fontFamily: "'Courier New', monospace",
+              fontSize: '0.6rem', fontFamily: 'inherit',
               letterSpacing: '0.12em', textTransform: 'uppercase',
               cursor: 'pointer', transition: 'all 0.2s',
             }}
@@ -263,7 +263,7 @@ export default function Home() {
               background: 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15))',
               border: '1px solid rgba(96,165,250,0.35)',
               padding: '0.85rem 2.5rem', color: '#ffffff',
-              fontSize: '0.75rem', fontFamily: "'Courier New', monospace",
+              fontSize: '0.75rem', fontFamily: 'inherit',
               letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700,
               cursor: 'pointer', transition: 'all 0.2s',
             }}

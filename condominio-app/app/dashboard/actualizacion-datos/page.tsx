@@ -22,7 +22,7 @@ const inputStyle = (focused: boolean): React.CSSProperties => ({
   border: `1px solid ${focused ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
   boxShadow: focused ? `0 0 0 3px ${ACCENT}10` : 'none',
   color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
-  fontFamily: "'Courier New', monospace", outline: 'none',
+  fontFamily: 'inherit', outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s',
 });
 
@@ -259,7 +259,7 @@ export default function ActualizacionDatosPage() {
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',

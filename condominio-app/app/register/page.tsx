@@ -150,7 +150,7 @@ const containerStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   background: '#0a0a0f',
-  fontFamily: "'Courier New', monospace",
+  fontFamily: 'inherit',
   position: 'relative',
   overflow: 'hidden',
   padding: '2rem',

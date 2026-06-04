@@ -27,12 +27,12 @@ const inputStyle = (focused: boolean): React.CSSProperties => ({
   border: `1px solid ${focused ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
   boxShadow: focused ? `0 0 0 3px ${ACCENT}10` : 'none',
   color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
-  fontFamily: "'Courier New', monospace", outline: 'none',
+  fontFamily: 'inherit', outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s',
 });
 
 const btnBase: React.CSSProperties = {
-  fontFamily: "'Courier New', monospace",
+  fontFamily: 'inherit',
   fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase',
   cursor: 'pointer', transition: 'all 0.25s ease',
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
@@ -224,7 +224,7 @@ export default function CobrosJuridicosPage() {
     <>
       <div id="cobros-page-content" style={{
         padding: '2.5rem',
-        fontFamily: "'Courier New', monospace",
+        fontFamily: 'inherit',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(16px)',
         transition: 'opacity 0.45s ease, transform 0.45s ease',
@@ -330,7 +330,7 @@ export default function CobrosJuridicosPage() {
                         borderBottom: '1px solid rgba(255,255,255,0.03)',
                         transition: 'all 0.15s',
                         display: 'flex', alignItems: 'center', gap: '0.6rem',
-                        fontFamily: "'Courier New', monospace",
+                        fontFamily: 'inherit',
                       }}
                       onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
                       onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
@@ -733,7 +733,7 @@ export default function CobrosJuridicosPage() {
               id="carta-prejuridica"
               style={{
                 background: '#ffffff', color: '#000000',
-                padding: '3rem 3.5rem', fontFamily: "'Times New Roman', serif",
+                padding: '3rem 3.5rem', fontFamily: 'inherit',
                 fontSize: '12pt', lineHeight: 1.7,
                 boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
               }}

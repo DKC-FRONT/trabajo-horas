@@ -12,7 +12,7 @@ export default function NotFound() {
       justifyContent: 'center',
       background: '#0a0a0f',
       color: '#fff',
-      fontFamily: 'monospace'
+      fontFamily: 'inherit'
     }}>
       <h1 style={{ fontSize: '3rem', color: '#f87171' }}>404</h1>
       <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '2rem' }}>PAGINA NO ENCONTRADA</p>

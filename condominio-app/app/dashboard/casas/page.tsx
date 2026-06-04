@@ -164,14 +164,14 @@ export default function CasasPage() {
     border: `1px solid ${hasError ? 'rgba(248,113,113,0.5)' : focusedField === field ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
     boxShadow: focusedField === field ? `0 0 0 3px ${ACCENT}10` : 'none',
     color: '#ffffff', fontSize: '0.82rem', padding: '0.65rem 0.85rem',
-    fontFamily: "'Courier New', monospace", outline: 'none',
+    fontFamily: 'inherit', outline: 'none',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   });
 
   return (
     <div style={{
       padding: '2.5rem',
-      fontFamily: "'Courier New', monospace",
+      fontFamily: 'inherit',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(16px)',
       transition: 'opacity 0.45s ease, transform 0.45s ease',
@@ -237,7 +237,7 @@ export default function CasasPage() {
               padding: '0.6rem 1.2rem', 
               fontSize: '0.8rem', 
               fontWeight: 'bold',
-              fontFamily: "'Courier New', monospace",
+              fontFamily: 'inherit',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               cursor: saving ? 'not-allowed' : 'pointer', 
