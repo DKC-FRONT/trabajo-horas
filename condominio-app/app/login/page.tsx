@@ -39,18 +39,19 @@ export default function Login() {
     setMensaje('');
 
     try {
-      const { createClient } = await import('@/lib/client');
-      const supabase = createClient();
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email: correo,
-        password: password,
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ correo, password }),
       });
 
-      if (error) {
-        setMensaje('Credenciales incorrectas o usuario no encontrado.');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMensaje(data.error || 'Credenciales incorrectas o usuario no encontrado.');
       } else {
-        // El middleware y Supabase SSR se encargan de la sesión
         window.location.href = '/dashboard';
       }
     } catch (err) {

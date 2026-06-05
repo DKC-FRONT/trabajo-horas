@@ -26,7 +26,7 @@ export async function verifyRole(rolesPermitidos: RolPermitido[]) {
 
     const { data: profile, error: profileError } = await supabase
       .from('usuarios')
-      .select('id, rol, nombre_completo')
+      .select('id, rol, casa_id, nombre_completo')
       .eq('id', user.id)
       .single();
 

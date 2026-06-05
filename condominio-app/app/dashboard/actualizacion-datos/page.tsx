@@ -90,7 +90,10 @@ export default function ActualizacionDatosPage() {
         : '/api/actualizacion-datos';
 
       const res = await fetch(query);
-      if (!res.ok) throw new Error('Error al obtener datos');
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.error || 'Error al obtener datos');
+      }
       const data = await res.json();
       const casasData = Array.isArray(data) ? data : [data];
       setCasas(casasData || []);
