@@ -74,7 +74,8 @@ export default function AsistenciaPage() {
       const { data: profile } = await supabase.from('usuarios').select('rol, email').eq('id', user.id).single();
       if (profile) {
         setUserRole(profile.rol);
-        setIsSuperAdmin(user.email === 'admin@florida.com');
+        // Todos los admins pueden editar registros
+        setIsSuperAdmin(profile.rol === 'admin');
       }
 
       // Buscar registro activo del usuario actual
@@ -106,6 +107,19 @@ export default function AsistenciaPage() {
     }
   };
 
+  const getWeekRange = () => {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = dom, 1 = lun ...
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - daysToMonday);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    return { start: monday, end: sunday };
+  };
+
   const fetchAdminData = async () => {
     try {
       const { createClient } = await import('@/lib/client');
@@ -119,9 +133,19 @@ export default function AsistenciaPage() {
         .order('nombre_completo');
       setEmployees(users || []);
 
-      // 2. Obtener registros de asistencia filtrados por mes/año
-      const startDate = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01T00:00:00`;
-      const endDate = new Date(anioSeleccionado, mesSeleccionado, 0).toISOString().split('T')[0] + 'T23:59:59';
+      let startDate: string;
+      let endDate: string;
+
+      if (filterEmployee === 'all') {
+        // Vista por defecto: solo esta semana (lun–dom)
+        const { start, end } = getWeekRange();
+        startDate = start.toISOString();
+        endDate   = end.toISOString();
+      } else {
+        // Vista por empleado: mes completo seleccionado
+        startDate = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01T00:00:00`;
+        endDate   = new Date(anioSeleccionado, mesSeleccionado, 0).toISOString().split('T')[0] + 'T23:59:59';
+      }
 
       let query = supabase
         .from('asistencia')
@@ -142,13 +166,10 @@ export default function AsistenciaPage() {
       const promedio = validRecords.length > 0 ? total / validRecords.length : 0;
       setStats({ total, promedio });
       
-      // 3. Cruzar datos manualmente
+      // Cruzar con nombres
       const mapped = (records || []).map((r: any) => {
         const u = (users || []).find((user: any) => user.id === r.usuario_id);
-        return {
-          ...r,
-          nombre_completo: u ? u.nombre_completo : 'Usuario desconocido'
-        };
+        return { ...r, nombre_completo: u ? u.nombre_completo : 'Usuario desconocido' };
       });
 
       setAdminHistory(mapped);
@@ -349,36 +370,55 @@ export default function AsistenciaPage() {
               <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <Activity size={18} style={{ color: '#a78bfa' }} />
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>SEGUIMIENTO DE PERSONAL</h3>
+                  <div>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>SEGUIMIENTO DE PERSONAL</h3>
+                    {filterEmployee === 'all' ? (
+                      <p style={{ margin: '0.15rem 0 0', fontSize: '0.6rem', color: '#60a5fa', letterSpacing: '0.05em' }}>
+                        📅 Vista: <strong>esta semana</strong> —
+                        {' '}{getWeekRange().start.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                        {' → '}
+                        {getWeekRange().end.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                      </p>
+                    ) : (
+                      <p style={{ margin: '0.15rem 0 0', fontSize: '0.6rem', color: '#fbbf24', letterSpacing: '0.05em' }}>
+                        📋 Vista: <strong>mes completo</strong> ({['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesSeleccionado - 1]} {anioSeleccionado})
+                      </p>
+                    )}
+                  </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <select 
-                    value={mesSeleccionado} 
-                    onChange={(e) => setMesSeleccionado(Number(e.target.value))}
-                    style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
-                  >
-                    {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m, i) => (
-                      <option key={m} value={i + 1}>{m}</option>
-                    ))}
-                  </select>
+                  {/* Filtros mes/año: solo visibles cuando hay empleado seleccionado */}
+                  {filterEmployee !== 'all' && (
+                    <>
+                      <select 
+                        value={mesSeleccionado} 
+                        onChange={(e) => setMesSeleccionado(Number(e.target.value))}
+                        style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                      >
+                        {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m, i) => (
+                          <option key={m} value={i + 1}>{m}</option>
+                        ))}
+                      </select>
 
-                  <select 
-                    value={anioSeleccionado} 
-                    onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
-                    style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
-                  >
-                    {aniosDisponibles.map(y => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
+                      <select 
+                        value={anioSeleccionado} 
+                        onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
+                        style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                      >
+                        {aniosDisponibles.map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
 
                   <select 
                     value={filterEmployee} 
                     onChange={(e) => setFilterEmployee(e.target.value)}
                     style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.8rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
                   >
-                    <option value="all">Todos los empleados</option>
+                    <option value="all">📅 Esta semana (todos)</option>
                     {employees.map((e: any) => <option key={e.id} value={e.id}>{e.nombre_completo}</option>)}
                   </select>
                 </div>
@@ -504,95 +544,126 @@ export default function AsistenciaPage() {
       </div>
         </>
       )}
-      {/* Modal de Edición (Solo SuperAdmin) */}
+      {/* Modal de Edición */}
       {editingRecord && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1.5rem'
-        }}>
-          <div style={{ background: '#111', border: '1px solid #333', padding: '2.5rem', width: '100%', maxWidth: '500px' }}>
-            <h3 style={{ color: '#fff', marginTop: 0, marginBottom: '1.5rem', fontSize: '1.2rem' }}>Modificar Asistencia</h3>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '2rem' }}>Editando registro de: <b style={{ color: '#fff' }}>{editingRecord.nombre_completo}</b></p>
-            
-            <form onSubmit={handleUpdateRecord} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora de Entrada (ISO)</label>
-                <input 
-                  type="datetime-local" 
-                  value={new Date(new Date(editingRecord.hora_entrada).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} 
-                  onChange={e => setEditingRecord({...editingRecord, hora_entrada: new Date(e.target.value).toISOString()})}
-                  style={inputStyle} 
-                />
+        <div
+          onClick={() => setEditingRecord(null)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+            zIndex: 1000,
+            overflowY: 'auto',
+            padding: '2rem 1rem 4rem',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#111', border: '1px solid rgba(255,255,255,0.12)',
+              padding: '2rem', width: '100%', maxWidth: '480px',
+              position: 'relative', flexShrink: 0,
+            }}
+          >
+            {/* Barra de color superior */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(to right, #fbbf24, transparent)' }} />
+
+            {/* Cabecera */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <div>
+                <p style={{ margin: '0 0 0.2rem', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Admin</p>
+                <h3 style={{ color: '#fff', margin: 0, fontSize: '1rem', fontFamily: 'inherit' }}>Modificar Asistencia</h3>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', margin: '0.3rem 0 0' }}>
+                  Registro de: <b style={{ color: '#fbbf24' }}>{editingRecord.nombre_completo}</b>
+                </p>
               </div>
-              
+              <button
+                onClick={() => setEditingRecord(null)}
+                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit', flexShrink: 0, marginLeft: '1rem' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateRecord} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora de Salida (ISO)</label>
-                <input 
-                  type="datetime-local" 
-                  value={editingRecord.hora_salida ? new Date(new Date(editingRecord.hora_salida).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''} 
-                  onChange={e => setEditingRecord({...editingRecord, hora_salida: e.target.value ? new Date(e.target.value).toISOString() : null})}
-                  style={inputStyle} 
+                <label style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Hora de Entrada</label>
+                <input
+                  type="datetime-local"
+                  value={(() => {
+                    try {
+                      const d = new Date(editingRecord.hora_entrada);
+                      return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    } catch { return ''; }
+                  })()}
+                  onChange={e => {
+                    if (e.target.value) {
+                      setEditingRecord({...editingRecord, hora_entrada: new Date(e.target.value).toISOString()});
+                    }
+                  }}
+                  style={inputStyle}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button 
-                  type="submit" 
-                  disabled={saving} 
-                  style={{ 
-                    flex: 1, 
-                    background: saving ? 'rgba(251,191,36,0.08)' : 'rgba(251,191,36,0.15)', 
-                    border: saving ? '1px solid rgba(251,191,36,0.2)' : '1px solid rgba(251,191,36,0.4)', 
-                    color: saving ? 'rgba(251,191,36,0.5)' : '#fbbf24', 
-                    padding: '0.6rem 1.2rem', 
-                    fontSize: '0.8rem', 
-                    fontWeight: 'bold', 
-                    fontFamily: 'inherit', 
-                    letterSpacing: '0.1em', 
-                    textTransform: 'uppercase', 
-                    cursor: saving ? 'not-allowed' : 'pointer', 
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-                  onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
-                >
-                  {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setEditingRecord(null)} 
-                  style={{ 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Hora de Salida</label>
+                <input
+                  type="datetime-local"
+                  value={(() => {
+                    try {
+                      if (!editingRecord.hora_salida) return '';
+                      const d = new Date(editingRecord.hora_salida);
+                      return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    } catch { return ''; }
+                  })()}
+                  onChange={e => setEditingRecord({...editingRecord, hora_salida: e.target.value ? new Date(e.target.value).toISOString() : null})}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem' }}>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{
                     flex: 1,
-                    background: 'rgba(248,113,113,0.15)', 
-                    border: '1px solid rgba(248,113,113,0.4)', 
-                    color: '#f87171', 
-                    padding: '0.6rem 1.2rem', 
-                    fontSize: '0.8rem', 
-                    fontWeight: 'bold', 
-                    fontFamily: 'inherit', 
-                    letterSpacing: '0.1em', 
-                    textTransform: 'uppercase', 
-                    cursor: 'pointer', 
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
+                    background: saving ? 'rgba(251,191,36,0.08)' : 'rgba(251,191,36,0.15)',
+                    border: `1px solid ${saving ? 'rgba(251,191,36,0.2)' : 'rgba(251,191,36,0.5)'}`,
+                    color: saving ? 'rgba(251,191,36,0.4)' : '#fbbf24',
+                    padding: '0.7rem', fontSize: '0.72rem', fontWeight: 700,
+                    fontFamily: 'inherit', letterSpacing: '0.12em', textTransform: 'uppercase',
+                    cursor: saving ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.25)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                  onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
                 >
-                  CANCELAR
+                  {saving ? 'GUARDANDO...' : '✓ GUARDAR'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingRecord(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(248,113,113,0.1)',
+                    border: '1px solid rgba(248,113,113,0.4)',
+                    color: '#f87171',
+                    padding: '0.7rem', fontSize: '0.72rem', fontWeight: 700,
+                    fontFamily: 'inherit', letterSpacing: '0.12em', textTransform: 'uppercase',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  ✕ CANCELAR
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
