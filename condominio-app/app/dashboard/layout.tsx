@@ -62,6 +62,48 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobile, setIsMobile]   = useState(false);
   const [dbStatus, setDbStatus]   = useState<'checking' | 'online' | 'error'>('checking');
 
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (newPassword.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        setPasswordError(error.message);
+      } else {
+        setPasswordSuccess('¡Contraseña actualizada con éxito!');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setShowPasswordModal(false), 2000);
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || 'Error al actualizar la contraseña.');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     const checkSize = () => setIsMobile(window.innerWidth < 768);
@@ -279,6 +321,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div style={{ fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
               {user?.correo}
             </div>
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#38bdf8',
+                fontSize: '0.62rem',
+                cursor: 'pointer',
+                padding: '0.2rem 0',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                marginTop: '0.25rem',
+                textDecoration: 'underline'
+              }}
+            >
+               Cambiar Contraseña
+            </button>
           </div>
         )}
         <button
@@ -411,6 +472,141 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
       `}</style>
+      {showPasswordModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(5, 5, 10, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: '#0d0d14',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 40px rgba(56, 189, 248, 0.05)',
+            borderRadius: '0.75rem',
+            padding: '2rem',
+            width: '100%',
+            maxWidth: '380px',
+            position: 'relative',
+          }}>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#fff', fontSize: '1.25rem', fontWeight: 700 }}>
+              🔑 Cambiar Contraseña
+            </h3>
+            <p style={{ margin: '0 0 1.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>
+              Ingresa tu nueva contraseña a continuación.
+            </p>
+
+            <form onSubmit={handleUpdatePassword} style={{ display: 'grid', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Nueva Contraseña
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.375rem',
+                    padding: '0.6rem 0.75rem',
+                    color: '#fff',
+                    fontSize: '0.875rem',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Confirmar Contraseña
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repite la contraseña"
+                  required
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.375rem',
+                    padding: '0.6rem 0.75rem',
+                    color: '#fff',
+                    fontSize: '0.875rem',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                />
+              </div>
+
+              {passwordError && (
+                <div style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                  ⚠️ {passwordError}
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div style={{ color: '#34d399', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                  ✓ {passwordSuccess}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                  }}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.375rem',
+                    color: '#fff',
+                    padding: '0.6rem',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingPassword}
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    color: '#fff',
+                    padding: '0.6rem',
+                    cursor: updatingPassword ? 'not-allowed' : 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {updatingPassword ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
