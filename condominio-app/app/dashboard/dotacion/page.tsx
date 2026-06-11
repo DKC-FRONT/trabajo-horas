@@ -115,7 +115,7 @@ export default function DotacionPage() {
           }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-            <Printer size={18} /> IMMODIR ACTA
+            <Printer size={18} /> IMPRIMIR ENTREGA DE DOTACION
           </button>
         </div>
 

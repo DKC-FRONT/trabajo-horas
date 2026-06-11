@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Trash2, X } from 'lucide-react';
+import { saveAs } from 'file-saver';
 import { createClient } from '@/lib/client';
 
 type SemanaTarea = {
@@ -20,6 +21,7 @@ type UserProfile = {
   id: string;
   rol: string;
   nombre_completo?: string;
+  email?: string;
 };
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -52,6 +54,27 @@ function formatDayHeader(date: Date) {
   return `${day} ${month}`;
 }
 
+function sortHoras(horasArr: string[]) {
+  return [...horasArr].sort((a, b) => {
+    const aStart = getHoraStart(a);
+    const bStart = getHoraStart(b);
+    return aStart.localeCompare(bStart);
+  });
+}
+
+function formatHoraLabel(timeStr: string) {
+  const parts = timeStr.trim().split(':');
+  if (parts.length > 0 && parts[0]) {
+    let h = parseInt(parts[0]);
+    const m = parts[1] || '00';
+    const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${ampm}`;
+  }
+  return timeStr;
+}
+
 export default function SemanaPage() {
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -64,16 +87,20 @@ export default function SemanaPage() {
 
   // Horas del Cronograma
   const [horas, setHoras] = useState<string[]>(() => {
+    let rawHoras = [];
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('semana_horas');
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) { console.error(e); }
+        try { rawHoras = JSON.parse(saved); } catch (e) { console.error(e); }
       }
     }
-    return Array.from({ length: 8 }, (_, i) => {
-      const h = 6 + i;
-      return `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
-    });
+    if (rawHoras.length === 0) {
+      rawHoras = Array.from({ length: 8 }, (_, i) => {
+        const h = 6 + i;
+        return `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
+      });
+    }
+    return sortHoras(rawHoras);
   });
 
   // Persistir horas
@@ -249,9 +276,9 @@ export default function SemanaPage() {
         .single();
 
       if (error || !profile) {
-        setUser({ id: authUser.id, rol: 'trabajador', nombre_completo: authUser.email || undefined });
+        setUser({ id: authUser.id, rol: 'trabajador', nombre_completo: authUser.email || undefined, email: authUser.email });
       } else {
-        setUser(profile as UserProfile);
+        setUser({ ...(profile as UserProfile), email: authUser.email });
       }
     } catch (err) {
       console.error('Error obteniendo usuario:', err);
@@ -523,6 +550,87 @@ export default function SemanaPage() {
     }
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      setStatusMessage('Generando archivo Excel...');
+      const ExcelJS = (await import('exceljs')).default;
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Cronograma Semanal');
+
+      // Configurar cuadrícula visible
+      worksheet.views = [{ showGridLines: true }];
+
+      // Columnas
+      worksheet.columns = [
+        { header: 'Día', key: 'dia', width: 15 },
+        { header: 'Hora', key: 'hora', width: 20 },
+        { header: 'Descripción', key: 'descripcion', width: 45 },
+        { header: 'Trabajador', key: 'trabajador', width: 25 },
+        { header: 'Estado', key: 'estado', width: 15 },
+      ];
+
+      // Estilo de cabeceras
+      const headerRow = worksheet.getRow(1);
+      headerRow.height = 30;
+      headerRow.eachCell((cell) => {
+        cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }; // Azul oscuro elegante
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      const diasOrder = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const sortedTareas = [...tareasSemana].sort((a, b) => {
+        const dayDiff = diasOrder.indexOf(a.dia) - diasOrder.indexOf(b.dia);
+        if (dayDiff !== 0) return dayDiff;
+        return a.hora.localeCompare(b.hora);
+      });
+
+      sortedTareas.forEach((t) => {
+        const row = worksheet.addRow({
+          dia: t.dia,
+          hora: t.hora.substring(0, 5),
+          descripcion: t.descripcion,
+          trabajador: t.usuarioNombre || 'Trabajador',
+          estado: t.completado ? 'Completado' : 'Pendiente',
+        });
+
+        row.height = 24;
+        row.eachCell((cell, colNumber) => {
+          cell.font = { name: 'Arial', size: 10 };
+          cell.alignment = { vertical: 'middle', horizontal: colNumber === 3 ? 'left' : 'center' };
+          
+          // Bordes sutiles
+          cell.border = {
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+          };
+
+          // Colores de estado
+          if (colNumber === 5) {
+            if (t.completado) {
+              cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF16A34A' } }; // Verde
+            } else {
+              cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFD97706' } }; // Naranja
+            }
+          }
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const nombreTrabajador = user?.nombre_completo || 'Trabajador';
+      const filename = `Tareas_${nombreTrabajador.replace(/\s+/g, '_')}_Semana_${semanaKey}.xlsx`;
+      saveAs(blob, filename);
+
+      setStatusMessage('¡Excel generado y descargado con éxito!');
+      setTimeout(() => setStatusMessage(''), 4000);
+    } catch (error: any) {
+      console.error('Error al exportar a Excel:', error);
+      setStatusMessage(`Error al exportar: ${error.message || error}`);
+    }
+  };
+
   const semanaInicio = weekStart.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
   const semanaFin = new Date(weekStart);
   semanaFin.setDate(semanaFin.getDate() + 5);
@@ -540,7 +648,30 @@ export default function SemanaPage() {
             Personal de Aseo y Apoyo de Jardinería
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {user?.email === 'admin@florida.com' && (
+            <button
+              onClick={handleExportToExcel}
+              style={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                transition: 'all 0.2s',
+                boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <Download size={16} />
+              Exportar Excel
+            </button>
+          )}
           <button
             onClick={() => cambiarSemana(-1)}
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', transition: 'all 0.2s' }}
@@ -571,7 +702,14 @@ export default function SemanaPage() {
       >
         <div>
           <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Horario</div>
-          <div style={{ color: '#fff', fontSize: '0.9rem', marginTop: '0.5rem' }}>6:00 a.m. a 2:00 p.m.</div>
+          <div style={{ color: '#fff', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            {(() => {
+              if (horas.length === 0) return 'Sin horario';
+              const startRaw = horas[0].split('-')[0]?.trim() || '';
+              const endRaw = horas[horas.length - 1].split('-')[1]?.trim() || '';
+              return `${formatHoraLabel(startRaw)} a ${formatHoraLabel(endRaw)}`;
+            })()}
+          </div>
         </div>
         <div>
           <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Trabajador</div>
@@ -642,7 +780,7 @@ export default function SemanaPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '120px repeat(6, 1fr) 120px',
+            gridTemplateColumns: '120px repeat(6, 1fr)',
             gap: 0,
             minWidth: '1000px',
           }}
@@ -662,9 +800,6 @@ export default function SemanaPage() {
               </div>
             );
           })}
-          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', fontWeight: 700, textAlign: 'center', fontSize: '0.85rem', color: '#fbbf24' }}>
-            Obs.
-          </div>
 
           {/* Time Rows */}
           {horas.map((hora, index) => {
@@ -712,7 +847,7 @@ export default function SemanaPage() {
                             if (editingHoraValue.trim()) {
                               const nuevasHoras = [...horas];
                               nuevasHoras[index] = editingHoraValue.trim();
-                              setHoras(nuevasHoras);
+                              setHoras(sortHoras(nuevasHoras));
                             }
                             setEditingHoraIndex(null);
                           }}
@@ -819,6 +954,7 @@ export default function SemanaPage() {
                               key={t.id}
                               draggable
                               onDragStart={(e) => handleDragStart(e as any, t.id)}
+                              onClick={(e) => e.stopPropagation()}
                               style={{
                                 background: t.completado ? 'rgba(52,211,153,0.15)' : 'rgba(251,191,36,0.15)',
                                 border: `1px solid ${t.completado ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'}`,
@@ -944,11 +1080,6 @@ export default function SemanaPage() {
                     </div>
                   );
                 })}
-
-                {/* Observations Cell */}
-                <div style={{ border: '1px solid rgba(255,255,255,0.08)', padding: '0.75rem', minHeight: '100px', background: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  —
-                </div>
               </div>
             );
           })}
@@ -966,8 +1097,10 @@ export default function SemanaPage() {
               const h = parseInt(parts[0]) || 14;
               nuevoHorario = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
             }
-            setHoras([...horas, nuevoHorario]);
-            setEditingHoraIndex(horas.length);
+            const nuevasHoras = sortHoras([...horas, nuevoHorario]);
+            setHoras(nuevasHoras);
+            const newIndex = nuevasHoras.indexOf(nuevoHorario);
+            setEditingHoraIndex(newIndex >= 0 ? newIndex : nuevasHoras.length - 1);
             setEditingHoraValue(nuevoHorario);
           }}
           style={{

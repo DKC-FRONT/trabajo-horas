@@ -153,7 +153,7 @@ export default function ConfiguracionPage() {
                 <h3 style={{ margin: 0, fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cobro de Agua</h3>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Tarifa Excedente ($/m³)</label>
                   <div style={{ position: 'relative' }}>
@@ -162,7 +162,7 @@ export default function ConfiguracionPage() {
                       type="number"
                       value={configs.find(c => c.clave === 'tarifa_m3')?.valor || ''}
                       onChange={(e) => handleChange('tarifa_m3', e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
                     />
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default function ConfiguracionPage() {
                       type="number"
                       value={configs.find(c => c.clave === 'limite_basico')?.valor || ''}
                       onChange={(e) => handleChange('limite_basico', e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
                     />
                     <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem' }}>m3</span>
                   </div>
