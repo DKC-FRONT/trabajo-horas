@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'PIN requerido' }, { status: 400 });
     }
 
-    // Validar formato del PIN (solo dígitos, entre 3 y 8 caracteres)
+    // Validar formato del PIN (solo dígitos, entre 1 y 8 caracteres)
     const pinStr = String(pin).trim();
-    if (!/^\d{3,8}$/.test(pinStr)) {
+    if (!/^\d{1,8}$/.test(pinStr)) {
       return NextResponse.json({ success: false, error: 'Formato de PIN inválido' }, { status: 400 });
     }
 
