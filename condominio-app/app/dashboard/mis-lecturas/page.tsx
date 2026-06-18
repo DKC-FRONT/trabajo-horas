@@ -175,18 +175,18 @@ export default function MisLecturasPage() {
 
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem' }}>
-        <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Mi portal</p>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+        <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Mi portal</p>
+        <h1 style={{ fontSize: '2.1rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
           Mis <span style={{ color: ACCENT }}>Lecturas de Agua</span>
         </h1>
-        <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
+        <p style={{ fontSize: '1.05rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
           {user?.casa_id ? `Historial de consumo · Casa ${user.casa_id}` : 'Vincula tu cuenta para ver tus lecturas'}
         </p>
       </div>
 
       {/* ── Error ── */}
       {errorMsg && (
-        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>⚠</span> {errorMsg}
         </div>
       )}
@@ -203,8 +203,8 @@ export default function MisLecturasPage() {
                 { label: 'Total a pagar',  value: formatCOP(totalValor),                    accent: '#f472b6' },
               ].map((stat, idx) => (
                 <div key={stat.label} style={{ background: '#0a0a0f', padding: '1rem 1.25rem', animation: `fadeSlideIn 0.35s ease ${idx * 0.06}s both` }}>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 700, color: stat.accent, letterSpacing: '-0.02em' }}>{stat.value}</div>
-                  <div style={{ fontSize: '0.55rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.2rem' }}>{stat.label}</div>
+                  <div style={{ fontSize: '2.03rem', fontWeight: 700, color: stat.accent, letterSpacing: '-0.02em' }}>{stat.value}</div>
+                  <div style={{ fontSize: '0.83rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.2rem' }}>{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -213,27 +213,27 @@ export default function MisLecturasPage() {
           {/* ── Filtros ── */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'flex-end' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.55rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.35rem' }}>Mes</label>
+              <label style={{ display: 'block', fontSize: '0.83rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.35rem' }}>Mes</label>
               <select value={mes} onChange={e => setMes(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '120px', transition: 'border 0.2s' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fdf5e6', fontSize: '1.17rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '120px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
-                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todos</option>
-                {MESES.map((m, i) => <option key={i+1} value={i+1} style={{ background: '#0a0a0f', color: '#fff' }}>{m}</option>)}
+                <option value="" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Todos</option>
+                {MESES.map((m, i) => <option key={i+1} value={i+1} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{m}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.55rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.35rem' }}>Año</label>
+              <label style={{ display: 'block', fontSize: '0.83rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.35rem' }}>Año</label>
               <select value={anio} onChange={e => setAnio(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: '0.78rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '90px', transition: 'border 0.2s' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fdf5e6', fontSize: '1.17rem', padding: '0.55rem 0.85rem', fontFamily: 'inherit', outline: 'none', appearance: 'none' as any, minWidth: '90px', transition: 'border 0.2s' }}
                 onFocus={e => e.target.style.borderColor = ACCENT + '70'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}>
-                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todos</option>
-                {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>)}
+                <option value="" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Todos</option>
+                {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{y}</option>)}
               </select>
             </div>
             {(mes || anio !== String(new Date().getFullYear())) && (
               <button onClick={() => { setMes(''); setAnio(String(new Date().getFullYear())); }}
-                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255, 255, 255, 1)', padding: '0.55rem 0.85rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255, 255, 255, 1)', padding: '0.55rem 0.85rem', fontSize: '1.05rem', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#fdf5e6'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
                 ✕ Limpiar filtros
               </button>
@@ -245,10 +245,10 @@ export default function MisLecturasPage() {
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}50, transparent)` }} />
             <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Historial</p>
-                <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>REGISTRO DE CONSUMO</h2>
+                <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Historial</p>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>REGISTRO DE CONSUMO</h2>
               </div>
-              {!loading && <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{lecturas.length} registros</span>}
+              {!loading && <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)' }}>{lecturas.length} registros</span>}
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -256,19 +256,19 @@ export default function MisLecturasPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     {['Período', 'Lect. Ant.', 'Lect. Act.', 'Consumo', 'Exceso cobrable', 'Valor'].map((h, i) => (
-                      <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 5 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                      <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.87rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 5 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>
+                    <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem' }}>
                       <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
                     </td></tr>
                   ) : lecturas.length === 0 ? (
                     <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center' }}>
-                      <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>💧</div>
-                      <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>No hay lecturas para este período</div>
+                      <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '2.25rem', marginBottom: '0.5rem' }}>💧</div>
+                      <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem' }}>No hay lecturas para este período</div>
                     </td></tr>
                   ) : (
                     lecturas.map((l, i) => {
@@ -286,35 +286,35 @@ export default function MisLecturasPage() {
                           onMouseLeave={() => setHoveredRow(null)}
                         >
                           <td style={{ padding: '0.9rem 1rem' }}>
-                            <div style={{ fontSize: '0.82rem', color: '#ffffff', fontWeight: 700 }}>{MESES[l.mes - 1]} {l.anio}</div>
-                            <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', marginTop: '0.15rem' }}>
+                            <div style={{ fontSize: '1.23rem', color: '#fdf5e6', fontWeight: 700 }}>{MESES[l.mes - 1]} {l.anio}</div>
+                            <div style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', marginTop: '0.15rem' }}>
                               {new Date(l.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
                             </div>
                           </td>
-                          <td style={{ padding: '0.9rem 1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>
+                          <td style={{ padding: '0.9rem 1rem', fontSize: '1.17rem', color: 'rgba(255, 255, 255, 1)' }}>
                             {Math.round(l.lectura_anterior)}
                           </td>
-                          <td style={{ padding: '0.9rem 1rem', fontSize: '0.82rem', color: '#ffffff', fontWeight: 700 }}>
+                          <td style={{ padding: '0.9rem 1rem', fontSize: '1.23rem', color: '#fdf5e6', fontWeight: 700 }}>
                             {Math.round(l.lectura_actual)}
                           </td>
                           <td style={{ padding: '0.9rem 1rem' }}>
-                            <span style={{ fontSize: '0.8rem', color: ACCENT, fontWeight: 600 }}>
+                            <span style={{ fontSize: '1.2rem', color: ACCENT, fontWeight: 600 }}>
                               {Math.round(l.consumo)} m³
                             </span>
                           </td>
                           <td style={{ padding: '0.9rem 1rem' }}>
                             {tieneExceso ? (
-                              <span style={{ fontSize: '0.75rem', color: '#f87171', background: 'rgba(248,113,113,0.08)', padding: '0.2rem 0.55rem', border: '1px solid rgba(248,113,113,0.2)' }}>
+                              <span style={{ fontSize: '1.13rem', color: '#f87171', background: 'rgba(248,113,113,0.08)', padding: '0.2rem 0.55rem', border: '1px solid rgba(248,113,113,0.2)' }}>
                                 {Math.round(l.consumo_cobrar)} m³
                               </span>
                             ) : (
-                              <span style={{ fontSize: '0.7rem', color: '#4ade80', background: 'rgba(74,222,128,0.08)', padding: '0.2rem 0.55rem', border: '1px solid rgba(74,222,128,0.2)' }}>
+                              <span style={{ fontSize: '1.05rem', color: '#4ade80', background: 'rgba(74,222,128,0.08)', padding: '0.2rem 0.55rem', border: '1px solid rgba(74,222,128,0.2)' }}>
                                 Dentro del límite
                               </span>
                             )}
                           </td>
                           <td style={{ padding: '0.9rem 1rem', textAlign: 'right' }}>
-                            <span style={{ fontSize: '0.9rem', color: Number(l.valor) > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700 }}>
+                            <span style={{ fontSize: '1.35rem', color: Number(l.valor) > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700 }}>
                               {Number(l.valor) > 0 ? formatCOP(l.valor) : '$0'}
                             </span>
                           </td>
@@ -335,7 +335,7 @@ export default function MisLecturasPage() {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        select option { background: #0a0a0f; color: #fff; }
+        select option { background: #0a0a0f; color: #fdf5e6; }
         ::placeholder { color: rgba(255,255,255,0.18) !important; }
       `}</style>
     </div>

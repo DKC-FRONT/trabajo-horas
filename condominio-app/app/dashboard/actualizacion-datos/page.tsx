@@ -21,7 +21,7 @@ const inputStyle = (focused: boolean): React.CSSProperties => ({
   background: 'rgba(255,255,255,0.04)',
   border: `1px solid ${focused ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
   boxShadow: focused ? `0 0 0 3px ${ACCENT}10` : 'none',
-  color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
+  color: '#fdf5e6', fontSize: '1.2rem', padding: '0.65rem 0.85rem',
   fontFamily: 'inherit', outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s',
 });
@@ -269,22 +269,22 @@ export default function ActualizacionDatosPage() {
     }}>
 
       <div style={{ marginBottom: '2rem' }}>
-        <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Propietarios</p>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+        <p style={{ fontSize: '1.8rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Propietarios</p>
+        <h1 style={{ fontSize: '3rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.01em' }}>
           Actualizacion <span style={{ color: ACCENT }}>Datos</span>
         </h1>
-        <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
+        <p style={{ fontSize: '1.5rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
           Gestiona la informacion de contacto de propietarios y arrendatarios
         </p>
       </div>
 
       {errorMsg && (
-        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>⚠</span> {errorMsg}
         </div>
       )}
       {successMsg && (
-        <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>✓</span> {successMsg}
         </div>
       )}
@@ -295,11 +295,11 @@ export default function ActualizacionDatosPage() {
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}40, transparent)` }} />
           <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Unidades</p>
-              <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>CASAS / LOTES</h2>
+              <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Unidades</p>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>CASAS / LOTES</h2>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              {!loading && <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{casas.length} registros</span>}
+              {!loading && <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)' }}>{casas.length} registros</span>}
               {canExportExcel && (
                 <button
                   onClick={exportarExcel}
@@ -307,9 +307,9 @@ export default function ActualizacionDatosPage() {
                   style={{
                     background: exporting ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.12)',
-                    color: '#ffffff',
+                    color: '#fdf5e6',
                     padding: '0.55rem 0.95rem',
-                    fontSize: '0.72rem',
+                    fontSize: '1.08rem',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     cursor: loading || exporting ? 'not-allowed' : 'pointer',
@@ -325,11 +325,11 @@ export default function ActualizacionDatosPage() {
           </div>
 
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem' }}>
               <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
             </div>
           ) : casas.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.25)', fontSize: '0.8rem' }}>
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.25)', fontSize: '1.2rem' }}>
               Sin registros
             </div>
           ) : (
@@ -355,15 +355,15 @@ export default function ActualizacionDatosPage() {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>
+                      <div style={{ fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6' }}>
                         {casa.tipo_propiedad ? `${casa.tipo_propiedad} ` : ''}{casa.numero_casa}
                       </div>
                       {casa.nombre_propietario ? (
-                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.15rem' }}>
+                        <div style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.15rem' }}>
                           {casa.nombre_propietario}
                         </div>
                       ) : (
-                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.2)', marginTop: '0.15rem' }}>Sin datos</div>
+                        <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.2)', marginTop: '0.15rem' }}>Sin datos</div>
                       )}
                     </div>
                     <div style={{
@@ -384,8 +384,8 @@ export default function ActualizacionDatosPage() {
 
           {!selectedCasa ? (
             <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.15 }}>◈</div>
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.15 }}>◈</div>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem', letterSpacing: '0.05em' }}>
                 Selecciona una casa o lote del panel izquierdo<br />para actualizar sus datos
               </p>
             </div>
@@ -393,12 +393,12 @@ export default function ActualizacionDatosPage() {
             <>
               <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Editando</p>
-                  <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                  <p style={{ fontSize: '1.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Editando</p>
+                  <h2 style={{ fontSize: '3rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
                     {selectedCasa.tipo_propiedad ? `${selectedCasa.tipo_propiedad} ` : ''}{selectedCasa.numero_casa}
                   </h2>
                 </div>
-                <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em' }}>
+                <span style={{ fontSize: '3rem', padding: '0.2rem 0.6rem', border: `1px solid ${ACCENT}40`, color: ACCENT, letterSpacing: '0.1em' }}>
                   ID: {selectedCasa.id}
                 </span>
               </div>
@@ -407,7 +407,7 @@ export default function ActualizacionDatosPage() {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 180px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                       Tipo de propiedad
                     </label>
                     <select
@@ -423,7 +423,7 @@ export default function ActualizacionDatosPage() {
                     </select>
                   </div>
                   <div style={{ flex: '1 1 180px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                       ¿Es arrendatario?
                     </label>
                     <select
@@ -440,7 +440,7 @@ export default function ActualizacionDatosPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                     Nombre del propietario
                   </label>
                   <input
@@ -456,7 +456,7 @@ export default function ActualizacionDatosPage() {
 
                 {form.es_arrendatario && (
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                       Nombre del arrendatario
                     </label>
                     <input
@@ -473,7 +473,7 @@ export default function ActualizacionDatosPage() {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 180px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                       Celular <span style={{ color: '#f87171' }}>*</span>
                     </label>
                     <input
@@ -487,7 +487,7 @@ export default function ActualizacionDatosPage() {
                     />
                   </div>
                   <div style={{ flex: '1 1 180px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '1.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                       Correo <span style={{ color: '#f87171' }}>*</span>
                     </label>
                     <input
@@ -510,7 +510,7 @@ export default function ActualizacionDatosPage() {
                       background: savingId !== null ? 'rgba(255,255,255,0.04)' : `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}08)`,
                       border: `1px solid ${savingId !== null ? 'rgba(255,255,255,0.08)' : ACCENT + '50'}`,
                       color: savingId !== null ? 'rgba(255,255,255,0.3)' : ACCENT,
-                      padding: '0.65rem 2rem', fontSize: '0.72rem', letterSpacing: '0.12em',
+                      padding: '0.65rem 2rem', fontSize: '1.08rem', letterSpacing: '0.12em',
                       cursor: savingId !== null ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
                       fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -525,8 +525,8 @@ export default function ActualizacionDatosPage() {
                   </button>
                 </div>
 
-                <p style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.2)', margin: 0, letterSpacing: '0.05em' }}>
-                  Los campos se guardan individualmente al salir del campo. El bot\u00f3n guarda todo de una vez.
+                <p style={{ fontSize: '1.35rem', color: 'rgba(255, 255, 255, 1)', margin: 0, letterSpacing: '0.05em' }}>
+                  Los campos se guardan individualmente al salir del campo. El boton guarda todo de una vez.
                 </p>
               </div>
             </>

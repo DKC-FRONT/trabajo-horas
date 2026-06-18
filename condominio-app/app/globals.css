@@ -66,22 +66,22 @@ body {
   overflow-y: auto;
 }
 
-/* Responsive text sizes */
+/* Responsive html sizes to scale all REM units (boxes, text, padding) */
 @media (max-width: 640px) {
-  body {
-    font-size: 14px;
+  html {
+    font-size: 20px;
   }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  body {
-    font-size: 15px;
+  html {
+    font-size: 22px;
   }
 }
 
 @media (min-width: 1025px) {
-  body {
-    font-size: 16px;
+  html {
+    font-size: 26px;
   }
 }
 
@@ -160,8 +160,14 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    color: #Fdf5e6; /* Blanco hueso base */
   }
   html {
     @apply font-sans;
+  }
+  
+  /* Override whites to blanco hueso globally where possible, without breaking colors */
+  h1, h2, h3, h4, p, span, div, button {
+    font-family: var(--font-sans), sans-serif !important;
   }
 }

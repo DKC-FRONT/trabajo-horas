@@ -394,7 +394,7 @@ export default function ReportesPage() {
             <button onClick={exportarExcel}
               style={{
                 background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
-                color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '0.8rem',
+                color: '#4ade80', padding: '0.6rem 1.2rem', fontSize: '1.2rem',
                 letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
                 fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
@@ -402,16 +402,16 @@ export default function ReportesPage() {
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR REPORTE EXCEL
+              <span style={{ fontSize: '1.5rem' }}>↓</span> EXPORTAR REPORTE EXCEL
             </button>
           )}
 
           <div>
-            <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
-            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.01em' }}>
               Reporte — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]} {anioSeleccionado}</span>
             </h1>
-            <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
+            <p style={{ fontSize: '1.05rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
               Análisis de consumo y facturación del período seleccionado
             </p>
           </div>
@@ -420,26 +420,26 @@ export default function ReportesPage() {
         {/* ── Selectores de Fecha ── */}
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
+            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
             <select 
               value={mesSeleccionado} 
               onChange={(e) => setMesSeleccionado(Number(e.target.value))}
-              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.4rem 0.6rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer' }}
             >
               {MESES.map((m, i) => (
-                <option key={m} value={i + 1} style={{ background: '#0a0a0f', color: '#fff' }}>{m}</option>
+                <option key={m} value={i + 1} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{m}</option>
               ))}
             </select>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
+            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
             <select 
               value={anioSeleccionado} 
               onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
-              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+              style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.4rem 0.6rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer' }}
             >
               {aniosDisponibles.map((y) => (
-                <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fff' }}>{y}</option>
+                <option key={y} value={y} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{y}</option>
               ))}
             </select>
           </div>
@@ -448,14 +448,14 @@ export default function ReportesPage() {
 
       {/* ── Error ── */}
       {error && (
-        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>⚠</span> {error}
         </div>
       )}
 
       {loading ? (
-        <div style={{ padding: '4rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.85rem', letterSpacing: '0.1em' }}>
-          <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem', fontSize: '1rem' }}>◌</span>
+        <div style={{ padding: '4rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.27rem', letterSpacing: '0.1em' }}>
+          <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem', fontSize: '1.5rem' }}>◌</span>
           Cargando reporte...
         </div>
       ) : data && (
@@ -478,13 +478,13 @@ export default function ReportesPage() {
                 animation: `fadeSlideIn 0.35s ease ${idx * 0.07}s both`,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <span style={{ fontSize: '0.8rem', color: s.accent, opacity: 0.6 }}>{s.icon}</span>
+                  <span style={{ fontSize: '1.2rem', color: s.accent, opacity: 0.6 }}>{s.icon}</span>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: s.accent, opacity: 0.5, display: 'inline-block' }} />
                 </div>
-                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                <span style={{ fontSize: '2.25rem', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>
                   {s.value}
                 </span>
-                <span style={{ fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.15rem' }}>
+                <span style={{ fontSize: '0.9rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.15rem' }}>
                   {s.label}
                 </span>
               </div>
@@ -499,7 +499,7 @@ export default function ReportesPage() {
                   flex: 1, border: 'none', padding: '0.85rem',
                   background: tab === t.key ? `${ACCENT}12` : '#0a0a0f',
                   color: tab === t.key ? ACCENT : 'rgba(255,255,255,0.45)',
-                  fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                  fontSize: '1.02rem', letterSpacing: '0.1em', textTransform: 'uppercase',
                   cursor: 'pointer', transition: 'all 0.2s',
                   fontFamily: 'inherit', fontWeight: tab === t.key ? 700 : 400,
                   borderBottom: tab === t.key ? `2px solid ${ACCENT}` : '2px solid transparent',
@@ -516,17 +516,17 @@ export default function ReportesPage() {
           {tab === 'resumen' && (
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', position: 'relative', overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '0.04em' }}>
                   CASAS QUE SUPERARON <span style={{ color: '#f87171' }}>{limiteBasico} m³</span>
                 </h2>
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.08em' }}>
+                <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.08em' }}>
                   {data.excedidas.length} casas
                 </span>
               </div>
               {data.excedidas.length === 0 ? (
                 <div style={{ padding: '3rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✓</div>
-                  <div style={{ color: '#4ade80', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: '2.25rem', marginBottom: '0.5rem' }}>✓</div>
+                  <div style={{ color: '#4ade80', fontSize: '1.27rem', letterSpacing: '0.05em' }}>
                     Ninguna casa superó el límite este mes
                   </div>
                 </div>
@@ -536,7 +536,7 @@ export default function ReportesPage() {
                     <thead>
                       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                         {['Casa', 'Consumo', 'Exceso', 'Valor a cobrar'].map((h, i) => (
-                          <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 3 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
+                          <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 3 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -550,14 +550,14 @@ export default function ReportesPage() {
                           }}
                           onMouseEnter={() => setHoveredRow(i)} onMouseLeave={() => setHoveredRow(null)}
                         >
-                          <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#ffffff', fontWeight: 700 }}>Casa {l.numero_casa}</td>
-                          <td style={{ padding: '1rem', fontSize: '0.82rem', color: '#60a5fa' }}>{Math.round(l.consumo)} m³</td>
-                          <td style={{ padding: '1rem', fontSize: '0.82rem' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.27rem', color: '#fdf5e6', fontWeight: 700 }}>Casa {l.numero_casa}</td>
+                          <td style={{ padding: '1rem', fontSize: '1.23rem', color: '#60a5fa' }}>{Math.round(l.consumo)} m³</td>
+                          <td style={{ padding: '1rem', fontSize: '1.23rem' }}>
                             <span style={{ color: '#f87171', background: 'rgba(248,113,113,0.1)', padding: '0.2rem 0.55rem', border: '1px solid rgba(248,113,113,0.25)', fontWeight: 700 }}>
                               {Math.round(l.consumo_cobrar)} m³
                             </span>
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.9rem', color: '#fbbf24', fontWeight: 700, textAlign: 'right' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.35rem', color: '#fbbf24', fontWeight: 700, textAlign: 'right' }}>
                             ${Math.round(l.valor).toLocaleString('es-CO')}
                           </td>
                         </tr>
@@ -574,31 +574,31 @@ export default function ReportesPage() {
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', position: 'relative', overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '0.04em' }}>
                     TODAS LAS CASAS — <span style={{ color: ACCENT }}>{MESES[mesSeleccionado - 1]}</span>
                   </h2>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Filtrar casa</span>
+                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Filtrar casa</span>
                     <select
                       value={filtroCasa}
                       onChange={(e) => setFiltroCasa(e.target.value)}
-                      style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}
+                      style={{ background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.4rem 0.6rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer' }}
                     >
-                      <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todas las casas</option>
+                      <option value="" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Todas las casas</option>
                       {casas.map((c: any) => (
-                        <option key={c.id} value={c.numero_casa} style={{ background: '#0a0a0f', color: '#fff' }}>
+                        <option key={c.id} value={c.numero_casa} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>
                           Casa {c.numero_casa}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{filteredPorCasa.length} registros</span>
+                  <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)' }}>{filteredPorCasa.length} registros</span>
                 </div>
               </div>
               {filteredPorCasa.length === 0 ? (
-                <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.85rem' }}>
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.27rem' }}>
                   Sin lecturas registradas este mes
                 </div>
               ) : (
@@ -607,7 +607,7 @@ export default function ReportesPage() {
                     <thead>
                       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                         {['Casa', 'Anterior', 'Actual', 'Consumo', 'Exceso', 'Valor', 'Fecha'].map((h, i) => (
-                          <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 6 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
+                          <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 6 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -621,25 +621,25 @@ export default function ReportesPage() {
                           }}
                           onMouseEnter={() => setHoveredRow(i + 100)} onMouseLeave={() => setHoveredRow(null)}
                         >
-                          <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#ffffff', fontWeight: 700 }}>Casa {l.numero_casa}</td>
-                          <td style={{ padding: '1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>{Math.round(l.lectura_anterior)}</td>
-                          <td style={{ padding: '1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>{Math.round(l.lectura_actual)}</td>
-                          <td style={{ padding: '1rem', fontSize: '0.82rem', color: '#60a5fa', fontWeight: 600 }}>{Math.round(l.consumo)} m³</td>
-                          <td style={{ padding: '1rem', fontSize: '0.8rem' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.27rem', color: '#fdf5e6', fontWeight: 700 }}>Casa {l.numero_casa}</td>
+                          <td style={{ padding: '1rem', fontSize: '1.17rem', color: 'rgba(255, 255, 255, 1)' }}>{Math.round(l.lectura_anterior)}</td>
+                          <td style={{ padding: '1rem', fontSize: '1.17rem', color: 'rgba(255, 255, 255, 1)' }}>{Math.round(l.lectura_actual)}</td>
+                          <td style={{ padding: '1rem', fontSize: '1.23rem', color: '#60a5fa', fontWeight: 600 }}>{Math.round(l.consumo)} m³</td>
+                          <td style={{ padding: '1rem', fontSize: '1.2rem' }}>
                             {l.consumo_cobrar > 0 ? (
                               <span style={{ color: '#f87171', fontWeight: 700 }}>{Math.round(l.consumo_cobrar)} m³</span>
                             ) : (
-                              <span style={{ color: '#4ade80', fontSize: '0.7rem', background: 'rgba(74,222,128,0.08)', padding: '0.15rem 0.45rem', border: '1px solid rgba(74,222,128,0.2)' }}>OK</span>
+                              <span style={{ color: '#4ade80', fontSize: '1.05rem', background: 'rgba(74,222,128,0.08)', padding: '0.15rem 0.45rem', border: '1px solid rgba(74,222,128,0.2)' }}>OK</span>
                             )}
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.82rem', fontWeight: 700 }}>
+                          <td style={{ padding: '1rem', fontSize: '1.23rem', fontWeight: 700 }}>
                             {l.valor > 0 ? (
                               <span style={{ color: '#fbbf24' }}>${Math.round(l.valor).toLocaleString('es-CO')}</span>
                             ) : (
                               <span style={{ color: 'rgba(255, 255, 255, 1)' }}>—</span>
                             )}
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 1)', textAlign: 'right' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.08rem', color: 'rgba(255, 255, 255, 1)', textAlign: 'right' }}>
                             {new Date(l.fecha).toLocaleDateString('es-CO')}
                           </td>
                         </tr>
@@ -655,40 +655,40 @@ export default function ReportesPage() {
           {tab === 'comparativo' && (
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', overflow: 'hidden' }}>
                <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '0.04em' }}>
                   COMPARATIVO <span style={{ color: ACCENT }}>ÚLTIMOS MESES</span>
                 </h2>
                 
                 {/* Selectores de Rango */}
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.5rem 1rem', borderRadius: '4px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Desde:</span>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Desde:</span>
                     <select value={mesInicio} onChange={e => setMesInicio(Number(e.target.value))}
-                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      style={{ background: 'transparent', border: 'none', color: '#fdf5e6', fontSize: '1.05rem', outline: 'none', cursor: 'pointer' }}>
                       {MESES.map((m, i) => <option key={i} value={i+1} style={{ background: '#0a0a0f' }}>{m}</option>)}
                     </select>
                     <select value={anioInicio} onChange={e => setAnioInicio(Number(e.target.value))}
-                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      style={{ background: 'transparent', border: 'none', color: '#fdf5e6', fontSize: '1.05rem', outline: 'none', cursor: 'pointer' }}>
                       {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                   <div style={{ width: '1px', height: '15px', background: 'rgba(255,255,255,0.1)' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hasta:</span>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hasta:</span>
                     <select value={mesFin} onChange={e => setMesFin(Number(e.target.value))}
-                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      style={{ background: 'transparent', border: 'none', color: '#fdf5e6', fontSize: '1.05rem', outline: 'none', cursor: 'pointer' }}>
                       {MESES.map((m, i) => <option key={i} value={i+1} style={{ background: '#0a0a0f' }}>{m}</option>)}
                     </select>
                     <select value={anioFin} onChange={e => setAnioFin(Number(e.target.value))}
-                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.7rem', outline: 'none', cursor: 'pointer' }}>
+                      style={{ background: 'transparent', border: 'none', color: '#fdf5e6', fontSize: '1.05rem', outline: 'none', cursor: 'pointer' }}>
                       {aniosDisponibles.map((y) => <option key={y} value={y} style={{ background: '#0a0a0f' }}>{y}</option>)}
                     </select>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
-                  <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Casa</span>
+                  <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Casa</span>
                   <select value={casaComparativo} onChange={(e) => setCasaComparativo(e.target.value)}
-                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', padding: '0.35rem 0.65rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer' }}>
+                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#fdf5e6', padding: '0.35rem 0.65rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer' }}>
                     <option value="" style={{ background: '#0a0a0f' }}>Todas las casas</option>
                     {casas.map((c: any) => (
                       <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>Casa {c.numero_casa}</option>
@@ -704,7 +704,7 @@ export default function ReportesPage() {
                   const isCurrent = c.mes === mesSeleccionado && c.anio === anioSeleccionado;
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', animation: `fadeSlideIn 0.3s ease ${i * 0.06}s both` }}>
-                      <div style={{ width: '80px', flexShrink: 0, textAlign: 'right', fontSize: '0.72rem', fontWeight: isCurrent ? 700 : 400, color: isCurrent ? ACCENT : 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>
+                      <div style={{ width: '80px', flexShrink: 0, textAlign: 'right', fontSize: '1.08rem', fontWeight: isCurrent ? 700 : 400, color: isCurrent ? ACCENT : 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>
                         {MESES[c.mes - 1].slice(0, 3)} {String(c.anio).slice(2)}
                       </div>
                       <div style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
@@ -717,7 +717,7 @@ export default function ReportesPage() {
                           transition: 'width 0.6s ease',
                         }}>
                           {pct > 15 && (
-                            <span style={{ fontSize: '0.65rem', color: '#ffffff', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.98rem', color: '#fdf5e6', fontWeight: 700 }}>
                               {Math.round(c.consumo_total)} m³
                             </span>
                           )}
@@ -726,7 +726,7 @@ export default function ReportesPage() {
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: `1px solid ${ACCENT}50`, pointerEvents: 'none' }} />
                         )}
                       </div>
-                      <div style={{ width: '80px', flexShrink: 0, textAlign: 'right', fontSize: '0.72rem', color: '#fbbf24', fontWeight: 600 }}>
+                      <div style={{ width: '80px', flexShrink: 0, textAlign: 'right', fontSize: '1.08rem', color: '#fbbf24', fontWeight: 600 }}>
                         ${Math.round(c.valor_total).toLocaleString('es-CO')}
                       </div>
                     </div>
@@ -740,7 +740,7 @@ export default function ReportesPage() {
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       {['Mes', 'Casas', 'Consumo total', 'Excedidas', 'Total cobrado'].map((h, i) => (
-                        <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 4 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
+                        <th key={h} style={{ padding: '0.9rem 1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 4 ? 'right' : 'left', fontWeight: 600 }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -757,30 +757,30 @@ export default function ReportesPage() {
                           onMouseEnter={() => setHoveredRow(i + 200)} onMouseLeave={() => setHoveredRow(null)}
                         >
                           <td style={{ padding: '1rem' }}>
-                            <span style={{ fontSize: '0.82rem', color: isCurrent ? ACCENT : '#ffffff', fontWeight: isCurrent ? 700 : 500 }}>
+                            <span style={{ fontSize: '1.23rem', color: isCurrent ? ACCENT : '#fdf5e6', fontWeight: isCurrent ? 700 : 500 }}>
                               {MESES[c.mes - 1]} {c.anio}
                             </span>
                             {isCurrent && (
-                              <span style={{ marginLeft: '0.5rem', fontSize: '0.55rem', color: ACCENT, letterSpacing: '0.08em', border: `1px solid ${ACCENT}40`, padding: '0.1rem 0.35rem' }}>
+                              <span style={{ marginLeft: '0.5rem', fontSize: '0.83rem', color: ACCENT, letterSpacing: '0.08em', border: `1px solid ${ACCENT}40`, padding: '0.1rem 0.35rem' }}>
                                 actual
                               </span>
                             )}
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.78rem', color: 'rgba(255, 255, 255, 1)' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.17rem', color: 'rgba(255, 255, 255, 1)' }}>
                             {casaComparativo 
                               ? `Casa ${casas.find(h => h.id?.toString() === casaComparativo)?.numero_casa || ''}`
                               : c.total_casas
                             }
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.82rem', color: '#60a5fa', fontWeight: 600 }}>{Math.round(c.consumo_total)} m³</td>
-                          <td style={{ padding: '1rem', fontSize: '0.8rem' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.23rem', color: '#60a5fa', fontWeight: 600 }}>{Math.round(c.consumo_total)} m³</td>
+                          <td style={{ padding: '1rem', fontSize: '1.2rem' }}>
                             {c.casas_excedidas > 0 ? (
                               <span style={{ color: '#f87171', fontWeight: 700 }}>{c.casas_excedidas}</span>
                             ) : (
                               <span style={{ color: '#4ade80' }}>—</span>
                             )}
                           </td>
-                          <td style={{ padding: '1rem', fontSize: '0.85rem', color: '#fbbf24', fontWeight: 700, textAlign: 'right' }}>
+                          <td style={{ padding: '1rem', fontSize: '1.27rem', color: '#fbbf24', fontWeight: 700, textAlign: 'right' }}>
                             ${Math.round(c.valor_total).toLocaleString('es-CO')}
                           </td>
                         </tr>

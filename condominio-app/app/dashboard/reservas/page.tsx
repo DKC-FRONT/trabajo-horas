@@ -530,13 +530,13 @@ export default function ReservasPage() {
     background: 'rgba(255,255,255,0.05)',
     border: `1px solid ${focusedField === field ? ACCENT + '80' : 'rgba(255,255,255,0.12)'}`,
     boxShadow: focusedField === field ? `0 0 0 3px ${ACCENT}15` : 'none',
-    color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
+    color: '#fdf5e6', fontSize: '1.2rem', padding: '0.65rem 0.85rem',
     fontFamily: 'inherit', outline: 'none', appearance: 'none' as any,
     transition: 'border-color 0.2s, box-shadow 0.2s',
   });
 
   const labelStyle = (field?: string): React.CSSProperties => ({
-    display: 'block', fontSize: '0.6rem', letterSpacing: '0.12em',
+    display: 'block', fontSize: '0.9rem', letterSpacing: '0.12em',
     textTransform: 'uppercase',
     color: field && focusedField === field ? ACCENT : 'rgba(255,255,255,0.55)',
     marginBottom: '0.4rem', transition: 'color 0.2s',
@@ -563,11 +563,11 @@ export default function ReservasPage() {
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+          <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Módulo</p>
+          <h1 style={{ fontSize: '2.1rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
             Áreas <span style={{ color: ACCENT }}>Comunes</span>
           </h1>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.04em' }}>
             {user?.rol === 'admin'
               ? 'Gestión de todas las reservas del condominio'
               : user?.rol === 'trabajador'
@@ -581,9 +581,9 @@ export default function ReservasPage() {
             style={{
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#ffffff',
+              color: '#fdf5e6',
               padding: '0.4rem 0.8rem',
-              fontSize: '0.7rem',
+              fontSize: '1.05rem',
               cursor: 'pointer',
               transition: 'all 0.2s',
               display: 'inline-flex',
@@ -614,7 +614,7 @@ export default function ReservasPage() {
                   padding: '0.35rem 0.75rem',
                   background: `${ESTADO_META[estado].color}15`,
                   border: `1px solid ${ESTADO_META[estado].color}40`,
-                  fontSize: '0.62rem', color: ESTADO_META[estado].color, letterSpacing: '0.08em',
+                  fontSize: '0.93rem', color: ESTADO_META[estado].color, letterSpacing: '0.08em',
                 }}>
                   {n} {ESTADO_META[estado].label}
                 </div>
@@ -638,10 +638,10 @@ export default function ReservasPage() {
           animation: 'fadeIn 0.3s ease',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.1rem', animation: isOnline ? 'none' : 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
+            <span style={{ fontSize: '1.65rem', animation: isOnline ? 'none' : 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
             <div>
-              <div style={{ color: '#fbbf24', fontSize: '0.8rem', fontWeight: 700 }}>Sincronización pendiente</div>
-              <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.72rem', marginTop: '0.1rem' }}>
+              <div style={{ color: '#fbbf24', fontSize: '1.2rem', fontWeight: 700 }}>Sincronización pendiente</div>
+              <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1.08rem', marginTop: '0.1rem' }}>
                 {reservasSyncQueue.length} acción{reservasSyncQueue.length !== 1 ? 'es' : ''} guardada{reservasSyncQueue.length !== 1 ? 's' : ''} localmente esperando conexión.
               </div>
             </div>
@@ -655,7 +655,7 @@ export default function ReservasPage() {
                 border: 'none',
                 color: '#0a0a0f',
                 padding: '0.4rem 1rem',
-                fontSize: '0.72rem',
+                fontSize: '1.08rem',
                 fontWeight: 700,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -672,19 +672,19 @@ export default function ReservasPage() {
       {/* ── Indicador de conexión ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isOnline ? '#4ade80' : '#f87171', animation: isOnline ? 'pulse 2s infinite' : 'none' }} />
-        <span style={{ fontSize: '0.65rem', color: isOnline ? '#4ade80' : '#f87171', letterSpacing: '0.06em' }}>
+        <span style={{ fontSize: '0.98rem', color: isOnline ? '#4ade80' : '#f87171', letterSpacing: '0.06em' }}>
           {isOnline ? 'EN LÍNEA' : 'SIN CONEXIÓN — Cambios guardados localmente'}
         </span>
       </div>
 
       {/* ── Alertas ── */}
       {errorMsg && (
-        <div style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.85rem 1rem', fontSize: '0.78rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', lineHeight: 1.5 }}>
+        <div style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.85rem 1rem', fontSize: '1.17rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', lineHeight: 1.5 }}>
           <span style={{ flexShrink: 0 }}>⚠</span> {errorMsg}
         </div>
       )}
       {successMsg && (
-        <div style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.85rem 1rem', fontSize: '0.78rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.85rem 1rem', fontSize: '1.17rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>✓</span> {successMsg}
         </div>
       )}
@@ -696,18 +696,18 @@ export default function ReservasPage() {
 
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>
+              <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>
                 {editId ? `Modificando ID #${editId}` : 'Nueva solicitud'}
               </p>
-              <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
                 {editId ? 'ACTUALIZAR DATOS' : 'RESERVAR ÁREA COMÚN'}
               </h2>
             </div>
             <div style={{ textAlign: 'right' }}>
-               <span style={{ fontSize: '1rem', fontWeight: 700, color: valorEstimado > 0 ? ACCENT : '#ffffff' }}>
+               <span style={{ fontSize: '1.5rem', fontWeight: 700, color: valorEstimado > 0 ? ACCENT : '#fdf5e6' }}>
                  {formatter.format(valorEstimado)}
                </span>
-               <p style={{ fontSize: '0.55rem', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>Valor Estimado</p>
+               <p style={{ fontSize: '0.83rem', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>Valor Estimado</p>
             </div>
           </div>
 
@@ -722,7 +722,7 @@ export default function ReservasPage() {
                   onFocus={() => setFocusedField('casa')} onBlur={() => setFocusedField(null)}>
                   <option value="" style={{ background: '#0a0a0f', color: 'rgba(255, 255, 255, 1)' }}>— Seleccionar</option>
                   {casas.map((c: any) => (
-                    <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fff' }}>
+                    <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>
                       Casa {c.numero_casa}
                     </option>
                   ))}
@@ -737,7 +737,7 @@ export default function ReservasPage() {
                 style={fieldStyle('area')}
                 onFocus={() => setFocusedField('area')} onBlur={() => setFocusedField(null)}>
                 {AREAS.map((a: any) => (
-                  <option key={a} value={a} style={{ background: '#0a0a0f', color: '#fff' }}>{a}</option>
+                  <option key={a} value={a} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{a}</option>
                 ))}
               </select>
             </div>
@@ -759,7 +759,7 @@ export default function ReservasPage() {
                 style={fieldStyle('ini')}
                 onFocus={() => setFocusedField('ini')} onBlur={() => setFocusedField(null)}>
                 {HORARIOS.slice(0, -1).map((h: any) => (
-                  <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fff' }}>{h.label}</option>
+                  <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{h.label}</option>
                 ))}
               </select>
             </div>
@@ -771,7 +771,7 @@ export default function ReservasPage() {
                 style={fieldStyle('fin')}
                 onFocus={() => setFocusedField('fin')} onBlur={() => setFocusedField(null)}>
                 {HORARIOS.slice(1).map((h: any) => (
-                  <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fff' }}>{h.label}</option>
+                  <option key={h.value} value={h.value} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{h.label}</option>
                 ))}
               </select>
             </div>
@@ -783,7 +783,7 @@ export default function ReservasPage() {
                   background: (formLoading || valorEstimado === 0) ? 'rgba(255,255,255,0.04)' : `linear-gradient(135deg, ${ACCENT}25, ${ACCENT}10)`,
                   border: `1px solid ${(formLoading || valorEstimado === 0) ? 'rgba(255,255,255,0.08)' : ACCENT + '60'}`,
                   color: (formLoading || valorEstimado === 0) ? 'rgba(255,255,255,0.3)' : ACCENT,
-                  padding: '0.65rem 1.5rem', fontSize: '0.75rem', letterSpacing: '0.1em',
+                  padding: '0.65rem 1.5rem', fontSize: '1.13rem', letterSpacing: '0.1em',
                   cursor: (formLoading || valorEstimado === 0) ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
                   display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit', fontWeight: 600,
                   height: '100%',
@@ -803,8 +803,8 @@ export default function ReservasPage() {
                   style={{
                     background: 'transparent',
                     border: '1px solid rgba(255,255,255,0.2)',
-                    color: '#fff',
-                    padding: '0.65rem 1.5rem', fontSize: '0.75rem', letterSpacing: '0.1em',
+                    color: '#fdf5e6',
+                    padding: '0.65rem 1.5rem', fontSize: '1.13rem', letterSpacing: '0.1em',
                     cursor: 'pointer', transition: 'all 0.2s',
                     display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit', fontWeight: 600,
                     height: '100%',
@@ -820,7 +820,7 @@ export default function ReservasPage() {
 
       {/* Aviso residente sin casa */}
       {user?.rol === 'residente' && !user.casa_id && (
-        <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderLeft: '3px solid #fbbf24', padding: '1rem 1.25rem', marginBottom: '2rem', fontSize: '0.8rem', color: '#fbbf24' }}>
+        <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderLeft: '3px solid #fbbf24', padding: '1rem 1.25rem', marginBottom: '2rem', fontSize: '1.2rem', color: '#fbbf24' }}>
           ⚠ Tu cuenta no está vinculada a ninguna casa. Contacta al administrador para que la asigne.
         </div>
       )}
@@ -830,8 +830,8 @@ export default function ReservasPage() {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}50, transparent)` }} />
         <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Historial</p>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Historial</p>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
               TODAS LAS RESERVAS
             </h2>
           </div>
@@ -840,17 +840,17 @@ export default function ReservasPage() {
               <select 
                 value={filtroTablaCasa} 
                 onChange={e => setFiltroTablaCasa(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.65rem', padding: '0.25rem 0.5rem', outline: 'none', fontFamily: 'inherit' }}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fdf5e6', fontSize: '0.98rem', padding: '0.25rem 0.5rem', outline: 'none', fontFamily: 'inherit' }}
               >
-                <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>Todas las casas</option>
+                <option value="" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Todas las casas</option>
                 {casas.map((c: any) => (
-                  <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fff' }}>
+                  <option key={c.id} value={c.id} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>
                     Casa {c.numero_casa}
                   </option>
                 ))}
               </select>
             )}
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{reservasFiltradas.length} registros</span>
+            <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)' }}>{reservasFiltradas.length} registros</span>
           </div>
         </div>
 
@@ -859,21 +859,21 @@ export default function ReservasPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 {['Casa', 'Área', 'Fecha', 'Horario', 'Valor', 'Estado', 'Acciones'].map((h, i) => (
-                  <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 6 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 6 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>
+                <tr><td colSpan={7} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem' }}>
                   <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
                 </td></tr>
               ) : reservasFiltradas.length === 0 ? (
                 <tr><td colSpan={7} style={{ padding: '3.5rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.75rem', opacity: 0.25 }}>📅</div>
-                  <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.82rem', letterSpacing: '0.05em' }}>No hay reservas agendadas</div>
+                  <div style={{ fontSize: '3rem', marginBottom: '0.75rem', opacity: 0.25 }}>📅</div>
+                  <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.23rem', letterSpacing: '0.05em' }}>No hay reservas agendadas</div>
                   {canCreateReserva && (
-                    <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem', marginTop: '0.35rem' }}>Usa el formulario de arriba para crear una</div>
+                    <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.05rem', marginTop: '0.35rem' }}>Usa el formulario de arriba para crear una</div>
                   )}
                 </td></tr>
               ) : (
@@ -897,21 +897,21 @@ export default function ReservasPage() {
                       onMouseEnter={() => setHoveredRow(r.id)}
                       onMouseLeave={() => setHoveredRow(null)}
                     >
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: esPropietario ? ACCENT : '#ffffff', fontWeight: 700 }}>
-                        Casa {r.numero_casa} {esPropietario && <span style={{fontSize: '0.5rem', marginLeft:'4px'}}>(Tú)</span>}
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.27rem', color: esPropietario ? ACCENT : '#fdf5e6', fontWeight: 700 }}>
+                        Casa {r.numero_casa} {esPropietario && <span style={{fontSize: '0.75rem', marginLeft:'4px'}}>(Tú)</span>}
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 1)' }}>{r.area}</td>
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.77rem', color: 'rgba(255, 255, 255, 1)' }}>{fechaFmt}</td>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.2rem', color: 'rgba(255, 255, 255, 1)' }}>{r.area}</td>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.16rem', color: 'rgba(255, 255, 255, 1)' }}>{fechaFmt}</td>
                       <td style={{ padding: '0.9rem 1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '0.74rem', color: ACCENT, background: `${ACCENT}12`, padding: '0.22rem 0.6rem', border: `1px solid ${ACCENT}30`, fontWeight: 600 }}>
+                        <span style={{ fontSize: '1.11rem', color: ACCENT, background: `${ACCENT}12`, padding: '0.22rem 0.6rem', border: `1px solid ${ACCENT}30`, fontWeight: 600 }}>
                           {parseHora(r.hora_inicio)} – {parseHora(r.hora_fin)}
                         </span>
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.8rem', color: '#4ade80' }}>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.2rem', color: '#4ade80' }}>
                         {formatter.format(r.valor)}
                       </td>
                       <td style={{ padding: '0.9rem 1rem' }}>
-                        <span style={{ fontSize: '0.62rem', padding: '0.22rem 0.6rem', border: `1px solid ${meta.color}40`, color: meta.color, background: `${meta.color}12`, letterSpacing: '0.08em', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.93rem', padding: '0.22rem 0.6rem', border: `1px solid ${meta.color}40`, color: meta.color, background: `${meta.color}12`, letterSpacing: '0.08em', fontWeight: 600 }}>
                           {meta.label}
                         </span>
                       </td>
@@ -920,13 +920,13 @@ export default function ReservasPage() {
                           {user?.rol === 'admin' && r.estado === 'pendiente' && (
                             <>
                               <button onClick={() => cambiarEstado(r.id, 'aprobada')}
-                                style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', padding: '0.3rem 0.75rem', fontSize: '0.65rem', letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', fontWeight: 600 }}
+                                style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', padding: '0.3rem 0.75rem', fontSize: '0.98rem', letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', fontWeight: 600 }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,222,128,0.22)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(74,222,128,0.1)'}>
                                 ✓ Aprobar
                               </button>
                               <button onClick={() => cambiarEstado(r.id, 'rechazada')}
-                                style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.3rem 0.75rem', fontSize: '0.65rem', letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', fontWeight: 600 }}
+                                style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.3rem 0.75rem', fontSize: '0.98rem', letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', fontWeight: 600 }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(248,113,113,0.22)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(248,113,113,0.1)'}>
                                 ✕ Rechazar
@@ -936,15 +936,15 @@ export default function ReservasPage() {
                           {/* Botón Editar para Admin o Propietario si está pendiente */}
                           {(user?.rol === 'admin' || (esPropietario && r.estado === 'pendiente')) && (
                             <button onClick={() => handleEditStart(r)}
-                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#ffffff', padding: '0.3rem 0.65rem', fontSize: '0.62rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#fdf5e6', padding: '0.3rem 0.65rem', fontSize: '0.93rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
                               onMouseEnter={e => { e.currentTarget.style.color = ACCENT; e.currentTarget.style.borderColor = ACCENT; }}
-                              onMouseLeave={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}>
+                              onMouseLeave={e => { e.currentTarget.style.color = '#fdf5e6'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}>
                               Editar
                             </button>
                           )}
                           {canDelete && (
                             <button onClick={() => handleDelete(r.id)}
-                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255, 255, 255, 1)', padding: '0.3rem 0.65rem', fontSize: '0.62rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', textTransform: 'uppercase' }}
+                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255, 255, 255, 1)', padding: '0.3rem 0.65rem', fontSize: '0.93rem', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit', textTransform: 'uppercase' }}
                               onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.5)'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
                               onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'transparent'; }}>
                               Eliminar
@@ -995,7 +995,7 @@ export default function ReservasPage() {
           onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
-              <h3 style={{ fontSize: '0.9rem', color: '#ffffff', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>
+              <h3 style={{ fontSize: '1.35rem', color: '#fdf5e6', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>
                 📋 VALORES TARIFAS - ZONA SOCIAL
               </h3>
               <button 
@@ -1004,7 +1004,7 @@ export default function ReservasPage() {
                   background: 'transparent', 
                   border: 'none', 
                   color: 'rgba(255, 255, 255, 0.6)', 
-                  fontSize: '1.1rem', 
+                  fontSize: '1.65rem', 
                   cursor: 'pointer',
                   padding: '0.25rem',
                   display: 'flex',
@@ -1012,7 +1012,7 @@ export default function ReservasPage() {
                   justifyContent: 'center',
                   transition: 'color 0.2s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
+                onMouseEnter={e => e.currentTarget.style.color = '#fdf5e6'}
                 onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
               >
                 ✕
@@ -1021,7 +1021,7 @@ export default function ReservasPage() {
             <div style={{ 
               display: 'flex', 
               justifyContent: 'center', 
-              background: '#ffffff', 
+              background: '#fdf5e6', 
               padding: '0.75rem', 
               borderRadius: '4px',
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
@@ -1034,7 +1034,7 @@ export default function ReservasPage() {
               />
             </div>
             <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', margin: 0, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.93rem', color: 'rgba(255,255,255,0.4)', margin: 0, fontStyle: 'italic' }}>
                 * Valores vigentes para el año 2026.
               </p>
               <button 
@@ -1042,9 +1042,9 @@ export default function ReservasPage() {
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.15)',
-                  color: '#ffffff',
+                  color: '#fdf5e6',
                   padding: '0.4rem 1rem',
-                  fontSize: '0.68rem',
+                  fontSize: '1.02rem',
                   fontFamily: 'inherit',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
@@ -1083,7 +1083,7 @@ export default function ReservasPage() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
         }
-        select option { background: #0a0a0f; color: #ffffff; }
+        select option { background: #0a0a0f; color: #fdf5e6; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
         ::placeholder { color: rgba(255,255,255,0.3) !important; }
       `}</style>

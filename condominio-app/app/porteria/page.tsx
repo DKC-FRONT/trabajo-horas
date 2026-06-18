@@ -200,10 +200,10 @@ export default function PorteriaPage() {
             </div>
           </div>
           
-          <h1 style={{ fontSize: '1.2rem', color: '#fff', fontWeight: 700, margin: '0 0 0.5rem' }}>
+          <h1 style={{ fontSize: '1.8rem', color: '#fdf5e6', fontWeight: 700, margin: '0 0 0.5rem' }}>
             TERMINAL DE <span style={{ color: ACCENT }}>PORTERÍA</span>
           </h1>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2rem', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2rem', letterSpacing: '0.05em' }}>
             CONTROL DE ACCESO · PERSONAL
           </p>
 
@@ -214,12 +214,12 @@ export default function PorteriaPage() {
             onChange={(e) => setPinInput(e.target.value)}
             style={{
               width: '100%', background: '#000', border: `1px solid ${errorPin ? '#f87171' : 'rgba(74,222,128,0.3)'}`,
-              color: errorPin ? '#f87171' : ACCENT, padding: '0.8rem', fontSize: '1rem', textAlign: 'center',
+              color: errorPin ? '#f87171' : ACCENT, padding: '0.8rem', fontSize: '1.5rem', textAlign: 'center',
               fontFamily: 'inherit', outline: 'none', letterSpacing: '0.2em', marginBottom: '1rem'
             }}
             autoFocus
           />
-          {errorPin && <div style={{ color: '#f87171', fontSize: '0.65rem', marginBottom: '1rem' }}>⚠ CÓDIGO INCORRECTO</div>}
+          {errorPin && <div style={{ color: '#f87171', fontSize: '0.98rem', marginBottom: '1rem' }}>⚠ CÓDIGO INCORRECTO</div>}
 
           <button 
             type="submit" 
@@ -230,7 +230,7 @@ export default function PorteriaPage() {
               border: '1px solid rgba(74,222,128,0.4)',
               color: ACCENT, 
               padding: '0.6rem 1.2rem', 
-              fontSize: '0.8rem', 
+              fontSize: '1.2rem', 
               fontWeight: 'bold', 
               fontFamily: 'inherit',
               letterSpacing: '0.15em',
@@ -266,18 +266,18 @@ export default function PorteriaPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Image src="/logo.png" alt="Logo" width={36} height={36} style={{ filter: 'grayscale(0.5)' }} />
           <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', letterSpacing: '0.05em' }}>MONITOR DE ACCESO</div>
-            <div style={{ fontSize: '0.6rem', color: ACCENT, letterSpacing: '0.15em' }}>PORTERÍA PRINCIPAL</div>
+            <div style={{ fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6', letterSpacing: '0.05em' }}>MONITOR DE ACCESO</div>
+            <div style={{ fontSize: '0.9rem', color: ACCENT, letterSpacing: '0.15em' }}>PORTERÍA PRINCIPAL</div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1.2rem', color: '#fff', fontWeight: 700, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ fontSize: '1.8rem', color: '#fdf5e6', fontWeight: 700, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={16} color={ACCENT} />
               {currentTime.toLocaleTimeString('es-CO')}
             </div>
-            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               {currentTime.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function PorteriaPage() {
             background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', padding: '0.5rem',
             color: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.2s', borderRadius: '4px'
           }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#fdf5e6'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
           onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
             <LogOut size={18} />
           </button>
@@ -298,16 +298,16 @@ export default function PorteriaPage() {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', margin: '0 0 0.5rem' }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fdf5e6', margin: '0 0 0.5rem' }}>
               ASISTENCIA <span style={{ color: ACCENT }}>TRABAJADORES</span>
             </h1>
-            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+            <p style={{ fontSize: '1.13rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
               Seleccione al trabajador para registrar su hora exacta de paso.
             </p>
           </div>
           <button onClick={fetchData} disabled={loading} style={{
             background: 'transparent', border: '1px solid rgba(74,222,128,0.2)', padding: '0.5rem 1rem',
-            color: ACCENT, fontSize: '0.65rem', letterSpacing: '0.1em', cursor: 'pointer',
+            color: ACCENT, fontSize: '0.98rem', letterSpacing: '0.1em', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.5 : 1
           }}>
             <RefreshCw size={14} className={loading ? "spin" : ""} />
@@ -318,13 +318,13 @@ export default function PorteriaPage() {
         {loading && trabajadores.length === 0 ? (
           <div style={{ padding: '4rem', textAlign: 'center', color: ACCENT }}>
             <RefreshCw size={32} className="spin" style={{ margin: '0 auto 1rem', display: 'block' }} />
-            <div style={{ fontSize: '0.8rem', letterSpacing: '0.2em' }}>CARGANDO DIRECTORIO...</div>
+            <div style={{ fontSize: '1.2rem', letterSpacing: '0.2em' }}>CARGANDO DIRECTORIO...</div>
           </div>
         ) : trabajadores.length === 0 ? (
           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', padding: '4rem', textAlign: 'center' }}>
             <UserCheck size={32} color="rgba(255,255,255,0.2)" style={{ margin: '0 auto 1rem' }} />
-            <div style={{ color: '#fff', fontSize: '1rem', marginBottom: '0.5rem' }}>No hay trabajadores registrados</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>El administrador debe dar de alta al personal en el módulo de Usuarios.</div>
+            <div style={{ color: '#fdf5e6', fontSize: '1.5rem', marginBottom: '0.5rem' }}>No hay trabajadores registrados</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '1.05rem' }}>El administrador debe dar de alta al personal en el módulo de Usuarios.</div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
@@ -346,7 +346,7 @@ export default function PorteriaPage() {
                   {/* Etiqueta de Estado */}
                   <div style={{
                     position: 'absolute', top: 0, right: 0, padding: '0.2rem 0.6rem',
-                    fontSize: '0.55rem', letterSpacing: '0.1em', fontWeight: 700, textTransform: 'uppercase',
+                    fontSize: '0.83rem', letterSpacing: '0.1em', fontWeight: 700, textTransform: 'uppercase',
                     background: yaSalio ? 'rgba(255,255,255,0.1)' : yaEntro ? 'rgba(96,165,250,0.15)' : 'rgba(255,255,255,0.05)',
                     color: yaSalio ? 'rgba(255,255,255,0.4)' : yaEntro ? '#60a5fa' : 'rgba(255,255,255,0.4)',
                     borderBottomLeftRadius: '4px'
@@ -356,24 +356,24 @@ export default function PorteriaPage() {
 
                   {/* Info Trabajador */}
                   <div style={{ paddingRight: '40px' }}>
-                    <div style={{ fontSize: '1rem', fontWeight: 700, color: yaSalio ? 'rgba(255,255,255,0.5)' : '#fff', marginBottom: '0.2rem' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: yaSalio ? 'rgba(255,255,255,0.5)' : '#fdf5e6', marginBottom: '0.2rem' }}>
                       {trabajador.nombre_completo}
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+                    <div style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
                       CÓDIGO: {trabajador.id.split('-')[0].toUpperCase()}
                     </div>
                   </div>
 
                   {/* Tiempos */}
                   {yaEntro && (
-                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.7rem', background: '#000', padding: '0.5rem', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '1.05rem', background: '#000', padding: '0.5rem', border: '1px dashed rgba(255,255,255,0.1)' }}>
                       <div>
-                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.5rem', letterSpacing: '0.1em' }}>ENTRADA</div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>ENTRADA</div>
                         <div style={{ color: '#60a5fa', fontWeight: 700 }}>{new Date(regHoy.hora_entrada).toLocaleTimeString('es-CO')}</div>
                       </div>
                       {yaSalio && (
                         <div>
-                          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.5rem', letterSpacing: '0.1em' }}>SALIDA</div>
+                          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', letterSpacing: '0.1em' }}>SALIDA</div>
                           <div style={{ color: '#a78bfa', fontWeight: 700 }}>{new Date(regHoy.hora_salida as string).toLocaleTimeString('es-CO')}</div>
                         </div>
                       )}
@@ -383,7 +383,7 @@ export default function PorteriaPage() {
                   {/* Acciones */}
                   <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
                     {isLoading ? (
-                      <div style={{ textAlign: 'center', padding: '0.5rem', color: ACCENT, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', border: '1px solid rgba(74,222,128,0.2)' }}>
+                      <div style={{ textAlign: 'center', padding: '0.5rem', color: ACCENT, fontSize: '1.05rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', border: '1px solid rgba(74,222,128,0.2)' }}>
                         <RefreshCw size={14} className="spin" /> Procesando...
                       </div>
                     ) : !yaEntro ? (
@@ -395,7 +395,7 @@ export default function PorteriaPage() {
                           border: '1px solid rgba(96,165,250,0.4)',
                           color: '#60a5fa', 
                           padding: '0.6rem 1.2rem', 
-                          fontSize: '0.8rem', 
+                          fontSize: '1.2rem', 
                           fontWeight: 'bold', 
                           fontFamily: 'inherit',
                           letterSpacing: '0.1em',
@@ -421,7 +421,7 @@ export default function PorteriaPage() {
                           border: '1px solid rgba(248,113,113,0.4)',
                           color: '#f87171', 
                           padding: '0.6rem 1.2rem', 
-                          fontSize: '0.8rem', 
+                          fontSize: '1.2rem', 
                           fontWeight: 'bold', 
                           fontFamily: 'inherit',
                           letterSpacing: '0.1em',
@@ -440,7 +440,7 @@ export default function PorteriaPage() {
                       </button>
                     ) : (
                       <div style={{
-                        width: '100%', padding: '0.7rem', textAlign: 'center', fontSize: '0.7rem', letterSpacing: '0.1em',
+                        width: '100%', padding: '0.7rem', textAlign: 'center', fontSize: '1.05rem', letterSpacing: '0.1em',
                         color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.05)', background: '#000'
                       }}>
                         JORNADA REGISTRADA

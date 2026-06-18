@@ -252,7 +252,7 @@ export default function UsuariosPage() {
     background: 'rgba(255,255,255,0.04)',
     border: `1px solid ${focusedField === field ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
     boxShadow: focusedField === field ? `0 0 0 3px ${ACCENT}10` : 'none',
-    color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
+    color: '#fdf5e6', fontSize: '1.2rem', padding: '0.65rem 0.85rem',
     fontFamily: 'inherit', outline: 'none',
     transition: 'border-color 0.2s, box-shadow 0.2s',
   });
@@ -269,11 +269,11 @@ export default function UsuariosPage() {
       {/* ── Encabezado ── */}
       <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Administración</p>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+          <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>Administración</p>
+          <h1 style={{ fontSize: '2.1rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.01em' }}>
             Gestión de <span style={{ color: ACCENT }}>Usuarios</span>
           </h1>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255, 255, 255, 1)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
             Administra accesos y vincula residentes a sus casas
           </p>
         </div>
@@ -282,7 +282,7 @@ export default function UsuariosPage() {
       {/* ── Filtros de Rol ── */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'todos', label: 'Todos', color: '#fff' },
+          { id: 'todos', label: 'Todos', color: '#fdf5e6' },
           { id: 'admin', label: 'Administradores', color: ROL_META.admin.color },
           { id: 'trabajador', label: 'Trabajadores', color: ROL_META.trabajador.color },
           { id: 'residente', label: 'Residentes', color: ROL_META.residente.color },
@@ -293,7 +293,7 @@ export default function UsuariosPage() {
             onClick={() => setFiltroRol(f.id as any)}
             style={{
               padding: '0.5rem 1rem',
-              fontSize: '0.65rem',
+              fontSize: '0.98rem',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -311,12 +311,12 @@ export default function UsuariosPage() {
 
       {/* ── Alertas ── */}
       {errorMsg && (
-        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>⚠</span> {errorMsg}
         </div>
       )}
       {successMsg && (
-        <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span>✓</span> {successMsg}
         </div>
       )}
@@ -326,29 +326,29 @@ export default function UsuariosPage() {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${isEditing ? '#fbbf24' : ACCENT}60, transparent)` }} />
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Formulario</p>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '0.04em' }}>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Formulario</p>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '0.04em' }}>
               {isEditing ? 'EDITAR USUARIO' : 'NUEVO USUARIO'}
             </h2>
           </div>
           {isEditing && (
-            <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem', border: '1px solid #fbbf2440', color: '#fbbf24', letterSpacing: '0.1em' }}>Editando</span>
+            <span style={{ fontSize: '0.9rem', padding: '0.2rem 0.6rem', border: '1px solid #fbbf2440', color: '#fbbf24', letterSpacing: '0.1em' }}>Editando</span>
           )}
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 180px' }}>
-            <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'nombre' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>Nombre</label>
+            <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'nombre' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>Nombre</label>
             <input required type="text" value={nombre} onChange={e => setNombre(e.target.value)}
               style={inputStyle('nombre')} onFocus={() => setFocusedField('nombre')} onBlur={() => setFocusedField(null)} />
           </div>
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'correo' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>Correo</label>
+            <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'correo' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>Correo</label>
             <input required type="email" value={correo} onChange={e => setCorreo(e.target.value)}
               style={inputStyle('correo')} onFocus={() => setFocusedField('correo')} onBlur={() => setFocusedField(null)} />
           </div>
           <div style={{ flex: '1 1 160px' }}>
-            <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'pass' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>
+            <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: focusedField === 'pass' ? ACCENT : 'rgba(255,255,255,0.4)', marginBottom: '0.4rem', transition: 'color 0.2s' }}>
               Password {isEditing && <span style={{ color: 'rgba(255, 255, 255, 1)' }}>(opcional)</span>}
             </label>
             <input required={!isEditing} type="password" value={password} onChange={e => setPassword(e.target.value)}
@@ -356,7 +356,7 @@ export default function UsuariosPage() {
               style={inputStyle('pass')} onFocus={() => setFocusedField('pass')} onBlur={() => setFocusedField(null)} />
           </div>
           <div style={{ flex: '1 1 140px' }}>
-            <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>Rol</label>
+            <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>Rol</label>
             <select value={rol} onChange={e => setRol(e.target.value as Rol)} style={{ ...inputStyle('rol'), appearance: 'none' as any, color: ROL_META[rol].color }}>
               <option value="residente"  style={{ background: '#0a0a0f', color: '#4ade80' }}>◎ Residente</option>
               <option value="trabajador" style={{ background: '#0a0a0f', color: '#60a5fa' }}>⬡ Trabajador</option>
@@ -366,7 +366,7 @@ export default function UsuariosPage() {
           </div>
           { (rol === 'residente' || rol === 'extras') && (
             <div style={{ flex: '1 1 220px' }}>
-              <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginBottom: '0.4rem' }}>
                 {isNewCasa ? 'Nombre del Nuevo Medidor' : 'Vincular a Medidor'}
               </label>
               
@@ -384,7 +384,7 @@ export default function UsuariosPage() {
                     <button 
                       type="button" 
                       onClick={() => { setIsNewCasa(false); setNewCasaName(''); }}
-                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '0.7rem' }}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fdf5e6', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '1.05rem' }}
                     >✕</button>
                   </div>
                 ) : (
@@ -422,8 +422,8 @@ export default function UsuariosPage() {
                       padding: '0.6rem 1rem', 
                       background: `${ACCENT}20`, 
                       border: `2px solid ${ACCENT}`, 
-                      color: '#fff', 
-                      fontSize: '0.7rem', 
+                      color: '#fdf5e6', 
+                      fontSize: '1.05rem', 
                       fontWeight: 800,
                       cursor: 'pointer', 
                       whiteSpace: 'nowrap',
@@ -441,8 +441,8 @@ export default function UsuariosPage() {
           )}
           <div style={{ display: 'flex', gap: '0.5rem', paddingBottom: '1px' }}>
             {isEditing && (
-              <button type="button" onClick={resetForm} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255, 255, 255, 1)', padding: '0.65rem 1.25rem', fontSize: '0.7rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.color = '#fff'; }}
+              <button type="button" onClick={resetForm} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255, 255, 255, 1)', padding: '0.65rem 1.25rem', fontSize: '1.05rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.color = '#fdf5e6'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}>
                 CANCELAR
               </button>
@@ -452,7 +452,7 @@ export default function UsuariosPage() {
                 background: formLoading ? 'rgba(255,255,255,0.04)' : `linear-gradient(135deg, ${ACCENT}20, ${ACCENT}08)`,
                 border: `1px solid ${formLoading ? 'rgba(255,255,255,0.08)' : ACCENT + '50'}`,
                 color: formLoading ? 'rgba(255,255,255,0.3)' : ACCENT,
-                padding: '0.65rem 1.75rem', fontSize: '0.72rem', letterSpacing: '0.12em',
+                padding: '0.65rem 1.75rem', fontSize: '1.08rem', letterSpacing: '0.12em',
                 cursor: formLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
                 display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit',
               }}
@@ -473,10 +473,10 @@ export default function UsuariosPage() {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}40, transparent)` }} />
         <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Lista</p>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>TODOS LOS USUARIOS</h2>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.2rem' }}>Lista</p>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>TODOS LOS USUARIOS</h2>
           </div>
-          <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)' }}>{usuarios.length} registros</span>
+          <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)' }}>{usuarios.length} registros</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -484,20 +484,20 @@ export default function UsuariosPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 {['#', 'Nombre', 'Correo', 'Rol', 'Casa', 'Acciones'].map((h, i) => (
-                  <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 5 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding: '0.85rem 1rem', fontSize: '0.87rem', color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: i === 5 ? 'right' : 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem' }}>
+                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem' }}>
                     <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
                   </td>
                 </tr>
               ) : usuarios.filter(u => filtroRol === 'todos' || u.rol === filtroRol).length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.8rem', letterSpacing: '0.05em' }}>
+                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.2rem', letterSpacing: '0.05em' }}>
                     No hay usuarios con este rol
                   </td>
                 </tr>
@@ -518,17 +518,17 @@ export default function UsuariosPage() {
                       onMouseEnter={() => setHoveredRow(u.id)}
                       onMouseLeave={() => setHoveredRow(null)}
                     >
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)', fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</td>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)', fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</td>
                       <td style={{ padding: '0.9rem 1rem' }}>
-                        <div style={{ fontSize: '0.82rem', color: '#ffffff', fontWeight: 700 }}>{u.nombre}</div>
+                        <div style={{ fontSize: '1.23rem', color: '#fdf5e6', fontWeight: 700 }}>{u.nombre}</div>
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 1)' }}>{u.correo}</td>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.13rem', color: 'rgba(255, 255, 255, 1)' }}>{u.correo}</td>
                       <td style={{ padding: '0.9rem 1rem' }}>
-                        <span style={{ fontSize: '0.6rem', padding: '0.2rem 0.55rem', border: `1px solid ${meta.color}35`, color: meta.color, background: `${meta.color}10`, letterSpacing: '0.08em', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <span style={{ fontSize: '0.9rem', padding: '0.2rem 0.55rem', border: `1px solid ${meta.color}35`, color: meta.color, background: `${meta.color}10`, letterSpacing: '0.08em', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                           <span>{meta.icon}</span> {meta.label}
                         </span>
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', fontSize: '0.75rem', color: u.numero_casa ? '#ffffff' : 'rgba(255,255,255,0.2)' }}>
+                      <td style={{ padding: '0.9rem 1rem', fontSize: '1.13rem', color: u.numero_casa ? '#fdf5e6' : 'rgba(255,255,255,0.2)' }}>
                         {u.numero_casa ? (
                           <span style={{ color: '#4ade80' }}>
                             {/^\d+$/.test(u.numero_casa) ? `Casa ${u.numero_casa}` : u.numero_casa}
@@ -537,13 +537,13 @@ export default function UsuariosPage() {
                       </td>
                       <td style={{ padding: '0.9rem 1rem', textAlign: 'right' }}>
                         <button onClick={() => handleEdit(u)}
-                          style={{ background: 'transparent', border: `1px solid rgba(255,255,255,0.1)`, color: 'rgba(255, 255, 255, 1)', padding: '0.35rem 0.8rem', fontSize: '0.62rem', letterSpacing: '0.08em', cursor: 'pointer', marginRight: '0.4rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                          style={{ background: 'transparent', border: `1px solid rgba(255,255,255,0.1)`, color: 'rgba(255, 255, 255, 1)', padding: '0.35rem 0.8rem', fontSize: '0.93rem', letterSpacing: '0.08em', cursor: 'pointer', marginRight: '0.4rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT + '60'; e.currentTarget.style.color = ACCENT; }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}>
                           EDITAR
                         </button>
                         <button onClick={() => handleDelete(u.id)} disabled={deletingId === u.id}
-                          style={{ background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: 'rgba(248,113,113,0.7)', padding: '0.35rem 0.7rem', fontSize: '0.62rem', letterSpacing: '0.08em', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                          style={{ background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: 'rgba(248,113,113,0.7)', padding: '0.35rem 0.7rem', fontSize: '0.93rem', letterSpacing: '0.08em', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor = '#f87171'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; e.currentTarget.style.color = 'rgba(248,113,113,0.7)'; e.currentTarget.style.background = 'transparent'; }}>
                           {deletingId === u.id ? '◌' : '✕'}

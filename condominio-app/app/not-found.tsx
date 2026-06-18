@@ -11,10 +11,10 @@ export default function NotFound() {
       alignItems: 'center',
       justifyContent: 'center',
       background: '#0a0a0f',
-      color: '#fff',
+      color: '#fdf5e6',
       fontFamily: 'inherit'
     }}>
-      <h1 style={{ fontSize: '3rem', color: '#f87171' }}>404</h1>
+      <h1 style={{ fontSize: '4.5rem', color: '#f87171' }}>404</h1>
       <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '2rem' }}>PAGINA NO ENCONTRADA</p>
       <Link 
         href="/"

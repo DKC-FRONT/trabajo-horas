@@ -343,8 +343,8 @@ export default function PermisosPage() {
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Image src="/logo_florida.png" alt="Logo" width={160} height={50} style={{ objectFit: 'contain', flexShrink: 0 }} />
           <div>
-            <p style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
-            <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+            <p style={{ fontSize: '0.9rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Gestión de Personal</p>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', fontWeight: 700, color: '#fdf5e6', letterSpacing: '-0.02em', margin: 0 }}>
               Formato de <span style={{ color: '#a78bfa' }}>Permisos</span>
             </h1>
           </div>
@@ -354,7 +354,7 @@ export default function PermisosPage() {
             onClick={() => setShowForm(true)}
             style={{
               background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
-              color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
+              color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '1.13rem',
               letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
               fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
@@ -375,74 +375,74 @@ export default function PermisosPage() {
           padding: '2.5rem',
           animation: 'fadeIn 0.3s ease'
         }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.8rem', color: '#fdf5e6', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <FileText size={20} style={{ color: '#a78bfa' }} /> Nueva Solicitud
           </h2>
           
           <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
             {userProfile?.rol === 'admin' && (
               <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Escoger Trabajador</label>
+                <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Escoger Trabajador</label>
                 <select required value={formData.trabajador_id} onChange={e => setFormData({...formData, trabajador_id: e.target.value})} style={selectStyle}>
-                  <option value="" style={{ background: '#0a0a0f', color: '#fff' }}>-- Seleccionar Empleado --</option>
+                  <option value="" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>-- Seleccionar Empleado --</option>
                   {trabajadores.map(t => (
-                    <option key={t.id} value={t.id} style={{ background: '#0a0a0f', color: '#fff' }}>{t.nombre_completo}</option>
+                    <option key={t.id} value={t.id} style={{ background: '#0a0a0f', color: '#fdf5e6' }}>{t.nombre_completo}</option>
                   ))}
                 </select>
               </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Cargo / Función</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Cargo / Función</label>
               <input type="text" placeholder="Ej: Vigilante, Jardinero..." value={formData.cargo} onChange={e => setFormData({...formData, cargo: e.target.value})} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Fecha de la Falta</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Fecha de la Falta</label>
               <input type="date" required value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} style={inputStyle} />
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Cantidad de Horas</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Cantidad de Horas</label>
               <input type="text" placeholder="Ej: 4 horas" value={formData.horas} onChange={e => setFormData({...formData, horas: e.target.value})} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora Salida</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora Salida</label>
               <input type="time" value={formData.hora_salida} onChange={e => setFormData({...formData, hora_salida: e.target.value})} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>¿Retorna?</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>¿Retorna?</label>
               <select value={formData.intent_retorno} onChange={e => setFormData({...formData, intent_retorno: e.target.value})} style={selectStyle}>
-                <option value="si" style={{ background: '#0a0a0f', color: '#fff' }}>SÍ (Regresa hoy)</option>
-                <option value="no" style={{ background: '#0a0a0f', color: '#fff' }}>NO (No regresa hoy)</option>
+                <option value="si" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>SÍ (Regresa hoy)</option>
+                <option value="no" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>NO (No regresa hoy)</option>
               </select>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', opacity: formData.intent_retorno === 'si' ? 1 : 0.4, pointerEvents: formData.intent_retorno === 'si' ? 'auto' : 'none' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora Retorno</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Hora Retorno</label>
               <input type="time" disabled={formData.intent_retorno === 'no'} value={formData.hora_retorno} onChange={e => setFormData({...formData, hora_retorno: e.target.value})} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Duración</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Duración</label>
               <select value={formData.tipo_duracion} onChange={e => setFormData({...formData, tipo_duracion: e.target.value as any})} style={selectStyle}>
-                <option value="medio_dia" style={{ background: '#0a0a0f', color: '#fff' }}>Medio día</option>
-                <option value="un_dia" style={{ background: '#0a0a0f', color: '#fff' }}>Un día</option>
+                <option value="medio_dia" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Medio día</option>
+                <option value="un_dia" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Un día</option>
               </select>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Categoría</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Categoría</label>
               <select value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value as any})} style={selectStyle}>
-                <option value="personal" style={{ background: '#0a0a0f', color: '#fff' }}>Asunto Personal</option>
-                <option value="salud" style={{ background: '#0a0a0f', color: '#fff' }}>Salud / Médica</option>
+                <option value="personal" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Asunto Personal</option>
+                <option value="salud" style={{ background: '#0a0a0f', color: '#fdf5e6' }}>Salud / Médica</option>
               </select>
             </div>
 
             <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Motivo Detallado</label>
+              <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Motivo Detallado</label>
               <textarea rows={4} required value={formData.motivo} onChange={e => setFormData({...formData, motivo: e.target.value})} style={inputStyle} />
             </div>
 
@@ -456,7 +456,7 @@ export default function PermisosPage() {
                   border: saving ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
                   color: saving ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
                   padding: '0.6rem 1.2rem', 
-                  fontSize: '0.8rem', 
+                  fontSize: '1.2rem', 
                   fontWeight: 'bold', 
                   fontFamily: 'inherit', 
                   letterSpacing: '0.1em', 
@@ -482,7 +482,7 @@ export default function PermisosPage() {
                   border: '1px solid rgba(248,113,113,0.4)', 
                   color: '#f87171', 
                   padding: '0.6rem 1.2rem', 
-                  fontSize: '0.8rem', 
+                  fontSize: '1.2rem', 
                   fontWeight: 'bold', 
                   fontFamily: 'inherit', 
                   letterSpacing: '0.1em', 
@@ -506,7 +506,7 @@ export default function PermisosPage() {
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <History size={18} style={{ color: '#a78bfa' }} />
-            <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', margin: 0 }}>HISTORIAL DE SOLICITUDES</h3>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>HISTORIAL DE SOLICITUDES</h3>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
@@ -525,12 +525,12 @@ export default function PermisosPage() {
                   <tr key={permit.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <td style={tdStyle}>{permit.fecha}</td>
                     <td style={tdStyle}>
-                      <div style={{ fontSize: '0.85rem', color: '#fff' }}>{permit.nombre_completo}</div>
-                      <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{permit.cargo}</div>
+                      <div style={{ fontSize: '1.27rem', color: '#fdf5e6' }}>{permit.nombre_completo}</div>
+                      <div style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{permit.cargo}</div>
                     </td>
                     <td style={tdStyle}>
                       <span style={{ 
-                        fontSize: '0.65rem', padding: '0.2rem 0.55rem', 
+                        fontSize: '0.98rem', padding: '0.2rem 0.55rem', 
                         background: permit.categoria === 'salud' ? 'rgba(96,165,250,0.1)' : 'rgba(167,139,250,0.1)',
                         color: permit.categoria === 'salud' ? '#60a5fa' : '#a78bfa',
                         border: `1px solid ${permit.categoria === 'salud' ? '#60a5fa20' : '#a78bfa20'}`
@@ -546,7 +546,7 @@ export default function PermisosPage() {
                       <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
                         <button 
                           onClick={() => generatePDF(permit)}
-                          style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                          style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.13rem' }}
                         >
                           <Download size={14} /> PDF
                         </button>
@@ -556,13 +556,13 @@ export default function PermisosPage() {
                               <>
                                 <button 
                                   onClick={() => handleUpdateStatus(permit.id, 'aprobado')}
-                                  style={{ background: 'transparent', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                                  style={{ background: 'transparent', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.13rem', fontWeight: 600 }}
                                 >
                                   <CheckCircle2 size={14} /> Aprobar
                                 </button>
                                 <button 
                                   onClick={() => handleUpdateStatus(permit.id, 'rechazado')}
-                                  style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600 }}
+                                  style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.13rem', fontWeight: 600 }}
                                 >
                                   <XCircle size={14} /> Rechazar
                                 </button>
@@ -570,7 +570,7 @@ export default function PermisosPage() {
                             )}
                             <button 
                               onClick={() => handleDelete(permit.id)}
-                              style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+                              style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.13rem' }}
                             >
                               <XCircle size={14} /> Borrar
                             </button>
@@ -598,8 +598,8 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
   padding: '0.8rem',
-  color: '#fff',
-  fontSize: '0.85rem',
+  color: '#fdf5e6',
+  fontSize: '1.27rem',
   fontFamily: 'inherit',
   outline: 'none',
   width: '100%',
@@ -621,13 +621,13 @@ const thStyle: React.CSSProperties = {
   padding: '1rem',
   textAlign: 'left',
   color: 'rgba(255,255,255,0.4)',
-  fontSize: '0.6rem',
+  fontSize: '0.9rem',
   textTransform: 'uppercase',
   letterSpacing: '0.1em'
 };
 
 const tdStyle: React.CSSProperties = {
   padding: '1rem',
-  color: '#fff',
-  fontSize: '0.82rem'
+  color: '#fdf5e6',
+  fontSize: '1.23rem'
 };

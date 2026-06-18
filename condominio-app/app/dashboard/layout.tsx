@@ -207,10 +207,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             <Image src="/logo.png" alt="Logo" width={32} height={32} style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
             <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff', letterSpacing: '0.05em', lineHeight: 1 }}>
+              <div style={{ fontSize: '1.13rem', fontWeight: 700, color: '#fdf5e6', letterSpacing: '0.05em', lineHeight: 1 }}>
                 La Florida
               </div>
-              <div style={{ fontSize: '0.55rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '0.83rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginTop: '0.2rem' }}>
                 Condominio
               </div>
             </div>
@@ -225,7 +225,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             transition: 'color 0.2s, transform 0.25s',
             transform: collapsed && !isMobile ? 'rotate(180deg)' : 'none',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#fdf5e6')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}
         >
           <ChevronLeft size={16} />
@@ -263,8 +263,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
               {(!collapsed || isMobile) && (
                 <span style={{
-                  fontSize: '0.72rem', letterSpacing: '0.06em',
-                  color: isActive ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                  fontSize: '1.08rem', letterSpacing: '0.06em',
+                  color: isActive ? '#fdf5e6' : 'rgba(255,255,255,0.5)',
                   fontWeight: isActive ? 700 : 400,
                   whiteSpace: 'nowrap',
                 }}>
@@ -297,7 +297,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 boxShadow: `0 0 8px ${dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : '#fbbf24'}`,
                 animation: dbStatus === 'checking' ? 'pulse 1s infinite' : 'none'
               }} />
-              <span style={{ fontSize: '0.55rem', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.83rem', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
                 Supabase: {dbStatus.toUpperCase()}
               </span>
             </div>
@@ -307,7 +307,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {(!collapsed || isMobile) && (
           <div>
             <span style={{
-              fontSize: '0.5rem', letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+              fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase' as const,
               color: ROL_COLOR[rol],
               padding: '0.1rem 0.4rem',
               border: `1px solid ${ROL_COLOR[rol]}40`,
@@ -315,10 +315,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             }}>
               {ROL_LABEL[rol]}
             </span>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(255, 255, 255, 1)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+            <div style={{ fontSize: '1.02rem', color: 'rgba(255, 255, 255, 1)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
               {user?.nombre || 'Sin Perfil'}
             </div>
-            <div style={{ fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+            <div style={{ fontSize: '0.87rem', color: 'rgba(255, 255, 255, 1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
               {user?.correo}
             </div>
             <button
@@ -327,7 +327,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 background: 'transparent',
                 border: 'none',
                 color: '#38bdf8',
-                fontSize: '0.62rem',
+                fontSize: '0.93rem',
                 cursor: 'pointer',
                 padding: '0.2rem 0',
                 textAlign: 'left',
@@ -350,7 +350,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             border: '1px solid rgba(255,255,255,0.08)',
             padding: collapsed && !isMobile ? '0.45rem' : '0.4rem 0.75rem',
             color: 'rgba(255, 255, 255, 1)',
-            fontSize: '0.6rem', fontFamily: 'inherit',
+            fontSize: '0.9rem', fontFamily: 'inherit',
             letterSpacing: '0.1em', textTransform: 'uppercase' as const,
             cursor: 'pointer', transition: 'all 0.2s',
             width: collapsed && !isMobile ? '36px' : '100%',
@@ -437,7 +437,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             zIndex: 60, background: '#0d0d14',
             border: '1px solid rgba(255,255,255,0.08)',
             color: 'rgba(255, 255, 255, 1)', padding: '0.5rem 0.6rem',
-            cursor: 'pointer', fontSize: '1rem',
+            cursor: 'pointer', fontSize: '1.5rem',
             fontFamily: 'inherit',
           }}
         >
@@ -493,16 +493,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             maxWidth: '380px',
             position: 'relative',
           }}>
-            <h3 style={{ margin: '0 0 0.5rem', color: '#fff', fontSize: '1.25rem', fontWeight: 700 }}>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#fdf5e6', fontSize: '1.88rem', fontWeight: 700 }}>
               🔑 Cambiar Contraseña
             </h3>
-            <p style={{ margin: '0 0 1.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>
+            <p style={{ margin: '0 0 1.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '1.2rem' }}>
               Ingresa tu nueva contraseña a continuación.
             </p>
 
             <form onSubmit={handleUpdatePassword} style={{ display: 'grid', gap: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Nueva Contraseña
                 </label>
                 <input
@@ -516,8 +516,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '0.375rem',
                     padding: '0.6rem 0.75rem',
-                    color: '#fff',
-                    fontSize: '0.875rem',
+                    color: '#fdf5e6',
+                    fontSize: '1.31rem',
                     fontFamily: 'inherit',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -526,7 +526,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Confirmar Contraseña
                 </label>
                 <input
@@ -540,8 +540,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '0.375rem',
                     padding: '0.6rem 0.75rem',
-                    color: '#fff',
-                    fontSize: '0.875rem',
+                    color: '#fdf5e6',
+                    fontSize: '1.31rem',
                     fontFamily: 'inherit',
                     outline: 'none',
                     transition: 'all 0.2s',
@@ -550,13 +550,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               {passwordError && (
-                <div style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                <div style={{ color: '#f87171', fontSize: '1.13rem', marginTop: '0.25rem' }}>
                   ⚠️ {passwordError}
                 </div>
               )}
 
               {passwordSuccess && (
-                <div style={{ color: '#34d399', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                <div style={{ color: '#34d399', fontSize: '1.13rem', marginTop: '0.25rem' }}>
                   ✓ {passwordSuccess}
                 </div>
               )}
@@ -576,10 +576,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     background: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '0.375rem',
-                    color: '#fff',
+                    color: '#fdf5e6',
                     padding: '0.6rem',
                     cursor: 'pointer',
-                    fontSize: '0.8rem',
+                    fontSize: '1.2rem',
                     fontWeight: 600,
                   }}
                 >
@@ -593,10 +593,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
                     border: 'none',
                     borderRadius: '0.375rem',
-                    color: '#fff',
+                    color: '#fdf5e6',
                     padding: '0.6rem',
                     cursor: updatingPassword ? 'not-allowed' : 'pointer',
-                    fontSize: '0.8rem',
+                    fontSize: '1.2rem',
                     fontWeight: 600,
                   }}
                 >

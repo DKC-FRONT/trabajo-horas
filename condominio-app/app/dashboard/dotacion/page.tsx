@@ -100,17 +100,17 @@ export default function DotacionPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                <Shield size={24} color={ACCENT} />
-               <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
+               <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.02em' }}>
                  ENTREGA DE DOTACIONES
                </h1>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '0.02em' }}>
+            <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '0.02em' }}>
               Diligencie los elementos de protección personal (EPP) y genere el acta para firma manual.
             </p>
           </div>
           <button onClick={handleImprimir} style={{
             background: ACCENT, color: '#000', border: 'none', padding: '0.75rem 1.5rem',
-            fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+            fontSize: '1.27rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
             transition: 'all 0.2s', borderRadius: '2px', flexShrink: 0
           }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
@@ -121,15 +121,15 @@ export default function DotacionPage() {
 
         {/* 1. Datos Generales */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '0.85rem', color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 1.5rem 0' }}>1. Información del Trabajador</h2>
+          <h2 style={{ fontSize: '1.27rem', color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 1.5rem 0' }}>1. Información del Trabajador</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>TRABAJADOR</label>
+              <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>TRABAJADOR</label>
               <select 
                 value={selectedTrabajadorId} 
                 onChange={e => setSelectedTrabajadorId(e.target.value)}
-                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
+                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               >
                 <option value="">Seleccione un trabajador...</option>
                 {trabajadores.map(t => (
@@ -139,34 +139,34 @@ export default function DotacionPage() {
             </div>
             
             <div>
-              <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CÉDULA DE CIUDADANÍA</label>
+              <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CÉDULA DE CIUDADANÍA</label>
               <input 
                 type="text" 
                 value={cedula} 
                 onChange={e => setCedula(e.target.value)} 
                 placeholder="Ej. 1.193.092.270"
-                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
+                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CARGO / PUESTO DE TRABAJO</label>
+              <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CARGO / PUESTO DE TRABAJO</label>
               <input 
                 type="text" 
                 value={cargo} 
                 onChange={e => setCargo(e.target.value.toUpperCase())} 
                 placeholder="Ej. ASISTENTE CONTABLE"
-                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
+                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>MUNICIPIO</label>
+              <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>MUNICIPIO</label>
               <input 
                 type="text" 
                 value={municipio} 
                 onChange={e => setMunicipio(e.target.value.toUpperCase())} 
-                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
+                style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               />
             </div>
           </div>
@@ -175,17 +175,17 @@ export default function DotacionPage() {
         {/* 2. Productos */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '0.85rem', color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>2. Detalles de Dotación</h2>
+            <h2 style={{ fontSize: '1.27rem', color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>2. Detalles de Dotación</h2>
             <button onClick={addItem} style={{
               background: 'transparent', color: ACCENT, border: `1px solid ${ACCENT}50`, padding: '0.5rem 1rem',
-              fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+              fontSize: '1.05rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
             }}>
               <Plus size={14} /> Añadir Fila
             </button>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '650px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '1.2rem', minWidth: '650px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   <th style={{ padding: '0.75rem 0.5rem', fontWeight: 600 }}>N°</th>
@@ -239,10 +239,10 @@ export default function DotacionPage() {
             <tr>
               <td style={{ width: '30%', border: '1px solid #000', padding: '10px', textAlign: 'center', verticalAlign: 'middle' }}>
                 {/* Asumimos que el logo principal puede ser texto estilizado para garantizar compatibilidad, o una imagen */}
-                <div style={{ color: MAIN_GREEN, fontWeight: 'bold', fontSize: '18px' }}>La Florida</div>
-                <div style={{ color: MAIN_GREEN, fontSize: '14px' }}>Condominio Campestre</div>
+                <div style={{ color: MAIN_GREEN, fontWeight: 'bold', fontSize: '27px' }}>La Florida</div>
+                <div style={{ color: MAIN_GREEN, fontSize: '21px' }}>Condominio Campestre</div>
               </td>
-              <td style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '18px' }}>
+              <td style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '27px' }}>
                 CONDOMINIO CAMPESTRE LA FLORIDA
               </td>
             </tr>
@@ -260,7 +260,7 @@ export default function DotacionPage() {
         </table>
 
         {/* Información del Trabajador */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '5px', fontFamily: 'Arial, sans-serif', fontSize: '13px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '5px', fontFamily: 'Arial, sans-serif', fontSize: '20px' }}>
           <tbody>
             <tr>
               <td style={{ border: '1px solid #000', padding: '4px 6px', color: MAIN_GREEN, fontWeight: 'bold', width: '35%' }}>Nombre y Apellido del Trabajador:</td>
@@ -282,21 +282,21 @@ export default function DotacionPage() {
         </table>
 
         {/* Subtítulo Descriptivo */}
-        <div style={{ fontStyle: 'italic', fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#555', marginBottom: '5px', paddingLeft: '5px' }}>
+        <div style={{ fontStyle: 'italic', fontFamily: 'Arial, sans-serif', fontSize: '18px', color: '#555', marginBottom: '5px', paddingLeft: '5px' }}>
           Elementos de protección personal, necesarios para el trabajador, según el puesto de trabajo.
         </div>
 
         {/* Tabla Recticular de Productos */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', fontFamily: 'Arial, sans-serif', fontSize: '13px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', fontFamily: 'Arial, sans-serif', fontSize: '20px' }}>
           <thead>
             <tr>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '5%' }}>N°</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '30%' }}>Producto</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '8%' }}>Talla</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '15%' }}>Marca</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '10%' }}>Cantidad</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '15%' }}>Fecha de<br/>entrega</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fff', padding: '6px 4px', width: '17%' }}>Firma del<br/>trabajador</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '5%' }}>N°</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '30%' }}>Producto</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '8%' }}>Talla</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '15%' }}>Marca</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '10%' }}>Cantidad</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '15%' }}>Fecha de<br/>entrega</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '17%' }}>Firma del<br/>trabajador</th>
             </tr>
           </thead>
           <tbody>
@@ -307,7 +307,7 @@ export default function DotacionPage() {
                 <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.talla}</td>
                 <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.marca}</td>
                 <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.cantidad > 0 ? item.cantidad : ''}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center', fontSize: '11px' }}>{item.fechaEntrega}</td>
+                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center', fontSize: '17px' }}>{item.fechaEntrega}</td>
                 <td style={{ border: '1px solid #ccc', padding: '4px' }}>{/* Vacio para la firma */}</td>
               </tr>
             ))}
@@ -315,7 +315,7 @@ export default function DotacionPage() {
         </table>
 
         {/* Marca de agua estilo página (Opcional) */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '8rem', color: 'rgba(0,0,0,0.03)', fontWeight: 'bold', zIndex: -1, pointerEvents: 'none', fontFamily: 'Arial' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12rem', color: 'rgba(0,0,0,0.03)', fontWeight: 'bold', zIndex: -1, pointerEvents: 'none', fontFamily: 'Arial' }}>
           Página 1
         </div>
       </div>
@@ -385,9 +385,9 @@ const inputRowObj = {
   background: 'transparent', 
   border: 'none', 
   borderBottom: '1px solid rgba(255,255,255,0.2)', 
-  color: '#fff', 
+  color: '#fdf5e6', 
   padding: '0.4rem', 
   outline: 'none',
   fontFamily: 'inherit',
-  fontSize: '0.8rem'
+  fontSize: '1.2rem'
 };

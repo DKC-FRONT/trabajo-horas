@@ -153,7 +153,7 @@ export default function Login() {
               borderRadius: '2px',
               padding: '0.3rem 0.75rem',
               marginBottom: '1.5rem',
-              fontSize: '0.6rem',
+              fontSize: '0.9rem',
               letterSpacing: '0.15em',
               color: dbStatus === 'online' ? '#4ade80' : dbStatus === 'error' ? '#f87171' : 'rgba(255,255,255,0.4)',
               textTransform: 'uppercase',
@@ -177,7 +177,7 @@ export default function Login() {
             style={{
               fontSize: 'clamp(2rem, 5vw, 3.5rem)',
               fontWeight: 700,
-              color: '#ffffff',
+              color: '#fdf5e6',
               letterSpacing: '-0.02em',
               margin: 0,
               lineHeight: 1,
@@ -205,7 +205,7 @@ export default function Login() {
           <p
             style={{
               color: 'rgba(255,255,255,0.35)',
-              fontSize: '0.8rem',
+              fontSize: '1.2rem',
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               margin: 0,
@@ -230,7 +230,7 @@ export default function Login() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             <label
               style={{
-                fontSize: '0.6rem',
+                fontSize: '0.9rem',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 color: focused === 'correo' ? '#60a5fa' : 'rgba(255,255,255,0.3)',
@@ -253,8 +253,8 @@ export default function Login() {
                   background: 'rgba(255,255,255,0.04)',
                   border: `1px solid ${focused === 'correo' ? '#60a5fa40' : 'rgba(255,255,255,0.08)'}`,
                   padding: '0.7rem 0.9rem',
-                  color: '#ffffff',
-                  fontSize: '0.85rem',
+                  color: '#fdf5e6',
+                  fontSize: '1.27rem',
                   fontFamily: 'inherit',
                   outline: 'none',
                   transition: 'border-color 0.2s ease',
@@ -282,7 +282,7 @@ export default function Login() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             <label
               style={{
-                fontSize: '0.6rem',
+                fontSize: '0.9rem',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 color: focused === 'password' ? '#60a5fa' : 'rgba(255,255,255,0.3)',
@@ -305,8 +305,8 @@ export default function Login() {
                   background: 'rgba(255,255,255,0.04)',
                   border: `1px solid ${focused === 'password' ? '#60a5fa40' : 'rgba(255,255,255,0.08)'}`,
                   padding: '0.7rem 0.9rem',
-                  color: '#ffffff',
-                  fontSize: '0.85rem',
+                  color: '#fdf5e6',
+                  fontSize: '1.27rem',
                   fontFamily: 'inherit',
                   outline: 'none',
                   transition: 'border-color 0.2s ease',
@@ -337,7 +337,7 @@ export default function Login() {
                 background: 'rgba(248,113,113,0.08)',
                 border: '1px solid rgba(248,113,113,0.2)',
                 padding: '0.6rem 0.9rem',
-                fontSize: '0.72rem',
+                fontSize: '1.08rem',
                 color: '#f87171',
                 letterSpacing: '0.03em',
                 display: 'flex',
@@ -361,8 +361,8 @@ export default function Login() {
                 : 'linear-gradient(135deg, #60a5fa20, #a78bfa20)',
               border: `1px solid ${loading ? 'rgba(255,255,255,0.08)' : '#60a5fa40'}`,
               padding: '0.85rem',
-              color: loading ? 'rgba(255,255,255,0.3)' : '#ffffff',
-              fontSize: '0.75rem',
+              color: loading ? 'rgba(255,255,255,0.3)' : '#fdf5e6',
+              fontSize: '1.13rem',
               fontFamily: 'inherit',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
@@ -405,7 +405,7 @@ export default function Login() {
           style={{
             textAlign: 'center',
             color: 'rgba(255,255,255,0.12)',
-            fontSize: '0.6rem',
+            fontSize: '0.9rem',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             marginTop: '1.5rem',

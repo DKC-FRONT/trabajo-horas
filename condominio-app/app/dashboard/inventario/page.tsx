@@ -318,7 +318,7 @@ export default function InventarioPage() {
     return (
       <div style={{ padding: '4rem 2rem', textAlign: 'center', fontFamily: 'inherit' }}>
         <ShieldAlert size={64} color="#f87171" style={{ margin: '0 auto 1.5rem' }} />
-        <h1 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>SISTEMA CLASIFICADO</h1>
+        <h1 style={{ color: '#fdf5e6', fontSize: '2.25rem', marginBottom: '1rem' }}>SISTEMA CLASIFICADO</h1>
         <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
           La cuenta detectada carece del nivel de seguridad requerido para operar los sistemas del Kardex. <br/><br/>
           Por favor regrese al panel de control principal.
@@ -334,18 +334,18 @@ export default function InventarioPage() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
              <PackageOpen size={24} color="#a78bfa" />
-             <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
+             <h1 style={{ fontSize: 'clamp(1.3rem, 5vw, 1.8rem)', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.02em' }}>
                KARDEX DE ALMACÉN
              </h1>
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '0.02em' }}>
+          <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '0.02em' }}>
              Control militar de existencias operado por: <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>{userEmail}</span>
           </p>
         </div>
         {!showNewForm && (
           <button onClick={() => setShowNewForm(true)} style={{
             background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)',
-            color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '0.75rem',
+            color: '#a78bfa', padding: '0.6rem 1.2rem', fontSize: '1.13rem',
             letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
             fontFamily: 'inherit', fontWeight: 'bold', transition: 'all 0.2s',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
@@ -364,12 +364,12 @@ export default function InventarioPage() {
           marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap'
         }}>
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>NOMBRE DE LA HERRAMIENTA O PRODUCTO</label>
-            <input type="text" value={newItemName} onChange={e => setNewItemName(e.target.value)} required autoFocus placeholder="Ej. TIJERAS PODADORAS" style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }} />
+            <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>NOMBRE DE LA HERRAMIENTA O PRODUCTO</label>
+            <input type="text" value={newItemName} onChange={e => setNewItemName(e.target.value)} required autoFocus placeholder="Ej. TIJERAS PODADORAS" style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }} />
           </div>
           <div style={{ flex: '0 0 150px' }}>
-            <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CATEGORÍA</label>
-            <select value={newItemCat} onChange={e => setNewItemCat(e.target.value)} style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}>
+            <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>CATEGORÍA</label>
+            <select value={newItemCat} onChange={e => setNewItemCat(e.target.value)} style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}>
               <option value="herramienta">Herramienta</option>
               <option value="aseo">Aseo</option>
               <option value="consumible">Consumible</option>
@@ -379,8 +379,8 @@ export default function InventarioPage() {
             </select>
           </div>
           <div style={{ flex: '0 0 150px' }}>
-            <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>UNIDAD MEDIDA</label>
-            <select value={newItemUnit} onChange={e => setNewItemUnit(e.target.value)} style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}>
+            <label style={{ display: 'block', fontSize: '0.98rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem' }}>UNIDAD MEDIDA</label>
+            <select value={newItemUnit} onChange={e => setNewItemUnit(e.target.value)} style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}>
               <option value="unidad">Unidades</option>
               <option value="galones">Galones</option>
               <option value="litros">Litros</option>
@@ -401,7 +401,7 @@ export default function InventarioPage() {
                 border: '1px solid rgba(248,113,113,0.4)', 
                 color: '#f87171', 
                 padding: '0.6rem 1.2rem', 
-                fontSize: '0.8rem', 
+                fontSize: '1.2rem', 
                 fontWeight: 'bold', 
                 fontFamily: 'inherit', 
                 letterSpacing: '0.1em', 
@@ -426,7 +426,7 @@ export default function InventarioPage() {
                 border: creating ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
                 color: creating ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
                 padding: '0.6rem 1.2rem', 
-                fontSize: '0.8rem', 
+                fontSize: '1.2rem', 
                 fontWeight: 'bold', 
                 fontFamily: 'inherit', 
                 letterSpacing: '0.1em', 
@@ -473,7 +473,7 @@ export default function InventarioPage() {
                     border: `1px solid ${isActive ? '#a78bfa' : 'rgba(255,255,255,0.12)'}`,
                     color: isActive ? '#a78bfa' : 'rgba(255,255,255,0.6)',
                     padding: '0.4rem 0.85rem',
-                    fontSize: '0.72rem',
+                    fontSize: '1.08rem',
                     fontWeight: isActive ? 700 : 400,
                     cursor: 'pointer',
                     borderRadius: '2rem',
@@ -491,7 +491,7 @@ export default function InventarioPage() {
                     color: isActive ? '#000' : 'rgba(255,255,255,0.5)',
                     borderRadius: '1rem',
                     padding: '0 0.4rem',
-                    fontSize: '0.65rem',
+                    fontSize: '0.98rem',
                     fontWeight: 700,
                     minWidth: '18px',
                     textAlign: 'center',
@@ -541,19 +541,19 @@ export default function InventarioPage() {
                 {editingItemId === item.id ? (
                   // ── Formulario edición inline ──
                   <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ fontSize: '0.6rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem', fontWeight: 700 }}>✏️ Editando artículo</div>
+                    <div style={{ fontSize: '0.9rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem', fontWeight: 700 }}>✏️ Editando artículo</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <input
                         type="text"
                         value={editFields.nombre}
                         onChange={e => setEditFields(f => ({ ...f, nombre: e.target.value }))}
                         placeholder="Nombre del artículo"
-                        style={{ background: '#0a0a0f', border: '1px solid #a78bfa', color: '#fff', padding: '0.5rem 0.75rem', fontFamily: 'inherit', fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                        style={{ background: '#0a0a0f', border: '1px solid #a78bfa', color: '#fdf5e6', padding: '0.5rem 0.75rem', fontFamily: 'inherit', fontSize: '1.27rem', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                         autoFocus
                       />
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <select value={editFields.categoria} onChange={e => setEditFields(f => ({ ...f, categoria: e.target.value }))}
-                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.75rem', outline: 'none' }}>
+                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fdf5e6', padding: '0.45rem', fontFamily: 'inherit', fontSize: '1.13rem', outline: 'none' }}>
                           <option value="herramienta">Herramienta</option>
                           <option value="aseo">Aseo</option>
                           <option value="consumible">Consumible</option>
@@ -562,7 +562,7 @@ export default function InventarioPage() {
                           <option value="otro">Otro</option>
                         </select>
                         <select value={editFields.unidad_medida} onChange={e => setEditFields(f => ({ ...f, unidad_medida: e.target.value }))}
-                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '0.45rem', fontFamily: 'inherit', fontSize: '0.75rem', outline: 'none' }}>
+                          style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.15)', color: '#fdf5e6', padding: '0.45rem', fontFamily: 'inherit', fontSize: '1.13rem', outline: 'none' }}>
                           <option value="unidad">Unidades</option>
                           <option value="galones">Galones</option>
                           <option value="litros">Litros</option>
@@ -576,9 +576,9 @@ export default function InventarioPage() {
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => setEditingItemId(null)}
-                          style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', padding: '0.4rem', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>Cancelar</button>
+                          style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', padding: '0.4rem', cursor: 'pointer', fontSize: '1.08rem', fontFamily: 'inherit' }}>Cancelar</button>
                         <button onClick={() => handleSaveEdit(item.id)} disabled={savingEdit}
-                          style={{ flex: 1, background: '#a78bfa', color: '#000', fontWeight: 700, border: 'none', padding: '0.4rem', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>
+                          style={{ flex: 1, background: '#a78bfa', color: '#000', fontWeight: 700, border: 'none', padding: '0.4rem', cursor: 'pointer', fontSize: '1.08rem', fontFamily: 'inherit' }}>
                           {savingEdit ? '...' : '💾 Guardar'}
                         </button>
                       </div>
@@ -588,7 +588,7 @@ export default function InventarioPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: '0 0 0.2rem', color: '#fff', fontSize: '1.05rem', fontWeight: 'bold', wordBreak: 'break-word' }}>{item.nombre}</h3>
+                        <h3 style={{ margin: '0 0 0.2rem', color: '#fdf5e6', fontSize: '1.58rem', fontWeight: 'bold', wordBreak: 'break-word' }}>{item.nombre}</h3>
                         {/* Editar: todos los usuarios con acceso */}
                         <button onClick={() => handleStartEdit(item)} title="Editar artículo"
                           style={{ background: 'transparent', border: 'none', color: 'rgba(167,139,250,0.6)', cursor: 'pointer', padding: 0, transition: 'color 0.2s' }}
@@ -606,13 +606,13 @@ export default function InventarioPage() {
                           </button>
                         )}
                       </div>
-                      <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.1rem' }}>
+                      <div style={{ fontSize: '0.93rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.1rem' }}>
                         {item.categoria === 'aseo' ? '🧹' : item.categoria === 'herramienta' ? '🔧' : item.categoria === 'gasolina' ? '⛽' : item.categoria === 'epp' ? '🦺' : item.categoria === 'consumible' ? '🪣' : '🗂'} {item.categoria}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '0.75rem' }}>
-                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: statusColor, lineHeight: 1 }}>{item.stock_actual}</div>
-                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{item.unidad_medida}</div>
+                      <div style={{ fontSize: '2.7rem', fontWeight: 900, color: statusColor, lineHeight: 1 }}>{item.stock_actual}</div>
+                      <div style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{item.unidad_medida}</div>
                     </div>
                   </div>
                 )}
@@ -620,30 +620,30 @@ export default function InventarioPage() {
                 {/* Acciones Rápidas */}
                 {!isActiveItem ? (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                    <button onClick={() => setActionItem({ id: item.id, type: 'entrada' })} style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', padding: '0.5rem', fontSize: '0.65rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                    <button onClick={() => setActionItem({ id: item.id, type: 'entrada' })} style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', padding: '0.5rem', fontSize: '0.98rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
                       <ArrowDownToLine size={12} /> INGRESA
                     </button>
-                    <button onClick={() => setActionItem({ id: item.id, type: 'salida' })} style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24', padding: '0.5rem', fontSize: '0.65rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }} disabled={isCritical}>
+                    <button onClick={() => setActionItem({ id: item.id, type: 'salida' })} style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24', padding: '0.5rem', fontSize: '0.98rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }} disabled={isCritical}>
                       <ArrowUpFromLine size={12} /> SALE
                     </button>
-                    <button onClick={() => setActionItem({ id: item.id, type: 'baja' })} style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', padding: '0.5rem', fontSize: '0.65rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }} disabled={isCritical}>
+                    <button onClick={() => setActionItem({ id: item.id, type: 'baja' })} style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', padding: '0.5rem', fontSize: '0.98rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }} disabled={isCritical}>
                       <Trash2 size={12} /> DAÑO
                     </button>
                   </div>
                 ) : (
                   <form onSubmit={submitTransaction} style={{ background: '#000', padding: '1rem', border: `1px dashed ${actionItem.type === 'entrada' ? '#4ade80' : actionItem.type === 'salida' ? '#fbbf24' : '#f87171'}`, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ fontSize: '0.7rem', color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '1.05rem', color: '#fdf5e6', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                       {actionItem.type === 'entrada' ? '➕ Registrar Ingreso' : actionItem.type === 'salida' ? '➖ Registrar Salida de Almacén' : '🛑 Registrar Daño / Pérdida'}
                     </div>
                     
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input type="number" min="0.1" step="0.1" value={actionAmount} onChange={e => setActionAmount(e.target.value)} placeholder="0.0" required style={{ width: '80px', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', textAlign: 'center', fontFamily: 'inherit', padding: '0.5rem' }} autoFocus />
-                      <input type="text" value={actionNotes} onChange={e => setActionNotes(e.target.value)} placeholder="Motivo o nombre del responsable..." required style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontFamily: 'inherit', padding: '0.5rem' }} />
+                      <input type="number" min="0.1" step="0.1" value={actionAmount} onChange={e => setActionAmount(e.target.value)} placeholder="0.0" required style={{ width: '80px', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.2)', color: '#fdf5e6', textAlign: 'center', fontFamily: 'inherit', padding: '0.5rem' }} autoFocus />
+                      <input type="text" value={actionNotes} onChange={e => setActionNotes(e.target.value)} placeholder="Motivo o nombre del responsable..." required style={{ flex: 1, background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.2)', color: '#fdf5e6', fontFamily: 'inherit', padding: '0.5rem' }} />
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <button type="button" onClick={() => { setActionItem(null); setActionAmount(''); setActionNotes(''); }} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem', cursor: 'pointer', fontSize: '0.7rem', fontFamily: 'inherit' }}>Cancelar</button>
-                      <button type="submit" disabled={submittingAction} style={{ flex: 1, background: actionItem.type === 'entrada' ? '#4ade80' : actionItem.type === 'salida' ? '#fbbf24' : '#f87171', color: '#000', fontWeight: 'bold', border: 'none', padding: '0.4rem', cursor: 'pointer', fontSize: '0.7rem', fontFamily: 'inherit' }}>
+                      <button type="button" onClick={() => { setActionItem(null); setActionAmount(''); setActionNotes(''); }} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fdf5e6', padding: '0.4rem', cursor: 'pointer', fontSize: '1.05rem', fontFamily: 'inherit' }}>Cancelar</button>
+                      <button type="submit" disabled={submittingAction} style={{ flex: 1, background: actionItem.type === 'entrada' ? '#4ade80' : actionItem.type === 'salida' ? '#fbbf24' : '#f87171', color: '#000', fontWeight: 'bold', border: 'none', padding: '0.4rem', cursor: 'pointer', fontSize: '1.05rem', fontFamily: 'inherit' }}>
                         {submittingAction ? '...' : 'Confirmar'}
                       </button>
                     </div>
@@ -659,11 +659,11 @@ export default function InventarioPage() {
       {/* HISTORIAL TABULAR */}
       {!loadingItems && movimientos.length > 0 && (
         <div style={{ marginTop: '4rem' }}>
-          <h2 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.8rem', color: '#fdf5e6', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
             REGISTRO CRONOLÓGICO DE MOVIMIENTOS
           </h2>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', minWidth: '700px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '1.2rem', textAlign: 'left', minWidth: '700px' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
                   <th style={{ padding: '0.75rem', fontWeight: 600 }}>Fecha y Hora</th>
@@ -682,17 +682,17 @@ export default function InventarioPage() {
                   
                   return (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '0.75rem', color: '#fff', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '0.75rem', color: '#fdf5e6', whiteSpace: 'nowrap' }}>
                         {new Date(m.fecha).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' })}
                       </td>
                       <td style={{ padding: '0.75rem', color: tColor, fontWeight: 'bold', textTransform: 'uppercase' }}>
                         {isEntrada ? '➕ ENTRADA' : isBaja ? '🗑 DAÑO/PÉRDIDA' : '➖ SALIDA'}
                       </td>
-                      <td style={{ padding: '0.75rem', color: '#fff', fontWeight: 'bold' }}>
+                      <td style={{ padding: '0.75rem', color: '#fdf5e6', fontWeight: 'bold' }}>
                         {m.inventario_items?.nombre || 'Producto Eliminado'}
                       </td>
-                      <td style={{ padding: '0.75rem', color: '#fff' }}>
-                        {m.cantidad} <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{m.inventario_items?.unidad_medida}</span>
+                      <td style={{ padding: '0.75rem', color: '#fdf5e6' }}>
+                        {m.cantidad} <span style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{m.inventario_items?.unidad_medida}</span>
                       </td>
                       <td style={{ padding: '0.75rem', color: '#a78bfa' }}>
                         {m.responsable_email}

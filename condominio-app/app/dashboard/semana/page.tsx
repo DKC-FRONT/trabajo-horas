@@ -82,6 +82,7 @@ export default function SemanaPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const [selectedCell, setSelectedCell] = useState<{ dia: string; hora: string } | null>(null);
   const [newTaskDesc, setNewTaskDesc] = useState('');
+  const [repeatEveryDay, setRepeatEveryDay] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
@@ -291,77 +292,93 @@ export default function SemanaPage() {
     const start = getHoraStart(selectedCell.hora);
     const hora = `${start}:00`;
 
-    const tempId = `temp-${Date.now()}`;
-    const nuevaTarea: SemanaTarea = {
-      id: tempId,
-      semanaKey,
-      dia: selectedCell.dia,
-      hora,
-      descripcion: newTaskDesc.trim(),
-      usuarioId: user.id,
-      usuarioNombre: user.nombre_completo || 'Trabajador',
-      completado: false,
-      createdAt: new Date().toISOString()
-    };
+    const diasAGuardar = repeatEveryDay ? DIAS : [selectedCell.dia];
+    setStatusMessage('Guardando tarea(s)...');
+
+    let nuevasTareas = [...tareas];
+    const newSyncQueueActions: any[] = [];
+    
+    // Preparar tareas locales
+    const tareasParaGuardar = diasAGuardar.map((dia) => {
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      return {
+        nuevaTareaLocal: {
+          id: tempId,
+          semanaKey,
+          dia,
+          hora,
+          descripcion: newTaskDesc.trim(),
+          usuarioId: user.id,
+          usuarioNombre: user.nombre_completo || 'Trabajador',
+          completado: false,
+          createdAt: new Date().toISOString()
+        },
+        action: { type: 'create', tempId, data: { semanaKey, dia, hora, descripcion: newTaskDesc.trim() } }
+      };
+    });
+
+    tareasParaGuardar.forEach(item => {
+      nuevasTareas.push(item.nuevaTareaLocal);
+      newSyncQueueActions.push(item.action);
+    });
 
     if (!isOnline) {
-      const action = { type: 'create', tempId, data: { semanaKey, dia: selectedCell.dia, hora, descripcion: newTaskDesc.trim() } };
-      setSemanaSyncQueue(prev => [...prev, action]);
-
-      const nuevasTareas = [...tareas, nuevaTarea];
+      setSemanaSyncQueue(prev => [...prev, ...newSyncQueueActions]);
       setTareas(nuevasTareas);
       localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
 
       setNewTaskDesc('');
       setSelectedCell(null);
+      setRepeatEveryDay(false);
       setStatusMessage('Guardado localmente. Se sincronizará al recuperar conexión.');
       return;
     }
 
     try {
-      setStatusMessage('Guardando tarea...');
-      const response = await fetch('/api/semana', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          semanaKey,
-          dia: selectedCell.dia,
-          hora,
-          descripcion: newTaskDesc.trim(),
-        }),
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        const errorMessage = data?.error || data?.message || response.statusText || 'Error al guardar la tarea.';
-        throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Error al guardar la tarea.');
-      }
+      // Guardar en servidor
+      const promesas = diasAGuardar.map(dia => 
+        fetch('/api/semana', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            semanaKey,
+            dia,
+            hora,
+            descripcion: newTaskDesc.trim(),
+          }),
+        }).then(async res => {
+          const data = await res.json().catch(() => null);
+          if (!res.ok) throw new Error(data?.error || 'Error al guardar');
+          if (!data || !data.id) throw new Error('No se recibieron datos');
+          return {
+            id: data.id,
+            semanaKey: data.semana_key,
+            dia: data.dia,
+            hora: data.hora,
+            descripcion: data.descripcion,
+            usuarioId: data.usuario_id,
+            usuarioNombre: data.usuario_nombre,
+            completado: data.completado ?? false,
+            createdAt: data.created_at,
+          };
+        })
+      );
 
-      if (!data || !data.id) {
-        throw new Error('No se recibieron datos de la tarea creada.');
-      }
+      const savedTasks = await Promise.all(promesas);
 
-      const savedTask = {
-        id: data.id,
-        semanaKey: data.semana_key,
-        dia: data.dia,
-        hora: data.hora,
-        descripcion: data.descripcion,
-        usuarioId: data.usuario_id,
-        usuarioNombre: data.usuario_nombre,
-        completado: data.completado ?? false,
-        createdAt: data.created_at,
-      };
-
-      const nuevasTareas = [...tareas, savedTask];
-      setTareas(nuevasTareas);
-      localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(nuevasTareas));
+      const tareasFinales = [...tareas, ...savedTasks];
+      setTareas(tareasFinales);
+      localStorage.setItem(`semana_tasks_cache_${semanaKey}`, JSON.stringify(tareasFinales));
 
       setNewTaskDesc('');
       setSelectedCell(null);
+      setRepeatEveryDay(false);
       setStatusMessage('');
     } catch (err: any) {
-      console.error('Error guardando tarea:', err);
-      setStatusMessage(err.message || 'No se pudo guardar la tarea.');
+      console.error('Error guardando tareas:', err);
+      setStatusMessage(err.message || 'No se pudieron guardar todas las tareas.');
+      // En caso de fallo parcial, volvemos a cargar del servidor para consistencia
+      fetchTasks();
     }
   };
 
@@ -637,14 +654,14 @@ export default function SemanaPage() {
   const semanaFinFormatted = semanaFin.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', background: '#0b0f1a', minHeight: '100vh', color: '#fff' }}>
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', background: '#0b0f1a', minHeight: '100vh', color: '#fdf5e6' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 700, color: '#fff' }}>
+          <h1 style={{ margin: 0, fontSize: '2.63rem', fontWeight: 700, color: '#fdf5e6' }}>
             Cronograma Semanal
           </h1>
-          <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+          <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.6)', fontSize: '1.35rem' }}>
             Personal de Aseo y Apoyo de Jardinería
           </p>
         </div>
@@ -661,9 +678,9 @@ export default function SemanaPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                color: '#fff',
+                color: '#fdf5e6',
                 fontWeight: 600,
-                fontSize: '0.85rem',
+                fontSize: '1.27rem',
                 transition: 'all 0.2s',
                 boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
               }}
@@ -674,13 +691,13 @@ export default function SemanaPage() {
           )}
           <button
             onClick={() => cambiarSemana(-1)}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', transition: 'all 0.2s' }}
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fdf5e6', transition: 'all 0.2s' }}
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={() => cambiarSemana(1)}
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', transition: 'all 0.2s' }}
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fdf5e6', transition: 'all 0.2s' }}
           >
             <ChevronRight size={18} />
           </button>
@@ -701,8 +718,8 @@ export default function SemanaPage() {
         }}
       >
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Horario</div>
-          <div style={{ color: '#fff', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Horario</div>
+          <div style={{ color: '#fdf5e6', fontSize: '1.35rem', marginTop: '0.5rem' }}>
             {(() => {
               if (horas.length === 0) return 'Sin horario';
               const startRaw = horas[0].split('-')[0]?.trim() || '';
@@ -712,20 +729,20 @@ export default function SemanaPage() {
           </div>
         </div>
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Trabajador</div>
-          <div style={{ color: '#fff', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Trabajador</div>
+          <div style={{ color: '#fdf5e6', fontSize: '1.35rem', marginTop: '0.5rem' }}>
             {user?.nombre_completo || 'Cargando...'}
           </div>
         </div>
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Semana del</div>
-          <div style={{ color: '#fff', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Semana del</div>
+          <div style={{ color: '#fdf5e6', fontSize: '1.35rem', marginTop: '0.5rem' }}>
             {semanaInicio} - {semanaFinFormatted}
           </div>
         </div>
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rol</div>
-          <div style={{ color: '#60a5fa', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 500 }}>
+          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rol</div>
+          <div style={{ color: '#60a5fa', fontSize: '1.35rem', marginTop: '0.5rem', fontWeight: 500 }}>
             {user?.rol === 'admin' ? 'Administrador' : 'Trabajador'}
           </div>
         </div>
@@ -745,10 +762,10 @@ export default function SemanaPage() {
           animation: 'fadeIn 0.3s ease',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.2rem', animation: 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
+            <span style={{ fontSize: '1.8rem', animation: 'spin 2s linear infinite', display: 'inline-block' }}>◌</span>
             <div>
-              <div style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 700 }}>Sincronización pendiente (Semana)</div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+              <div style={{ color: '#fbbf24', fontSize: '1.27rem', fontWeight: 700 }}>Sincronización pendiente (Semana)</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.13rem', marginTop: '0.15rem' }}>
                 Tienes {semanaSyncQueue.length} acciones guardadas localmente esperando conexión.
               </div>
             </div>
@@ -763,7 +780,7 @@ export default function SemanaPage() {
                 color: '#0b0f1a',
                 padding: '0.45rem 1rem',
                 borderRadius: '0.35rem',
-                fontSize: '0.8rem',
+                fontSize: '1.2rem',
                 fontWeight: 700,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -786,7 +803,7 @@ export default function SemanaPage() {
           }}
         >
           {/* Header Row */}
-          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', fontWeight: 700, textAlign: 'center', fontSize: '0.85rem', color: '#38bdf8' }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', fontWeight: 700, textAlign: 'center', fontSize: '1.27rem', color: '#38bdf8' }}>
             Hora
           </div>
           {DIAS.map((dia) => {
@@ -794,9 +811,9 @@ export default function SemanaPage() {
             const dayIndex = DIAS.indexOf(dia);
             fecha.setDate(weekStart.getDate() + dayIndex);
             return (
-              <div key={dia} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>
+              <div key={dia} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', textAlign: 'center', fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6' }}>
                 <div>{dia}</div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>{formatDayHeader(fecha)}</div>
+                <div style={{ fontSize: '1.13rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>{formatDayHeader(fecha)}</div>
               </div>
             );
           })}
@@ -813,7 +830,7 @@ export default function SemanaPage() {
                   border: '1px solid rgba(255,255,255,0.08)',
                   padding: '0.75rem 0.5rem',
                   fontWeight: 700,
-                  fontSize: '0.75rem',
+                  fontSize: '1.13rem',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
@@ -831,8 +848,8 @@ export default function SemanaPage() {
                         style={{
                           background: 'rgba(0,0,0,0.4)',
                           border: '1px solid #38bdf8',
-                          color: '#fff',
-                          fontSize: '0.7rem',
+                          color: '#fdf5e6',
+                          fontSize: '1.05rem',
                           padding: '0.25rem',
                           borderRadius: '0.25rem',
                           textAlign: 'center',
@@ -856,7 +873,7 @@ export default function SemanaPage() {
                             border: 'none',
                             borderRadius: '0.2rem',
                             color: '#0b0f1a',
-                            fontSize: '0.65rem',
+                            fontSize: '0.98rem',
                             padding: '0.15rem 0.4rem',
                             cursor: 'pointer',
                             fontWeight: 700
@@ -870,8 +887,8 @@ export default function SemanaPage() {
                             background: 'rgba(255,255,255,0.1)',
                             border: '1px solid rgba(255,255,255,0.2)',
                             borderRadius: '0.2rem',
-                            color: '#fff',
-                            fontSize: '0.65rem',
+                            color: '#fdf5e6',
+                            fontSize: '0.98rem',
                             padding: '0.15rem 0.4rem',
                             cursor: 'pointer'
                           }}
@@ -901,7 +918,7 @@ export default function SemanaPage() {
                           background: 'transparent',
                           border: 'none',
                           color: '#f87171',
-                          fontSize: '0.6rem',
+                          fontSize: '0.9rem',
                           marginTop: '0.35rem',
                           cursor: 'pointer',
                           opacity: 0.4,
@@ -944,7 +961,7 @@ export default function SemanaPage() {
                       }}
                     >
                       {cellTareas.length === 0 && !isSelected ? (
-                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.13rem', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           —
                         </div>
                       ) : (
@@ -960,7 +977,7 @@ export default function SemanaPage() {
                                 border: `1px solid ${t.completado ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'}`,
                                 borderRadius: '0.4rem',
                                 padding: '0.5rem',
-                                fontSize: '0.75rem',
+                                fontSize: '1.13rem',
                                 display: 'flex',
                                 alignItems: 'flex-start',
                                 gap: '0.5rem',
@@ -977,11 +994,11 @@ export default function SemanaPage() {
                                 style={{ marginTop: '0.15rem', cursor: 'pointer', accentColor: '#34d399' }}
                               />
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ textDecoration: t.completado ? 'line-through' : 'none', color: '#fff' }}>
+                                <div style={{ textDecoration: t.completado ? 'line-through' : 'none', color: '#fdf5e6' }}>
                                   {t.descripcion}
                                 </div>
                                 {user?.rol === 'admin' && t.usuarioNombre && (
-                                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
+                                  <div style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
                                     {t.usuarioNombre}
                                   </div>
                                 )}
@@ -1026,17 +1043,37 @@ export default function SemanaPage() {
                             onChange={(e) => setNewTaskDesc(e.target.value)}
                             placeholder='Nueva tarea...'
                             style={{
-                              fontSize: '0.75rem',
+                              fontSize: '1.13rem',
                               padding: '0.5rem',
                               borderRadius: '0.3rem',
                               border: '1px solid rgba(255,255,255,0.1)',
                               fontFamily: 'inherit',
                               background: 'rgba(255,255,255,0.05)',
-                              color: '#fff',
+                              color: '#fdf5e6',
                               resize: 'vertical',
                               minHeight: '50px',
                             }}
                           />
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: '#fdf5e6',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            marginTop: '0.2rem',
+                            padding: '0.2rem',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '0.3rem'
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={repeatEveryDay}
+                              onChange={(e) => setRepeatEveryDay(e.target.checked)}
+                              style={{ transform: 'scale(1.2)', cursor: 'pointer', accentColor: '#38bdf8' }}
+                            />
+                            Repetir todos los días
+                          </label>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               onClick={handleGuardarTarea}
@@ -1048,7 +1085,7 @@ export default function SemanaPage() {
                                 borderRadius: '0.3rem',
                                 padding: '0.5rem',
                                 cursor: 'pointer',
-                                fontSize: '0.75rem',
+                                fontSize: '1.13rem',
                                 fontWeight: 700,
                                 transition: 'all 0.2s',
                               }}
@@ -1069,7 +1106,7 @@ export default function SemanaPage() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#fff',
+                                color: '#fdf5e6',
                               }}
                             >
                               <X size={14} />
@@ -1108,7 +1145,7 @@ export default function SemanaPage() {
             border: '1px solid rgba(56,189,248,0.4)',
             color: '#38bdf8',
             padding: '0.6rem 1.2rem',
-            fontSize: '0.8rem',
+            fontSize: '1.2rem',
             fontWeight: 'bold',
             fontFamily: 'inherit',
             letterSpacing: '0.1em',
@@ -1137,7 +1174,7 @@ export default function SemanaPage() {
 
       {/* Status Message */}
       {statusMessage && (
-        <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '0.5rem', color: '#fbbf24', fontSize: '0.9rem' }}>
+        <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '0.5rem', color: '#fbbf24', fontSize: '1.35rem' }}>
           {statusMessage}
         </div>
       )}
@@ -1146,7 +1183,7 @@ export default function SemanaPage() {
       <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
         {/* Connection Status */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Estado de conexión
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -1159,7 +1196,7 @@ export default function SemanaPage() {
                 animation: isOnline ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
               }}
             />
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: isOnline ? '#34d399' : '#f87171' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: isOnline ? '#34d399' : '#f87171' }}>
               {isOnline ? 'En línea' : 'Sin conexión'}
             </div>
           </div>
@@ -1167,14 +1204,14 @@ export default function SemanaPage() {
 
         {/* Weekly Tasks */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.1s backwards' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Tareas esta semana
           </div>
           <div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#60a5fa', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '3rem', fontWeight: 700, color: '#60a5fa', marginBottom: '0.5rem' }}>
               {tareasSemana.length}
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ fontSize: '1.27rem', color: 'rgba(255,255,255,0.6)' }}>
               {tareasCompletadas} completadas
             </div>
           </div>
@@ -1182,14 +1219,14 @@ export default function SemanaPage() {
 
         {/* Most Productive Hour */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.2s backwards' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Hora más productiva
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '2.63rem', fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>
               {horasMasProductiva || '—'}
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ fontSize: '1.27rem', color: 'rgba(255,255,255,0.6)' }}>
               {horasMasProductiva ? `${tareasSemana.filter((t) => t.hora === horasMasProductiva).length} tareas` : 'Sin tareas'}
             </div>
           </div>
@@ -1197,14 +1234,14 @@ export default function SemanaPage() {
 
         {/* Average per Day */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.3s backwards' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Promedio por día
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#34d399', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '2.63rem', fontWeight: 700, color: '#34d399', marginBottom: '0.5rem' }}>
               {promedioPorDia}
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ fontSize: '1.27rem', color: 'rgba(255,255,255,0.6)' }}>
               tareas/día
             </div>
           </div>
@@ -1212,14 +1249,14 @@ export default function SemanaPage() {
 
         {/* Connection Rate */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.4s backwards' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Tasa de completación
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#a78bfa', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '2.63rem', fontWeight: 700, color: '#a78bfa', marginBottom: '0.5rem' }}>
               {tareasSemana.length > 0 ? Math.round((tareasCompletadas / tareasSemana.length) * 100) : 0}%
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ fontSize: '1.27rem', color: 'rgba(255,255,255,0.6)' }}>
               de las tareas
             </div>
           </div>
@@ -1227,10 +1264,10 @@ export default function SemanaPage() {
 
         {/* Week Info */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease 0.5s backwards' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '1.13rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
             Información
           </div>
-          <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+          <div style={{ fontSize: '1.27rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
             <div>{semanaInicio} — {semanaFinFormatted}</div>
             <div style={{ marginTop: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>
               {user?.nombre_completo || 'Trabajador'}

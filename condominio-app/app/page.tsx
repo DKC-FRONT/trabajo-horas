@@ -176,7 +176,7 @@ export default function Home() {
           opacity: mounted ? 1 : 0, transition: 'opacity 0.4s ease',
           zIndex: 10,
         }}>
-          <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
+          <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em' }}>
             {user.nombre}
           </span>
           <button
@@ -186,7 +186,7 @@ export default function Home() {
               border: '1px solid rgba(255,255,255,0.08)',
               padding: '0.3rem 0.75rem',
               color: 'rgba(255,255,255,0.3)',
-              fontSize: '0.6rem', fontFamily: 'inherit',
+              fontSize: '0.9rem', fontFamily: 'inherit',
               letterSpacing: '0.12em', textTransform: 'uppercase',
               cursor: 'pointer', transition: 'all 0.2s',
             }}
@@ -217,7 +217,7 @@ export default function Home() {
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '2px', padding: '0.3rem 0.75rem',
-          marginBottom: '1.5rem', fontSize: '0.65rem',
+          marginBottom: '1.5rem', fontSize: '0.98rem',
           letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)',
           textTransform: 'uppercase',
         }}>
@@ -231,7 +231,7 @@ export default function Home() {
 
         <h1 style={{
           fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700,
-          color: '#ffffff', letterSpacing: '-0.02em', margin: 0, lineHeight: 1,
+          color: '#fdf5e6', letterSpacing: '-0.02em', margin: 0, lineHeight: 1,
         }}>
           Condominio Campestre
         </h1>
@@ -247,7 +247,7 @@ export default function Home() {
         </h2>
 
         <p style={{
-          color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem',
+          color: 'rgba(255,255,255,0.35)', fontSize: '1.2rem',
           letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0,
         }}>
           {user ? `BIENVENIDO, ${user.nombre}` : 'SISTEMA DE GESTIÓN DEL CONDOMINIO'}
@@ -262,8 +262,8 @@ export default function Home() {
             style={{
               background: 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15))',
               border: '1px solid rgba(96,165,250,0.35)',
-              padding: '0.85rem 2.5rem', color: '#ffffff',
-              fontSize: '0.75rem', fontFamily: 'inherit',
+              padding: '0.85rem 2.5rem', color: '#fdf5e6',
+              fontSize: '1.13rem', fontFamily: 'inherit',
               letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700,
               cursor: 'pointer', transition: 'all 0.2s',
             }}
@@ -324,7 +324,7 @@ export default function Home() {
                     {item.icon}
                   </span>
                   <span style={{
-                    fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontSize: '0.83rem', letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: item.accent, padding: '0.15rem 0.4rem',
                     border: `1px solid ${item.accent}30`,
                     borderRadius: '1px',
@@ -335,19 +335,19 @@ export default function Home() {
 
                 <div>
                   <div style={{
-                    color: isHovered ? '#fff' : 'rgba(255,255,255,0.8)',
-                    fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.05em',
+                    color: isHovered ? '#fdf5e6' : 'rgba(255,255,255,0.8)',
+                    fontSize: '1.35rem', fontWeight: 700, letterSpacing: '0.05em',
                     textTransform: 'uppercase', marginBottom: '0.25rem',
                   }}>
                     {item.label}
                   </div>
-                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.7rem', lineHeight: 1.4 }}>
+                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '1.05rem', lineHeight: 1.4 }}>
                     {item.description}
                   </div>
                 </div>
 
                 <div style={{
-                  marginTop: '0.5rem', color: item.accent, fontSize: '0.7rem',
+                  marginTop: '0.5rem', color: item.accent, fontSize: '1.05rem',
                   opacity: isHovered ? 1 : 0,
                   transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
                   transition: 'all 0.2s',
@@ -363,7 +363,7 @@ export default function Home() {
       {/* Footer */}
       <div style={{
         marginTop: '3.5rem', color: 'rgba(255,255,255,0.12)',
-        fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+        fontSize: '0.9rem', letterSpacing: '0.12em', textTransform: 'uppercase',
         zIndex: 1,
       }}>
         v1.0.0 · ADMINISTRACIÓN DE CONDOMINIOS

@@ -135,29 +135,29 @@ export default function DashboardHomePage() {
 
       {/* ── Bienvenida ── */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>
+        <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.35rem' }}>
           {saludo}
         </p>
-        <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: '#ffffff', margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: '#fdf5e6', margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>
           {user?.nombre ? `Hola, ${user.nombre.split(' ')[0]}` : 'Panel General'}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: '0.6rem', padding: '0.2rem 0.65rem',
+            fontSize: '0.9rem', padding: '0.2rem 0.65rem',
             border: `1px solid ${rolMeta.color}35`, color: rolMeta.color,
             background: `${rolMeta.color}10`, letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>
             {rolMeta.label}
           </span>
           {user?.correo && (
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.04em' }}>
+            <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.04em' }}>
               {user.correo}
             </span>
           )}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80', display: 'inline-block', animation: 'pulse 2s infinite' }} />
             <Activity size={11} style={{ color: 'rgba(255, 255, 255, 1)' }} />
-            <span style={{ fontSize: '0.58rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.06em' }}>Sistema activo</span>
+            <span style={{ fontSize: '0.87rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.06em' }}>Sistema activo</span>
           </div>
         </div>
       </div>
@@ -175,10 +175,10 @@ export default function DashboardHomePage() {
               display: 'flex', flexDirection: 'column', gap: '0.3rem',
               animation: `fadeSlideIn 0.35s ease ${idx * 0.07}s both`,
             }}>
-              <span style={{ fontSize: '1.6rem', fontWeight: 700, color: stat.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>
+              <span style={{ fontSize: '2.4rem', fontWeight: 700, color: stat.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>
                 {stat.value}
               </span>
-              <span style={{ fontSize: '0.55rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.1rem' }}>
+              <span style={{ fontSize: '0.83rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', marginTop: '0.1rem' }}>
                 {stat.label}
               </span>
             </div>
@@ -188,7 +188,7 @@ export default function DashboardHomePage() {
 
       {/* ── Módulos ── */}
       <div style={{ marginBottom: '1rem' }}>
-        <p style={{ fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: 0 }}>
+        <p style={{ fontSize: '0.83rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: 0 }}>
           Módulos disponibles
         </p>
       </div>
@@ -235,7 +235,7 @@ export default function DashboardHomePage() {
                   <Icon size={17} strokeWidth={1.75} style={{ color: isHov ? mod.accent : `${mod.accent}bb`, transition: 'color 0.2s' }} />
                 </div>
                 <span style={{
-                  fontSize: '0.55rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                  fontSize: '0.83rem', letterSpacing: '0.12em', textTransform: 'uppercase',
                   color: isHov ? mod.accent : 'rgba(255,255,255,0.2)',
                   padding: '0.15rem 0.45rem', border: `1px solid ${isHov ? mod.accent + '50' : 'rgba(255,255,255,0.08)'}`,
                   transition: 'all 0.2s',
@@ -246,26 +246,26 @@ export default function DashboardHomePage() {
 
               <div>
                 <div style={{
-                  color: isHov ? '#ffffff' : 'rgba(255,255,255,0.8)',
-                  fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.04em',
+                  color: isHov ? '#fdf5e6' : 'rgba(255,255,255,0.8)',
+                  fontSize: '1.35rem', fontWeight: 700, letterSpacing: '0.04em',
                   textTransform: 'uppercase', marginBottom: '0.35rem', transition: 'color 0.2s',
                 }}>
                   {mod.label}
                 </div>
-                <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem', lineHeight: 1.5, letterSpacing: '0.02em' }}>
+                <div style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.05rem', lineHeight: 1.5, letterSpacing: '0.02em' }}>
                   {mod.desc}
                 </div>
               </div>
 
               <div style={{
-                color: mod.accent, fontSize: '0.72rem',
+                color: mod.accent, fontSize: '1.08rem',
                 opacity: isHov ? 1 : 0,
                 transform: isHov ? 'translateX(5px)' : 'translateX(0)',
                 transition: 'opacity 0.2s, transform 0.2s',
                 letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '0.3rem',
               }}>
                 <span>Abrir</span>
-                <span style={{ fontSize: '0.8rem' }}>→</span>
+                <span style={{ fontSize: '1.2rem' }}>→</span>
               </div>
             </button>
           );

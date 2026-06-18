@@ -874,16 +874,16 @@ export default function LecturasPage() {
           <button onClick={() => router.push('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 1)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }} onMouseEnter={(e) => (e.currentTarget.style.color = '#a78bfa')} onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 1)')}>
             ← Dashboard
           </button>
-          <span style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem' }}> / </span>
-          <span style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa' }}>
+          <span style={{ color: 'rgba(255, 255, 255, 1)', fontSize: '1.05rem' }}> / </span>
+          <span style={{ fontSize: '0.98rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa' }}>
             Lecturas de Agua
           </span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', maxWidth: '360px', alignItems: 'center', gap: '1rem' }}>
           {canExportExcel && (
-            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-              <span style={{ fontSize: '1rem' }}>↓</span> EXPORTAR A EXCEL
+            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+              <span style={{ fontSize: '1.5rem' }}>↓</span> EXPORTAR A EXCEL
             </button>
           )}
           
@@ -894,12 +894,12 @@ export default function LecturasPage() {
             accept=".xlsx,.xls,.csv"
             style={{ display: 'none' }}
           />
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
             {importing ? '◌ Importando...' : '↑ Importar Excel'}
           </button>
         </div>
         
-        <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '0.08em', textTransform: 'capitalize' }}>
+        <span style={{ fontSize: '0.98rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '0.08em', textTransform: 'capitalize' }}>
           {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </span>
       </nav>
@@ -909,21 +909,21 @@ export default function LecturasPage() {
         <div style={{
           position: 'sticky', top: 0, zIndex: 100,
           background: !isOnline ? 'rgba(239,68,68,0.95)' : 'rgba(59,130,246,0.95)',
-          color: '#fff', padding: '0.75rem 1rem',
+          color: '#fdf5e6', padding: '0.75rem 1rem',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.1)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: '10px', height: '10px', borderRadius: '50%',
-              background: !isOnline ? '#fff' : '#fff',
+              background: !isOnline ? '#fdf5e6' : '#fdf5e6',
               animation: !isOnline ? 'pulse 1.5s infinite' : 'none'
             }} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {!isOnline ? 'MODO OFFLINE ACTIVO - SIN CONEXIÓN' : 'CONEXIÓN RECUPERADA'}
             </span>
             {syncQueue.length > 0 && (
-              <span style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.5rem', borderRadius: '10px' }}>
+              <span style={{ fontSize: '1.13rem', background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.5rem', borderRadius: '10px' }}>
                 {syncQueue.length} lecturas pendientes por subir
               </span>
             )}
@@ -934,8 +934,8 @@ export default function LecturasPage() {
               onClick={handleSync}
               disabled={syncing}
               style={{
-                background: '#fff', color: '#3b82f6', border: 'none',
-                padding: '0.4rem 1rem', borderRadius: '4px', fontSize: '0.75rem',
+                background: '#fdf5e6', color: '#3b82f6', border: 'none',
+                padding: '0.4rem 1rem', borderRadius: '4px', fontSize: '1.13rem',
                 fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
               }}
@@ -953,10 +953,10 @@ export default function LecturasPage() {
         {/* Page title */}
         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
+            <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
               Módulo activo
             </p>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#fdf5e6', letterSpacing: '-0.02em', margin: 0 }}>
               Lecturas de Agua
             </h1>
           </div>
@@ -973,7 +973,7 @@ export default function LecturasPage() {
                   border: '1px solid rgba(96,165,250,0.4)',
                   color: '#60a5fa',
                   padding: '0.6rem 1.2rem',
-                  fontSize: '0.8rem',
+                  fontSize: '1.2rem',
                   fontWeight: 'bold',
                   fontFamily: 'inherit',
                   letterSpacing: '0.1em',
@@ -993,11 +993,11 @@ export default function LecturasPage() {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Mes</span>
               <select 
                 value={mesSeleccionado} 
                 onChange={(e) => setMesSeleccionado(Number(e.target.value))}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.4rem 0.6rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 {MESES.map((m, i) => (
                   <option key={m} value={i + 1}>{m}</option>
@@ -1005,11 +1005,11 @@ export default function LecturasPage() {
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Año</span>
               <select 
                 value={anioSeleccionado} 
                 onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.6rem', fontSize: '0.75rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.4rem 0.6rem', fontSize: '1.13rem', outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 {aniosDisponibles.map((y: number) => (
                   <option key={y} value={y}>{y}</option>
@@ -1029,10 +1029,10 @@ export default function LecturasPage() {
               { label: 'Casas registradas', value: casas.length, accent: '#f472b6' },
             ].map((s) => (
               <div key={s.label} style={{ background: '#0a0a0f', padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                <span style={{ fontSize: '1.2rem', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em' }}>
+                <span style={{ fontSize: '1.8rem', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em' }}>
                   {s.value}
                 </span>
-                <span style={{ fontSize: '0.5rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)' }}>
+                <span style={{ fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)' }}>
                   {s.label}
                 </span>
               </div>
@@ -1042,18 +1042,18 @@ export default function LecturasPage() {
 
         {/* Alerts */}
         {error && (
-          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', padding: '0.5rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#f87171', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', padding: '0.5rem 1rem', marginBottom: '1rem', fontSize: '1.2rem', color: '#f87171', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span>⚠</span> {error}
           </div>
         )}
         {success && (
-          <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', padding: '0.5rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#4ade80', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', padding: '0.5rem 1rem', marginBottom: '1rem', fontSize: '1.2rem', color: '#4ade80', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span>✓</span> {success}
           </div>
         )}
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 1)', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div style={{ textAlign: 'center', padding: '2rem 0', fontSize: '1.2rem', color: 'rgba(255, 255, 255, 1)', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span>
             Cargando datos...
           </div>
@@ -1063,14 +1063,14 @@ export default function LecturasPage() {
             <section style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', padding: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '1rem', gap: '0.5rem' }}>
                 <div>
-                  <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
                     {editId ? `Modificando registro #${editId}` : 'Formulario'}
                   </p>
-                  <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
                     {editId ? 'ACTUALIZAR LECTURA' : 'Nueva Lectura'}
                   </h2>
                 </div>
-                <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa', padding: '0.1rem 0.3rem', border: '1px solid rgba(96,165,250,0.3)' }}>
+                <span style={{ fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa', padding: '0.1rem 0.3rem', border: '1px solid rgba(96,165,250,0.3)' }}>
                   Activo
                 </span>
               </div>
@@ -1078,10 +1078,10 @@ export default function LecturasPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
                 {/* Casa */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'casa' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
+                  <label style={{ display: 'block', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'casa' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Casa {formErrors.casa_id && <span style={{ color: '#f87171' }}>· {formErrors.casa_id}</span>}
                   </label>
-                  <select value={form.casa_id} onChange={(e) => setForm({ ...form, casa_id: e.target.value })} onFocus={() => setFocused('casa')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.casa_id ? 'rgba(248,113,113,0.4)' : focused === 'casa' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'casa' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }}>
+                  <select value={form.casa_id} onChange={(e) => setForm({ ...form, casa_id: e.target.value })} onFocus={() => setFocused('casa')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.casa_id ? 'rgba(248,113,113,0.4)' : focused === 'casa' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#fdf5e6', fontSize: '1.2rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'casa' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }}>
                     <option value="" style={{ background: '#0a0a0f' }}>Seleccionar...</option>
                     {casas.map((c) => (
                       <option key={c.id} value={c.id} style={{ background: '#0a0a0f' }}>
@@ -1093,26 +1093,26 @@ export default function LecturasPage() {
 
                 {/* Fecha */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'fecha' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
+                  <label style={{ display: 'block', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'fecha' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Fecha {formErrors.fecha && <span style={{ color: '#f87171' }}>· {formErrors.fecha}</span>}
                   </label>
-                  <input type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} onFocus={() => setFocused('fecha')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.fecha ? 'rgba(248,113,113,0.4)' : focused === 'fecha' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'fecha' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} onFocus={() => setFocused('fecha')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.fecha ? 'rgba(248,113,113,0.4)' : focused === 'fecha' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#fdf5e6', fontSize: '1.2rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'fecha' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
 
                 {/* Lectura anterior */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'anterior' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
+                  <label style={{ display: 'block', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'anterior' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Lectura anterior {formErrors.lectura_anterior && <span style={{ color: '#f87171' }}>· {formErrors.lectura_anterior}</span>}
                   </label>
-                  <input type="number" placeholder="0" value={form.lectura_anterior} onChange={(e) => setForm({ ...form, lectura_anterior: e.target.value })} onFocus={() => setFocused('anterior')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_anterior ? 'rgba(248,113,113,0.4)' : focused === 'anterior' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'anterior' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="number" placeholder="0" value={form.lectura_anterior} onChange={(e) => setForm({ ...form, lectura_anterior: e.target.value })} onFocus={() => setFocused('anterior')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_anterior ? 'rgba(248,113,113,0.4)' : focused === 'anterior' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#fdf5e6', fontSize: '1.2rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'anterior' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
 
                 {/* Lectura actual */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'actual' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
+                  <label style={{ display: 'block', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem', color: focused === 'actual' ? '#60a5fa' : 'rgba(255,255,255,0.3)', transition: 'color 0.2s' }}>
                     Lectura actual {formErrors.lectura_actual && <span style={{ color: '#f87171' }}>· {formErrors.lectura_actual}</span>}
                   </label>
-                  <input type="number" placeholder="0" value={form.lectura_actual} onChange={(e) => setForm({ ...form, lectura_actual: e.target.value })} onFocus={() => setFocused('actual')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_actual ? 'rgba(248,113,113,0.4)' : focused === 'actual' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#ffffff', fontSize: '0.8rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'actual' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
+                  <input type="number" placeholder="0" value={form.lectura_actual} onChange={(e) => setForm({ ...form, lectura_actual: e.target.value })} onFocus={() => setFocused('actual')} onBlur={() => setFocused(null)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: `1px solid ${formErrors.lectura_actual ? 'rgba(248,113,113,0.4)' : focused === 'actual' ? 'rgba(96,165,250,0.35)' : 'rgba(255,255,255,0.08)'}`, padding: '0.5rem 0.75rem', color: '#fdf5e6', fontSize: '1.2rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s', boxShadow: focused === 'actual' ? '0 0 0 3px rgba(96,165,250,0.05)' : 'none' }} />
                 </div>
               </div>
 
@@ -1126,23 +1126,23 @@ export default function LecturasPage() {
                 const valor = consumoCobrar * config.tarifa;
                 return (
                   <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'rgba(96,165,250,0.05)', border: '1px solid rgba(96,165,250,0.12)', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em' }}>
                       Vista previa →
                     </span>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)' }}>
                       Consumo: <strong style={{ color: '#60a5fa' }}>{consumo.toFixed(2)} m³</strong>
                     </span>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)' }}>
                       A cobrar: <strong style={{ color: consumoCobrar > 0 ? '#f87171' : '#4ade80' }}>
                         {consumoCobrar > 0 ? `${consumoCobrar.toFixed(2)} m³` : 'Dentro del límite'}
                       </strong>
                     </span>
                     {consumoCobrar > 0 && (
-                      <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)' }}>
+                      <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)' }}>
                         Valor: <strong style={{ color: '#fbbf24' }}>${valor.toLocaleString('es-CO')}</strong>
                       </span>
                     )}
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.05em', marginLeft: 'auto' }}>
                       Límite: {config.limite} m³ · Tarifa: ${config.tarifa.toLocaleString('es-CO')}/m³
                     </span>
                   </div>
@@ -1158,7 +1158,7 @@ export default function LecturasPage() {
                     border: saving ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.4)', 
                     color: saving ? 'rgba(167,139,250,0.5)' : '#a78bfa', 
                     padding: '0.6rem 1.2rem', 
-                    fontSize: '0.8rem', 
+                    fontSize: '1.2rem', 
                     fontWeight: 'bold', 
                     fontFamily: 'inherit', 
                     letterSpacing: '0.1em', 
@@ -1189,7 +1189,7 @@ export default function LecturasPage() {
                       border: '1px solid rgba(248,113,113,0.4)', 
                       color: '#f87171', 
                       padding: '0.6rem 1.2rem', 
-                      fontSize: '0.8rem', 
+                      fontSize: '1.2rem', 
                       fontWeight: 'bold', 
                       fontFamily: 'inherit', 
                       letterSpacing: '0.1em', 
@@ -1214,24 +1214,24 @@ export default function LecturasPage() {
             <section style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', marginTop: '1.5rem' }}>
               <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <div>
-                  <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
+                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', margin: '0 0 0.25rem' }}>
                     Tabla
                   </p>
-                  <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'rgba(255, 255, 255, 1)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
                     Historial de Lecturas
                   </h2>
                 </div>
-                <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.08em' }}>
+                <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 1)', letterSpacing: '0.08em' }}>
                   {lecturas.length} registros
                 </span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', minWidth: '800px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '1.2rem', minWidth: '800px' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       {['#', 'Casa', 'Anterior', 'Actual', 'Consumo', 'Exceso', 'Valor', 'Fecha', ''].map((h) => (
-                        <th key={h} style={{ padding: '0.5rem 0.75rem', textAlign: 'center', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <th key={h} style={{ padding: '0.5rem 0.75rem', textAlign: 'center', fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 1)', fontWeight: 600, whiteSpace: 'nowrap' }}>
                           {h}
                         </th>
                       ))}
@@ -1240,7 +1240,7 @@ export default function LecturasPage() {
                   <tbody>
                     {lecturas.length === 0 ? (
                       <tr>
-                        <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '0.7rem', letterSpacing: '0.05em' }}>
+                        <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 1)', fontSize: '1.05rem', letterSpacing: '0.05em' }}>
                           Sin registros todavía
                         </td>
                       </tr>
@@ -1262,10 +1262,10 @@ export default function LecturasPage() {
                             </td>
                           ))}
                           <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                            <button onClick={() => handleEditStart(l)} style={{ background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.2rem 0.5rem', fontSize: '0.6rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
+                            <button onClick={() => handleEditStart(l)} style={{ background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.2rem 0.5rem', fontSize: '0.9rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
                               ✎
                             </button>
-                            <button onClick={() => eliminar(l.id)} disabled={deletingId === l.id} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.2rem 0.5rem', fontSize: '0.6rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
+                            <button onClick={() => eliminar(l.id)} disabled={deletingId === l.id} style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '0.2rem 0.5rem', fontSize: '0.9rem', letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.15s' }}>
                               {deletingId === l.id ? '◌' : '✕'}
                             </button>
                           </td>
@@ -1285,7 +1285,7 @@ export default function LecturasPage() {
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-        select option { background: #0a0a0f; color: #fff; }
+        select option { background: #0a0a0f; color: #fdf5e6; }
         ::placeholder { color: rgba(255,255,255,0.15) !important; }
       `}</style>
     </div>

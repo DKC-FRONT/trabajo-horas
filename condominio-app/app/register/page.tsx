@@ -68,7 +68,7 @@ export default function RegisterPage() {
             background: message.type === 'error' ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)',
             border: `1px solid ${message.type === 'error' ? '#f87171' : '#4ade80'}`,
             color: message.type === 'error' ? '#f87171' : '#4ade80',
-            fontSize: '0.85rem',
+            fontSize: '1.27rem',
             textAlign: 'center'
           }}>
             {message.text}
@@ -135,8 +135,8 @@ export default function RegisterPage() {
         </div>
 
         <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', opacity: 0.5 }}>
-          <ShieldCheck size={16} color="#fff" />
-          <span style={{ fontSize: '0.65rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seguridad Supabase Activa</span>
+          <ShieldCheck size={16} color='#fdf5e6' />
+          <span style={{ fontSize: '0.98rem', color: '#fdf5e6', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seguridad Supabase Activa</span>
         </div>
       </div>
     </div>
@@ -191,15 +191,15 @@ const iconContainerStyle: React.CSSProperties = {
 };
 
 const titleStyle: React.CSSProperties = {
-  fontSize: '1.75rem',
-  color: '#fff',
+  fontSize: '2.63rem',
+  color: '#fdf5e6',
   fontWeight: 700,
   margin: '0 0 0.5rem',
   letterSpacing: '-0.02em',
 };
 
 const subtitleStyle: React.CSSProperties = {
-  fontSize: '0.9rem',
+  fontSize: '1.35rem',
   color: 'rgba(255,255,255,0.4)',
 };
 
@@ -220,18 +220,18 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)',
   border: '1px solid rgba(255,255,255,0.1)',
   padding: '0.85rem 1rem 0.85rem 3rem',
-  color: '#fff',
-  fontSize: '0.9rem',
+  color: '#fdf5e6',
+  fontSize: '1.35rem',
   outline: 'none',
   transition: 'all 0.2s',
 };
 
 const buttonStyle: React.CSSProperties = {
   background: '#60a5fa',
-  color: '#fff',
+  color: '#fdf5e6',
   border: 'none',
   padding: '1rem',
-  fontSize: '0.95rem',
+  fontSize: '1.42rem',
   fontWeight: 700,
   cursor: 'pointer',
   display: 'flex',
@@ -245,6 +245,6 @@ const buttonStyle: React.CSSProperties = {
 const footerStyle: React.CSSProperties = {
   marginTop: '2rem',
   textAlign: 'center',
-  fontSize: '0.85rem',
+  fontSize: '1.27rem',
   color: 'rgba(255,255,255,0.4)',
 };

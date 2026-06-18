@@ -110,19 +110,19 @@ export default function ConfiguracionPage() {
       <nav style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '1rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,10,15,0.8)', backdropFilter: 'blur(8px)' }}>
         <button 
           onClick={() => router.push('/dashboard')} 
-          style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} 
+          style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.98rem', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#fdf5e6')} 
           onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
         >
           ← Regresar
         </button>
-        <span style={{ fontSize: '0.65rem', color: '#fff', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Consola de Configuración</span>
+        <span style={{ fontSize: '0.98rem', color: '#fdf5e6', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Consola de Configuración</span>
       </nav>
 
       <main style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem' }}>
         <header style={{ marginBottom: '2.5rem' }}>
-          <h1 style={{ color: '#fff', margin: '0 0 0.5rem', fontSize: '2.2rem', letterSpacing: '-0.02em' }}>Configuración</h1>
-          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>Parámetros globales del sistema y lógica de facturación.</p>
+          <h1 style={{ color: '#fdf5e6', margin: '0 0 0.5rem', fontSize: '3.3rem', letterSpacing: '-0.02em' }}>Configuración</h1>
+          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.27rem' }}>Parámetros globales del sistema y lógica de facturación.</p>
         </header>
 
         {mensaje && (
@@ -131,7 +131,7 @@ export default function ConfiguracionPage() {
             border: `1px solid ${mensaje.tipo === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)'}`,
             padding: '1rem', borderRadius: '4px', marginBottom: '2rem',
             color: mensaje.tipo === 'success' ? '#4ade80' : '#f87171',
-            display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem'
+            display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.27rem'
           }}>
             {mensaje.tipo === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
             {mensaje.text}
@@ -150,33 +150,33 @@ export default function ConfiguracionPage() {
             <section style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: '#60a5fa' }}>
                 <Droplets size={20} />
-                <h3 style={{ margin: 0, fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cobro de Agua</h3>
+                <h3 style={{ margin: 0, fontSize: '1.35rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cobro de Agua</h3>
               </div>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Tarifa Excedente ($/m³)</label>
+                  <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Tarifa Excedente ($/m³)</label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>$</span>
+                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: '1.27rem' }}>$</span>
                     <input 
                       type="number"
                       value={configs.find(c => c.clave === 'tarifa_m3')?.valor || ''}
                       onChange={(e) => handleChange('tarifa_m3', e.target.value)}
-                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 0.75rem 0.75rem 1.75rem', color: '#fdf5e6', fontFamily: 'inherit', fontSize: '1.35rem', borderRadius: '2px' }}
                     />
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Límite Básico (m³)</label>
+                  <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Límite Básico (m³)</label>
                   <div style={{ position: 'relative' }}>
                     <input 
                       type="number"
                       value={configs.find(c => c.clave === 'limite_basico')?.valor || ''}
                       onChange={(e) => handleChange('limite_basico', e.target.value)}
-                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
+                      style={{ width: '95%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fdf5e6', fontFamily: 'inherit', fontSize: '1.35rem', borderRadius: '2px' }}
                     />
-                    <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem' }}>m3</span>
+                    <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', fontSize: '1.05rem' }}>m3</span>
                   </div>
                 </div>
               </div>
@@ -186,17 +186,17 @@ export default function ConfiguracionPage() {
             <section style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: '#f472b6' }}>
                 <Building2 size={20} />
-                <h3 style={{ margin: 0, fontSize: '0.9rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Identidad del Condominio</h3>
+                <h3 style={{ margin: 0, fontSize: '1.35rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Identidad del Condominio</h3>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Nombre Oficial para Reportes</label>
+                <label style={{ fontSize: '0.98rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Nombre Oficial para Reportes</label>
                 <input 
                   type="text"
                   value={configs.find(c => c.clave === 'nombre_condominio')?.valor || ''}
                   onChange={(e) => handleChange('nombre_condominio', e.target.value)}
                   placeholder="Ej: Condominio Campestre La Florida"
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fff', fontFamily: 'inherit', fontSize: '0.9rem', borderRadius: '2px' }}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', color: '#fdf5e6', fontFamily: 'inherit', fontSize: '1.35rem', borderRadius: '2px' }}
                 />
               </div>
             </section>
@@ -210,12 +210,12 @@ export default function ConfiguracionPage() {
                   background: 'linear-gradient(135deg, rgba(96,165,250,0.2), rgba(167,139,250,0.2))',
                   border: '1px solid #60a5fa40',
                   padding: '1rem 2.5rem',
-                  color: '#fff',
+                  color: '#fdf5e6',
                   fontFamily: 'inherit',
                   letterSpacing: '0.15em',
                   textTransform: 'uppercase',
                   fontWeight: 700,
-                  fontSize: '0.8rem',
+                  fontSize: '1.2rem',
                   cursor: saving ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',

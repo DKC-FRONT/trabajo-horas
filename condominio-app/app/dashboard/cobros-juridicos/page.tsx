@@ -26,14 +26,14 @@ const inputStyle = (focused: boolean): React.CSSProperties => ({
   background: 'rgba(255,255,255,0.04)',
   border: `1px solid ${focused ? ACCENT + '70' : 'rgba(255,255,255,0.08)'}`,
   boxShadow: focused ? `0 0 0 3px ${ACCENT}10` : 'none',
-  color: '#ffffff', fontSize: '0.8rem', padding: '0.65rem 0.85rem',
+  color: '#fdf5e6', fontSize: '1.2rem', padding: '0.65rem 0.85rem',
   fontFamily: 'inherit', outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s',
 });
 
 const btnBase: React.CSSProperties = {
   fontFamily: 'inherit',
-  fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+  fontSize: '1.02rem', letterSpacing: '0.1em', textTransform: 'uppercase',
   cursor: 'pointer', transition: 'all 0.25s ease',
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
 };
@@ -232,25 +232,25 @@ export default function CobrosJuridicosPage() {
 
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.35rem' }}>Jurídicos</p>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.01em' }}>
+          <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.35rem' }}>Jurídicos</p>
+          <h1 style={{ fontSize: '2.1rem', fontWeight: 700, color: '#fdf5e6', margin: 0, letterSpacing: '-0.01em' }}>
             Cobros <span style={{ color: ACCENT }}>Prejurídicos</span>
           </h1>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.4)', margin: '0.4rem 0 0', letterSpacing: '0.05em' }}>
             Gestión de notificaciones de cobro prejurídico para propietarios en mora
           </p>
         </div>
 
         {/* Mensajes */}
         {errorMsg && (
-          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexDirection: 'column' }}>
+          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: '3px solid #f87171', color: '#f87171', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexDirection: 'column' }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <span>⚠</span> {errorMsg}
             </div>
             {sqlHint && (
               <pre style={{ 
                 background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
-                padding: '0.75rem', fontSize: '0.65rem', color: '#fbbf24', margin: '0.5rem 0 0', 
+                padding: '0.75rem', fontSize: '0.98rem', color: '#fbbf24', margin: '0.5rem 0 0', 
                 whiteSpace: 'pre-wrap', width: '100%', overflowX: 'auto',
               }}>
                 {sqlHint}
@@ -259,7 +259,7 @@ export default function CobrosJuridicosPage() {
           </div>
         )}
         {successMsg && (
-          <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '0.75rem', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ade80', color: '#4ade80', padding: '0.75rem 1rem', fontSize: '1.13rem', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span>✓</span> {successMsg}
           </div>
         )}
@@ -274,7 +274,7 @@ export default function CobrosJuridicosPage() {
                 ...btnBase,
                 background: tab === t ? `${ACCENT}12` : 'transparent',
                 border: 'none', borderBottom: tab === t ? `2px solid ${ACCENT}` : '2px solid transparent',
-                color: tab === t ? '#ffffff' : 'rgba(255,255,255,0.4)',
+                color: tab === t ? '#fdf5e6' : 'rgba(255,255,255,0.4)',
                 padding: '0.75rem 1.5rem',
                 fontWeight: tab === t ? 700 : 400,
               }}
@@ -287,7 +287,7 @@ export default function CobrosJuridicosPage() {
         </div>
 
         {loading ? (
-          <div style={{ padding: '4rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>
+          <div style={{ padding: '4rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '1.27rem' }}>
             <span style={{ animation: 'spin 1.2s linear infinite', display: 'inline-block', marginRight: '0.5rem' }}>◌</span> Cargando...
           </div>
         ) : tab === 'registrar' ? (
@@ -298,9 +298,9 @@ export default function CobrosJuridicosPage() {
             <div style={{ flex: '1 1 280px', maxWidth: '340px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}40, transparent)` }} />
               <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Seleccionar</p>
-                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>CASAS EN MORA</h3>
-                <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', margin: '0.3rem 0 0' }}>
+                <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Seleccionar</p>
+                <h3 style={{ fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>CASAS EN MORA</h3>
+                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.3)', margin: '0.3rem 0 0' }}>
                   {selectedCasas.length} seleccionada(s)
                 </p>
               </div>
@@ -311,7 +311,7 @@ export default function CobrosJuridicosPage() {
                   placeholder="Buscar casa..."
                   value={searchCasa}
                   onChange={e => setSearchCasa(e.target.value)}
-                  style={{ ...inputStyle(false), fontSize: '0.7rem', padding: '0.5rem 0.75rem' }}
+                  style={{ ...inputStyle(false), fontSize: '1.05rem', padding: '0.5rem 0.75rem' }}
                 />
               </div>
 
@@ -339,11 +339,11 @@ export default function CobrosJuridicosPage() {
                         width: '16px', height: '16px', border: isSelected ? `1px solid ${ACCENT}` : '1px solid rgba(255,255,255,0.2)',
                         background: isSelected ? `${ACCENT}30` : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.6rem', color: ACCENT, flexShrink: 0,
+                        fontSize: '0.9rem', color: ACCENT, flexShrink: 0,
                       }}>
                         {isSelected && '✓'}
                       </div>
-                      <span style={{ fontSize: '0.78rem', color: isSelected ? '#fff' : 'rgba(255,255,255,0.6)', fontWeight: isSelected ? 700 : 400 }}>
+                      <span style={{ fontSize: '1.17rem', color: isSelected ? '#fdf5e6' : 'rgba(255,255,255,0.6)', fontWeight: isSelected ? 700 : 400 }}>
                         Casa {casa.numero_casa}
                       </span>
                     </button>
@@ -355,13 +355,13 @@ export default function CobrosJuridicosPage() {
               <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '0.5rem' }}>
                 <button
                   onClick={() => setSelectedCasas(casas.map(c => c.numero_casa))}
-                  style={{ ...btnBase, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', padding: '0.4rem 0.8rem', fontSize: '0.58rem', flex: 1 }}
+                  style={{ ...btnBase, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', padding: '0.4rem 0.8rem', fontSize: '0.87rem', flex: 1 }}
                 >
                   Todas
                 </button>
                 <button
                   onClick={() => setSelectedCasas([])}
-                  style={{ ...btnBase, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', padding: '0.4rem 0.8rem', fontSize: '0.58rem', flex: 1 }}
+                  style={{ ...btnBase, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', padding: '0.4rem 0.8rem', fontSize: '0.87rem', flex: 1 }}
                 >
                   Ninguna
                 </button>
@@ -372,15 +372,15 @@ export default function CobrosJuridicosPage() {
             <div style={{ flex: '1 1 400px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(to right, ${ACCENT}60, transparent)` }} />
               <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Datos del cobro</p>
-                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>INFORMACIÓN DEL COBRO</h3>
+                <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Datos del cobro</p>
+                <h3 style={{ fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>INFORMACIÓN DEL COBRO</h3>
               </div>
 
               <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 200px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Propietario (opcional)
                     </label>
                     <input
@@ -394,7 +394,7 @@ export default function CobrosJuridicosPage() {
                     />
                   </div>
                   <div style={{ flex: '1 1 160px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Valor en mora <span style={{ color: ACCENT }}>*</span>
                     </label>
                     <input
@@ -411,7 +411,7 @@ export default function CobrosJuridicosPage() {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 200px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Concepto
                     </label>
                     <input
@@ -425,7 +425,7 @@ export default function CobrosJuridicosPage() {
                     />
                   </div>
                   <div style={{ flex: '1 1 160px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Meses en mora
                     </label>
                     <input
@@ -442,7 +442,7 @@ export default function CobrosJuridicosPage() {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 160px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Fecha de notificación
                     </label>
                     <input
@@ -455,7 +455,7 @@ export default function CobrosJuridicosPage() {
                     />
                   </div>
                   <div style={{ flex: '1 1 160px' }}>
-                    <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       Fecha límite de pago
                     </label>
                     <input
@@ -470,7 +470,7 @@ export default function CobrosJuridicosPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.87rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                     Notas adicionales
                   </label>
                   <textarea
@@ -487,13 +487,13 @@ export default function CobrosJuridicosPage() {
                 {/* Resumen */}
                 {selectedCasas.length > 0 && form.valor_mora && (
                   <div style={{ background: `${ACCENT}08`, border: `1px solid ${ACCENT}20`, padding: '0.85rem 1rem' }}>
-                    <p style={{ fontSize: '0.6rem', color: ACCENT, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 0.4rem', fontWeight: 700 }}>Resumen</p>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 0.2rem' }}>
-                      Casas: <strong style={{ color: '#fff' }}>{selectedCasas.join(', ')}</strong>
+                    <p style={{ fontSize: '0.9rem', color: ACCENT, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 0.4rem', fontWeight: 700 }}>Resumen</p>
+                    <p style={{ fontSize: '1.13rem', color: 'rgba(255,255,255,0.7)', margin: '0 0 0.2rem' }}>
+                      Casas: <strong style={{ color: '#fdf5e6' }}>{selectedCasas.join(', ')}</strong>
                     </p>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-                      Total a cobrar: <strong style={{ color: '#fff' }}>{formatCurrency(Number(form.valor_mora) * selectedCasas.length)}</strong>
-                      <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginLeft: '0.5rem' }}>
+                    <p style={{ fontSize: '1.13rem', color: 'rgba(255,255,255,0.7)', margin: 0 }}>
+                      Total a cobrar: <strong style={{ color: '#fdf5e6' }}>{formatCurrency(Number(form.valor_mora) * selectedCasas.length)}</strong>
+                      <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.3)', marginLeft: '0.5rem' }}>
                         ({formatCurrency(Number(form.valor_mora))} × {selectedCasas.length})
                       </span>
                     </p>
@@ -510,7 +510,7 @@ export default function CobrosJuridicosPage() {
                       background: saving ? 'rgba(255,255,255,0.04)' : `linear-gradient(135deg, ${ACCENT}25, ${ACCENT}10)`,
                       border: `1px solid ${saving ? 'rgba(255,255,255,0.08)' : ACCENT + '50'}`,
                       color: saving ? 'rgba(255,255,255,0.3)' : ACCENT,
-                      padding: '0.7rem 2rem', fontSize: '0.72rem',
+                      padding: '0.7rem 2rem', fontSize: '1.08rem',
                       opacity: selectedCasas.length === 0 ? 0.4 : 1,
                     }}
                     onMouseEnter={e => { if (!saving && selectedCasas.length > 0) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 4px 15px ${ACCENT}20`; } }}
@@ -530,8 +530,8 @@ export default function CobrosJuridicosPage() {
             {/* Filtro por estado */}
             <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
-                <p style={{ fontSize: '0.5rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Historial</p>
-                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', margin: '0 0 0.2rem' }}>Historial</p>
+                <h3 style={{ fontSize: '1.27rem', fontWeight: 700, color: '#fdf5e6', margin: 0 }}>
                   {filteredCobros.length} COBRO{filteredCobros.length !== 1 ? 'S' : ''}
                 </h3>
               </div>
@@ -544,8 +544,8 @@ export default function CobrosJuridicosPage() {
                       ...btnBase,
                       background: filtroEstado === e ? `${estadoColor[e] || ACCENT}20` : 'rgba(255,255,255,0.03)',
                       border: `1px solid ${filtroEstado === e ? (estadoColor[e] || ACCENT) + '40' : 'rgba(255,255,255,0.08)'}`,
-                      color: filtroEstado === e ? '#fff' : 'rgba(255,255,255,0.4)',
-                      padding: '0.4rem 0.85rem', fontSize: '0.6rem',
+                      color: filtroEstado === e ? '#fdf5e6' : 'rgba(255,255,255,0.4)',
+                      padding: '0.4rem 0.85rem', fontSize: '0.9rem',
                     }}
                   >
                     {e === 'todos' ? '📋 Todos' : e === 'activo' ? '🔴 Activo' : e === 'pagado' ? '🟢 Pagado' : '📁 Archivado'}
@@ -556,7 +556,7 @@ export default function CobrosJuridicosPage() {
 
             {/* Tabla */}
             {filteredCobros.length === 0 ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: '0.8rem' }}>
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: '1.2rem' }}>
                 Sin cobros registrados {filtroEstado !== 'todos' ? `con estado "${filtroEstado}"` : ''}
               </div>
             ) : (
@@ -566,7 +566,7 @@ export default function CobrosJuridicosPage() {
                     <tr>
                       {['Casa', 'Propietario', 'Valor Mora', 'Meses', 'Fecha', 'Estado', 'Acciones'].map(h => (
                         <th key={h} style={{
-                          textAlign: 'left', padding: '0.75rem 1rem', fontSize: '0.55rem',
+                          textAlign: 'left', padding: '0.75rem 1rem', fontSize: '0.83rem',
                           letterSpacing: '0.15em', textTransform: 'uppercase',
                           color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)',
                           whiteSpace: 'nowrap',
@@ -585,24 +585,24 @@ export default function CobrosJuridicosPage() {
                           transition: 'background 0.15s',
                         }}
                       >
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '1.2rem', color: '#fdf5e6', fontWeight: 700, whiteSpace: 'nowrap' }}>
                           🏠 {cobro.numero_casa}
                         </td>
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '1.13rem', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>
                           {cobro.propietario || '—'}
                         </td>
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: ACCENT, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '1.2rem', color: ACCENT, fontWeight: 700, whiteSpace: 'nowrap' }}>
                           {formatCurrency(cobro.valor_mora)}
                         </td>
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
                           {cobro.meses_mora || '—'}
                         </td>
-                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap' }}>
                           {formatDate(cobro.fecha_notificacion)}
                         </td>
                         <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap' }}>
                           <span style={{
-                            fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                            fontSize: '0.83rem', letterSpacing: '0.1em', textTransform: 'uppercase',
                             padding: '0.2rem 0.5rem',
                             background: `${estadoColor[cobro.estado] || '#94a3b8'}15`,
                             border: `1px solid ${estadoColor[cobro.estado] || '#94a3b8'}40`,
@@ -616,7 +616,7 @@ export default function CobrosJuridicosPage() {
                             <button
                               onClick={() => setShowCarta(cobro)}
                               title="Ver Carta"
-                              style={{ ...btnBase, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', padding: '0.3rem 0.55rem', fontSize: '0.6rem' }}
+                              style={{ ...btnBase, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
                               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
                             >
@@ -626,7 +626,7 @@ export default function CobrosJuridicosPage() {
                               <button
                                 onClick={() => handleUpdateEstado(cobro.id, 'pagado')}
                                 title="Marcar Pagado"
-                                style={{ ...btnBase, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', padding: '0.3rem 0.55rem', fontSize: '0.6rem' }}
+                                style={{ ...btnBase, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
                                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
                               >
@@ -637,7 +637,7 @@ export default function CobrosJuridicosPage() {
                               <button
                                 onClick={() => handleUpdateEstado(cobro.id, 'archivado')}
                                 title="Archivar"
-                                style={{ ...btnBase, background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.3)', color: '#94a3b8', padding: '0.3rem 0.55rem', fontSize: '0.6rem' }}
+                                style={{ ...btnBase, background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.3)', color: '#94a3b8', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
                                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
                               >
@@ -647,7 +647,7 @@ export default function CobrosJuridicosPage() {
                             <button
                               onClick={() => handleDelete(cobro.id)}
                               title="Eliminar"
-                              style={{ ...btnBase, background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', padding: '0.3rem 0.55rem', fontSize: '0.6rem' }}
+                              style={{ ...btnBase, background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
                               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
                               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
                             >
@@ -707,7 +707,7 @@ export default function CobrosJuridicosPage() {
                 style={{
                   ...btnBase,
                   background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)',
-                  color: '#60a5fa', padding: '0.55rem 1.2rem', fontSize: '0.7rem',
+                  color: '#60a5fa', padding: '0.55rem 1.2rem', fontSize: '1.05rem',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -719,7 +719,7 @@ export default function CobrosJuridicosPage() {
                 style={{
                   ...btnBase,
                   background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.4)',
-                  color: '#f87171', padding: '0.55rem 1.2rem', fontSize: '0.7rem',
+                  color: '#f87171', padding: '0.55rem 1.2rem', fontSize: '1.05rem',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -732,7 +732,7 @@ export default function CobrosJuridicosPage() {
             <div
               id="carta-prejuridica"
               style={{
-                background: '#ffffff', color: '#000000',
+                background: '#fdf5e6', color: '#000000',
                 padding: '3rem 3.5rem', fontFamily: 'inherit',
                 fontSize: '12pt', lineHeight: 1.7,
                 boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
