@@ -882,8 +882,13 @@ export default function LecturasPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', maxWidth: '360px', alignItems: 'center', gap: '1rem' }}>
           {canExportExcel && (
-            <button onClick={exportarExcel} style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-              <span style={{ fontSize: '1.5rem' }}>↓</span> EXPORTAR A EXCEL
+            <button 
+              onClick={exportarExcel} 
+              style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', padding: '0.6rem 1.2rem', color: '#fbbf24', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', height: '100%' }} 
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.25)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} 
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>↓</span> EXPORTAR EXCEL
             </button>
           )}
           
@@ -894,8 +899,18 @@ export default function LecturasPage() {
             accept=".xlsx,.xls,.csv"
             style={{ display: 'none' }}
           />
-          <button onClick={() => fileInputRef.current?.click()} disabled={importing} style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }} onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}>
-            {importing ? '◌ Importando...' : '↑ Importar Excel'}
+          <button 
+            onClick={() => fileInputRef.current?.click()} 
+            disabled={importing} 
+            style={{ background: importing ? 'rgba(96,165,250,0.08)' : 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.4)', padding: '0.6rem 1.2rem', color: '#60a5fa', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: importing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', height: '100%' }} 
+            onMouseEnter={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.25)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.6)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }} 
+            onMouseLeave={(e) => { if (!importing) { e.currentTarget.style.background = 'rgba(96,165,250,0.15)'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
+          >
+            {importing ? (
+              <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', lineHeight: 1 }}>◌</span> IMPORTANDO...</>
+            ) : (
+              <><span style={{ fontSize: '1.5rem', lineHeight: 1 }}>↑</span> IMPORTAR EXCEL</>
+            )}
           </button>
         </div>
         
