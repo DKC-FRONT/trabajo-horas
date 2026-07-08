@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 const ACCENT = '#f87171';
 const MESES_NOMBRES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -75,6 +76,9 @@ export default function CobrosJuridicosPage() {
     fecha_limite: '',
     notas: '',
   });
+
+  // Edit state
+  const [editCobro, setEditCobro] = useState<Cobro | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -184,6 +188,34 @@ export default function CobrosJuridicosPage() {
       notify(`Cobro marcado como "${estado}".`);
     } catch (err: any) {
       notify('Error: ' + err.message, true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editCobro) return;
+    try {
+      setSaving(true);
+      const res = await fetch('/api/cobros-juridicos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editCobro.id,
+          propietario: editCobro.propietario,
+          valor_mora: editCobro.valor_mora,
+          concepto: editCobro.concepto,
+          meses_mora: editCobro.meses_mora,
+          notas: editCobro.notas,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setCobros(prev => prev.map(c => c.id === editCobro.id ? { ...c, ...editCobro } : c));
+      notify('Cambios guardados exitosamente.');
+      setEditCobro(null);
+    } catch (err: any) {
+      notify('Error: ' + err.message, true);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -612,26 +644,11 @@ export default function CobrosJuridicosPage() {
                           </span>
                         </td>
                         <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'nowrap' }}>
-                            <button
-                              onClick={() => setShowCarta(cobro)}
-                              title="Ver Carta"
-                              style={{ ...btnBase, background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
-                              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                            >
-                              📄
-                            </button>
+                          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', opacity: hoveredRow === cobro.id ? 1 : 0.6, transition: 'opacity 0.2s' }}>
+                            <button onClick={() => setShowCarta(cobro)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem', cursor: 'pointer', borderRadius: '4px' }} title="Ver/Imprimir Carta">📄</button>
+                            <button onClick={() => setEditCobro(cobro)} style={{ background: 'transparent', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa', padding: '0.4rem', cursor: 'pointer', borderRadius: '4px' }} title="Editar Datos">✏️</button>
                             {cobro.estado === 'activo' && (
-                              <button
-                                onClick={() => handleUpdateEstado(cobro.id, 'pagado')}
-                                title="Marcar Pagado"
-                                style={{ ...btnBase, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', padding: '0.3rem 0.55rem', fontSize: '0.9rem' }}
-                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                              >
-                                ✓
-                              </button>
+                              <button onClick={() => handleUpdateEstado(cobro.id, 'pagado')} style={{ background: 'transparent', border: '1px solid rgba(34,197,94,0.4)', color: '#22c55e', padding: '0.4rem', cursor: 'pointer', borderRadius: '4px' }} title="Marcar Pagado">✓</button>
                             )}
                             {cobro.estado !== 'archivado' && (
                               <button
@@ -665,20 +682,55 @@ export default function CobrosJuridicosPage() {
         )}
       </div>
 
+      {/* ═══════ MODAL EDITAR COBRO ═══════ */}
+      {editCobro && createPortal(
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem', overflowY: 'auto' }} onClick={() => setEditCobro(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', padding: '2rem', width: '100%', maxWidth: '500px', borderRadius: '12px' }}>
+            <h3 style={{ margin: '0 0 1.5rem', color: '#fff', fontSize: '1.5rem' }}>Editar Cobro — Casa {editCobro.numero_casa}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>Propietario</label>
+                <input type="text" value={editCobro.propietario || ''} onChange={e => setEditCobro({ ...editCobro, propietario: e.target.value })} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>Valor adeudado</label>
+                <input type="number" value={editCobro.valor_mora} onChange={e => setEditCobro({ ...editCobro, valor_mora: Number(e.target.value) })} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>Concepto</label>
+                <input type="text" value={editCobro.concepto || ''} onChange={e => setEditCobro({ ...editCobro, concepto: e.target.value })} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>Meses en mora</label>
+                <input type="text" value={editCobro.meses_mora || ''} onChange={e => setEditCobro({ ...editCobro, meses_mora: e.target.value })} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.3rem' }}>Notas</label>
+                <textarea value={editCobro.notas || ''} onChange={e => setEditCobro({ ...editCobro, notas: e.target.value })} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem', borderRadius: '6px', minHeight: '80px', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button onClick={() => setEditCobro(null)} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.75rem', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={handleSaveEdit} disabled={saving} style={{ flex: 1, background: '#4ade80', border: 'none', color: '#000', fontWeight: 'bold', padding: '0.75rem', borderRadius: '6px', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>{saving ? 'Guardando...' : 'Guardar Cambios'}</button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* ═══════ MODAL CARTA PREJURÍDICA ═══════ */}
-      {showCarta && (
+      {showCarta && createPortal(
         <div
           style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
+            position: 'fixed', inset: 0, zIndex: 99999,
             background: 'rgba(0,0,0,0.85)',
-            display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
             padding: '2rem', overflowY: 'auto',
           }}
           onClick={() => setShowCarta(null)}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: '800px' }}
+            style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}
           >
             {/* Botones de control */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -691,6 +743,7 @@ export default function CobrosJuridicosPage() {
                   printWin.document.write(`
                     <!DOCTYPE html>
                     <html><head>
+                      <base href="${window.location.origin}" />
                       <title>Cobro Prejurídico - Casa ${showCarta.numero_casa}</title>
                       <style>
                         @page { margin: 2cm; size: letter; }
@@ -739,12 +792,13 @@ export default function CobrosJuridicosPage() {
               }}
             >
               {/* Encabezado */}
-              <div style={{ textAlign: 'center', borderBottom: '2px solid #1a1a1a', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '2px solid #1a1a1a', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                <img src="/La%20Florida%20logo.png" alt="Logo La Florida" style={{ height: '90px', marginBottom: '0.5rem', objectFit: 'contain' }} />
                 <h2 style={{ margin: '0 0 0.3rem', fontSize: '16pt', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   CONJUNTO RESIDENCIAL LA FLORIDA
                 </h2>
-                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>NIT: 900.XXX.XXX-X</p>
-                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>Dirección del conjunto — Ciudad, Departamento</p>
+                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>NIT: 900.858.163</p>
+                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>Kilometro 5 vereda la poyata</p>
               </div>
 
               {/* Fecha y asunto */}
@@ -792,7 +846,7 @@ export default function CobrosJuridicosPage() {
                 {/* Monto destacado */}
                 <div style={{
                   textAlign: 'center', margin: '1.5rem 0', padding: '1rem',
-                  border: '2px solid #cc0000', background: '#fff5f5',
+                  border: '2px solid #cc0000', background: '#fff5f5'
                 }}>
                   <p style={{ margin: '0 0 0.3rem', fontSize: '10pt', color: '#666', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Valor adeudado</p>
                   <p style={{ margin: 0, fontSize: '24pt', fontWeight: 700, color: '#cc0000' }}>
@@ -828,7 +882,8 @@ export default function CobrosJuridicosPage() {
 
                 <p>Cordialmente,</p>
 
-                <div style={{ marginTop: '3rem' }}>
+                <div style={{ marginTop: '2rem' }}>
+                  <img src="/Firma%20admin.png" alt="Firma Administrador" style={{ height: '80px', marginBottom: '-10px', display: 'block' }} />
                   <div style={{ borderTop: '1px solid #000', width: '250px', paddingTop: '0.5rem' }}>
                     <p style={{ margin: '0 0 0.1rem', fontWeight: 700 }}>ADMINISTRACIÓN</p>
                     <p style={{ margin: 0, fontSize: '10pt', color: '#444' }}>Conjunto Residencial La Florida</p>
@@ -844,7 +899,8 @@ export default function CobrosJuridicosPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`

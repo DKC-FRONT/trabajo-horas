@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── PUT — Actualizar estado de un cobro ──
+// ── PUT — Actualizar un cobro ──
 export async function PUT(req: NextRequest) {
   // Solo admin puede actualizar cobros
   const auth = await verifyRole(['admin']);
@@ -151,7 +151,7 @@ export async function PUT(req: NextRequest) {
   try {
     const supabase = createAdminClient();
     const body = await req.json();
-    const { id, estado, notas } = body;
+    const { id, estado, propietario, valor_mora, concepto, meses_mora, notas } = body;
 
     if (!id || isNaN(Number(id))) {
       return NextResponse.json({ error: 'ID de cobro inválido.' }, { status: 400 });
@@ -167,19 +167,33 @@ export async function PUT(req: NextRequest) {
     if (notas !== undefined) {
       updateData.notas = String(notas).trim();
     }
+    if (propietario !== undefined) {
+      updateData.propietario = propietario ? String(propietario).trim() : null;
+    }
+    if (valor_mora !== undefined) {
+      updateData.valor_mora = Number(valor_mora) || 0;
+    }
+    if (concepto !== undefined) {
+      updateData.concepto = concepto ? String(concepto).trim() : null;
+    }
+    if (meses_mora !== undefined) {
+      updateData.meses_mora = meses_mora ? String(meses_mora).trim() : null;
+    }
 
     if (Object.keys(updateData).length === 1) {
       return NextResponse.json({ error: 'No hay datos para actualizar.' }, { status: 400 });
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('cobros_juridicos')
       .update(updateData)
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ message: 'Cobro actualizado.' }, { status: 200 });
+    return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     console.error('[PUT /api/cobros-juridicos]', error);
     return NextResponse.json({ error: 'Error al actualizar: ' + error.message }, { status: 500 });
