@@ -70,7 +70,7 @@ export default function CobrosJuridicosPage() {
   const [form, setForm] = useState({
     propietario: '',
     valor_mora: '',
-    concepto: 'Cuota de administración',
+    concepto: 'Expensas comunes',
     meses_mora: '',
     fecha_notificacion: new Date().toISOString().split('T')[0],
     fecha_limite: '',
@@ -907,7 +907,7 @@ export default function CobrosJuridicosPage() {
         @keyframes spin { 100% { transform: rotate(360deg); } }
         ::placeholder { color: rgba(255,255,255,0.18) !important; }
         @media print {
-          #cobros-page-content { display: none !important; }
+          .modal-overlay { display: none !important; }
         }
       `}</style>
     </>
