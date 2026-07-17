@@ -64,6 +64,7 @@ export default function CobrosJuridicosPage() {
   const [showCarta, setShowCarta] = useState<Cobro | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [searchCasa, setSearchCasa] = useState('');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   // Form state
   const [selectedCasas, setSelectedCasas] = useState<string[]>([]);
@@ -233,6 +234,35 @@ export default function CobrosJuridicosPage() {
       notify('Cobro eliminado.');
     } catch (err: any) {
       notify('Error: ' + err.message, true);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!showCarta) return;
+    const element = document.getElementById('carta-prejuridica');
+    if (!element) return;
+
+    try {
+      setDownloadingPdf(true);
+      const html2pdf = (await import('html2pdf.js')).default;
+
+      await html2pdf()
+        .from(element)
+        .set({
+          margin: 0,
+          filename: `Cobro_Prejuridico_Casa_${showCarta.numero_casa}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'] }
+        } as any)
+        .save();
+
+    } catch (err) {
+      console.error('Error al generar PDF', err);
+      notify('Error al generar el PDF', true);
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -733,7 +763,21 @@ export default function CobrosJuridicosPage() {
             style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}
           >
             {/* Botones de control */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+                style={{
+                  ...btnBase,
+                  background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)',
+                  color: '#fbbf24', padding: '0.55rem 1.2rem', fontSize: '1.05rem',
+                  opacity: downloadingPdf ? 0.7 : 1, cursor: downloadingPdf ? 'wait' : 'pointer'
+                }}
+                onMouseEnter={e => { if(!downloadingPdf) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { if(!downloadingPdf) e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                {downloadingPdf ? '⏳ GENERANDO...' : '📥 DESCARGAR PDF'}
+              </button>
               <button
                 onClick={() => {
                   const printWin = window.open('', '_blank');
@@ -781,42 +825,41 @@ export default function CobrosJuridicosPage() {
               </button>
             </div>
 
-            {/* CARTA FORMAL */}
             <div
               id="carta-prejuridica"
               style={{
                 background: '#fdf5e6', color: '#000000',
-                padding: '3rem 3.5rem', fontFamily: 'inherit',
-                fontSize: '12pt', lineHeight: 1.7,
+                padding: '2.5rem 3rem', fontFamily: 'inherit',
+                fontSize: '9pt', lineHeight: 1.45,
                 boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
               }}
             >
               {/* Encabezado */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '2px solid #1a1a1a', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-                <img src="/La%20Florida%20logo.png" alt="Logo La Florida" style={{ height: '90px', marginBottom: '0.5rem', objectFit: 'contain' }} />
-                <h2 style={{ margin: '0 0 0.3rem', fontSize: '16pt', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '2px solid #1a1a1a', paddingBottom: '0.8rem', marginBottom: '1.2rem' }}>
+                <img src="/La%20Florida%20logo.png" alt="Logo La Florida" style={{ height: '75px', marginBottom: '0.4rem', objectFit: 'contain' }} />
+                <h2 style={{ margin: '0 0 0.2rem', fontSize: '12pt', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   CONJUNTO RESIDENCIAL LA FLORIDA
                 </h2>
-                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>NIT: 900.858.163</p>
-                <p style={{ margin: 0, fontSize: '10pt', color: '#333' }}>Kilometro 5 vereda la poyata</p>
+                <p style={{ margin: 0, fontSize: '8pt', color: '#333' }}>NIT: 900.858.163</p>
+                <p style={{ margin: 0, fontSize: '8pt', color: '#333' }}>Kilometro 5 vereda la poyata</p>
               </div>
 
               {/* Fecha y asunto */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
-                  <p style={{ margin: '0 0 0.2rem', fontSize: '10pt', color: '#666' }}>Fecha de notificación:</p>
+                  <p style={{ margin: '0 0 0.1rem', fontSize: '8pt', color: '#666' }}>Fecha de notificación:</p>
                   <p style={{ margin: 0, fontWeight: 700 }}>{formatDate(showCarta.fecha_notificacion)}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: '0 0 0.2rem', fontSize: '10pt', color: '#666' }}>Inmueble:</p>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: '14pt' }}>Casa N° {showCarta.numero_casa}</p>
+                  <p style={{ margin: '0 0 0.1rem', fontSize: '8pt', color: '#666' }}>Inmueble:</p>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: '10pt' }}>Casa N° {showCarta.numero_casa}</p>
                 </div>
               </div>
 
               {/* Destinatario */}
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '1.2rem' }}>
                 <p style={{ margin: 0 }}><strong>Señor(a):</strong></p>
-                <p style={{ margin: '0.2rem 0', fontSize: '13pt', fontWeight: 700, textTransform: 'uppercase' }}>
+                <p style={{ margin: '0.1rem 0', fontSize: '12pt', fontWeight: 700, textTransform: 'uppercase' }}>
                   {showCarta.propietario || 'PROPIETARIO / RESIDENTE'}
                 </p>
                 <p style={{ margin: 0, color: '#333' }}>
@@ -825,17 +868,17 @@ export default function CobrosJuridicosPage() {
               </div>
 
               {/* Asunto */}
-              <div style={{ background: '#f5f5f5', padding: '0.6rem 1rem', marginBottom: '1.5rem', borderLeft: '4px solid #cc0000' }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: '11pt' }}>
+              <div style={{ background: '#f5f5f5', padding: '0.5rem 0.8rem', marginBottom: '1.2rem', borderLeft: '4px solid #cc0000' }}>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: '9pt' }}>
                   ASUNTO: COBRO PREJURÍDICO — {(showCarta.concepto || 'Cuota de administración').toUpperCase()}
                 </p>
               </div>
 
               {/* Cuerpo */}
               <div style={{ textAlign: 'justify' }}>
-                <p>Respetado(a) propietario(a),</p>
+                <p style={{ margin: '0 0 0.8rem' }}>Respetado(a) propietario(a),</p>
 
-                <p>
+                <p style={{ margin: '0 0 0.8rem' }}>
                   Por medio de la presente, la Administración del <strong>CONJUNTO RESIDENCIAL LA FLORIDA</strong> se
                   permite informarle que a la fecha presenta una <strong>obligación pendiente de pago</strong> correspondiente
                   al concepto de <strong>{showCarta.concepto || 'cuota de administración'}</strong>,
@@ -845,23 +888,24 @@ export default function CobrosJuridicosPage() {
 
                 {/* Monto destacado */}
                 <div style={{
-                  textAlign: 'center', margin: '1.5rem 0', padding: '1rem',
-                  border: '2px solid #cc0000', background: '#fff5f5'
+                  textAlign: 'center', margin: '1.2rem 0', padding: '0.8rem',
+                  border: '2px solid #cc0000', background: '#fff5f5',
+                  pageBreakInside: 'avoid'
                 }}>
-                  <p style={{ margin: '0 0 0.3rem', fontSize: '10pt', color: '#666', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Valor adeudado</p>
-                  <p style={{ margin: 0, fontSize: '24pt', fontWeight: 700, color: '#cc0000' }}>
+                  <p style={{ margin: '0 0 0.2rem', fontSize: '8pt', color: '#666', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Valor adeudado</p>
+                  <p style={{ margin: 0, fontSize: '18pt', fontWeight: 700, color: '#cc0000' }}>
                     {formatCurrency(showCarta.valor_mora)}
                   </p>
                 </div>
 
-                <p>
+                <p style={{ margin: '0 0 0.8rem' }}>
                   De conformidad con lo establecido en la <strong>Ley 675 de 2001</strong> (Régimen de Propiedad Horizontal), 
                   artículos <strong>29</strong> y <strong>30</strong>, todo propietario tiene la obligación de contribuir con las 
                   expensas comunes necesarias, ordinarias y extraordinarias. El no pago oportuno genera intereses moratorios 
                   a la tasa máxima legal vigente.
                 </p>
 
-                <p>
+                <p style={{ margin: '0 0 0.8rem' }}>
                   Le instamos a ponerse al día con su obligación dentro de los <strong>quince (15) días hábiles</strong> siguientes 
                   a la fecha de recibo de esta comunicación{showCarta.fecha_limite && <>, es decir, a más tardar el <strong>{formatDate(showCarta.fecha_limite)}</strong></>}. 
                   De no recibir su pago en el término indicado, la administración se verá en la obligación de iniciar 
@@ -869,31 +913,31 @@ export default function CobrosJuridicosPage() {
                   adicionales por concepto de honorarios de abogado y costas procesales que serán a su cargo.
                 </p>
 
-                <p>
+                <p style={{ margin: '0 0 0.8rem' }}>
                   Para su pronta solución, puede acercarse a la administración en horario de oficina o comunicarse al 
                   teléfono de contacto disponible para coordinar un plan de pago.
                 </p>
 
                 {showCarta.notas && (
-                  <div style={{ background: '#f9f9f9', padding: '0.75rem 1rem', margin: '1rem 0', borderLeft: '3px solid #999', fontStyle: 'italic', color: '#555' }}>
+                  <div style={{ background: '#f9f9f9', padding: '0.6rem 0.8rem', margin: '0.8rem 0', borderLeft: '3px solid #999', fontStyle: 'italic', color: '#555', pageBreakInside: 'avoid', fontSize: '8pt' }}>
                     <strong>Nota:</strong> {showCarta.notas}
                   </div>
                 )}
 
-                <p>Cordialmente,</p>
+                <p style={{ margin: '0 0 0.8rem' }}>Cordialmente,</p>
 
-                <div style={{ marginTop: '2rem' }}>
-                  <img src="/Firma%20admin.png" alt="Firma Administrador" style={{ height: '80px', marginBottom: '-10px', display: 'block' }} />
-                  <div style={{ borderTop: '1px solid #000', width: '250px', paddingTop: '0.5rem' }}>
+                <div style={{ marginTop: '1.2rem', pageBreakInside: 'avoid' }}>
+                  <img src="/Firma%20admin.png" alt="Firma Administrador" style={{ height: '70px', marginBottom: '-10px', display: 'block' }} />
+                  <div style={{ borderTop: '1px solid #000', width: '220px', paddingTop: '0.4rem' }}>
                     <p style={{ margin: '0 0 0.1rem', fontWeight: 700 }}>ADMINISTRACIÓN</p>
-                    <p style={{ margin: 0, fontSize: '10pt', color: '#444' }}>Conjunto Residencial La Florida</p>
+                    <p style={{ margin: 0, fontSize: '8pt', color: '#444' }}>Conjunto Residencial La Florida</p>
                   </div>
                 </div>
               </div>
 
               {/* Pie */}
-              <div style={{ marginTop: '2rem', paddingTop: '0.75rem', borderTop: '1px solid #ccc', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '8pt', color: '#888', letterSpacing: '0.05em' }}>
+              <div style={{ marginTop: '1.2rem', paddingTop: '0.6rem', borderTop: '1px solid #ccc', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '6.5pt', color: '#888', letterSpacing: '0.05em' }}>
                   Este documento es una notificación de cobro prejurídico y hace parte del debido proceso de cobro de la copropiedad.
                 </p>
               </div>
