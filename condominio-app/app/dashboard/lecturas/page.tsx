@@ -87,22 +87,43 @@ export default function LecturasPage() {
     }
 
     // Cargar caché de lecturas anteriores
-    const savedCache = localStorage.getItem('lecturas_ultimo_registro_cache');
-    if (savedCache) {
-      try {
-        setOfflineCache(JSON.parse(savedCache));
-      } catch (e) {
-        console.error("Error al cargar caché offline:", e);
-      }
-    }
+    const savedTimestamp = localStorage.getItem('lecturas_offline_timestamp');
+    const cacheExpired = savedTimestamp ? (Date.now() - Number(savedTimestamp) > 5 * 24 * 60 * 60 * 1000) : false;
 
-    // Cargar configuración previa de localStorage (por si no hay internet)
-    const savedConfig = localStorage.getItem('lecturas_config');
-    if (savedConfig) {
-      try {
-        setConfig(JSON.parse(savedConfig));
-      } catch (e) {
-        console.error("Error al cargar configuración guardada:", e);
+    if (cacheExpired) {
+      console.log("El caché offline ha expirado (más de 5 días). Limpiando datos locales...");
+      localStorage.removeItem('lecturas_ultimo_registro_cache');
+      localStorage.removeItem('lecturas_casas_cache');
+      localStorage.removeItem('lecturas_config');
+      localStorage.removeItem('lecturas_offline_timestamp');
+    } else {
+      const savedCache = localStorage.getItem('lecturas_ultimo_registro_cache');
+      if (savedCache) {
+        try {
+          setOfflineCache(JSON.parse(savedCache));
+        } catch (e) {
+          console.error("Error al cargar caché offline:", e);
+        }
+      }
+
+      // Cargar casas desde caché
+      const savedCasas = localStorage.getItem('lecturas_casas_cache');
+      if (savedCasas) {
+        try {
+          setCasas(JSON.parse(savedCasas));
+        } catch (e) {
+          console.error("Error al cargar casas offline:", e);
+        }
+      }
+
+      // Cargar configuración previa de localStorage (por si no hay internet)
+      const savedConfig = localStorage.getItem('lecturas_config');
+      if (savedConfig) {
+        try {
+          setConfig(JSON.parse(savedConfig));
+        } catch (e) {
+          console.error("Error al cargar configuración guardada:", e);
+        }
       }
     }
 
@@ -200,16 +221,34 @@ export default function LecturasPage() {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
       
-      // Obtenemos las lecturas más recientes (traemos bastantes para asegurar cubrir todas las casas)
+      // 1. Descargar y guardar las casas en el caché offline
+      const { data: casasData, error: casasErr } = await supabase.from('casas').select('*');
+      if (casasErr) throw casasErr;
+      
+      const sortedCasas = (casasData || []).sort((a: any, b: any) => {
+        const isNumA = /^\d+$/.test(a.numero_casa);
+        const isNumB = /^\d+$/.test(b.numero_casa);
+        if (isNumA && !isNumB) return -1;
+        if (!isNumA && isNumB) return 1;
+        if (isNumA && isNumB) return parseInt(a.numero_casa) - parseInt(b.numero_casa);
+        return a.numero_casa.localeCompare(b.numero_casa);
+      });
+      setCasas(sortedCasas);
+      localStorage.setItem('lecturas_casas_cache', JSON.stringify(sortedCasas));
+
+      // 2. Descargar y guardar la configuración
+      await fetchConfig();
+
+      // 3. Obtenemos las lecturas más recientes para cada casa (ordenamos por fecha e id desc para precisión)
       const { data, error } = await supabase
         .from('lecturas_agua')
         .select('casa_id, lectura_actual')
         .order('fecha', { ascending: false })
-        .limit(300); // 300 debería cubrir de sobra las 120 casas
+        .order('id', { ascending: false })
+        .limit(1000);
         
       if (error) throw error;
       
-      // Construir el mapa: casa_id -> lectura_actual (la primera que aparezca es la más reciente)
       const cache: Record<number, string> = {};
       data.forEach((l: any) => {
         if (!cache[l.casa_id]) {
@@ -219,7 +258,8 @@ export default function LecturasPage() {
       
       setOfflineCache(cache);
       localStorage.setItem('lecturas_ultimo_registro_cache', JSON.stringify(cache));
-      setSuccess('Datos offline preparados. ¡Ya puedes ir al campo!');
+      localStorage.setItem('lecturas_offline_timestamp', String(Date.now()));
+      setSuccess('Datos offline preparados con éxito para todas las casas. ¡Ya puedes ir al campo!');
     } catch (err: any) {
       setError('Fallo al preparar datos: ' + err.message);
     } finally {
@@ -285,9 +325,22 @@ export default function LecturasPage() {
     setError('');
     setLoading(true);
     try {
-      await Promise.all([fetchCasas(), fetchLecturas()]);
+      if (isOnline) {
+        await Promise.all([fetchCasas(), fetchLecturas()]);
+      } else {
+        const savedCasas = localStorage.getItem('lecturas_casas_cache');
+        if (savedCasas) setCasas(JSON.parse(savedCasas));
+
+        const savedCache = localStorage.getItem('lecturas_ultimo_registro_cache');
+        if (savedCache) setOfflineCache(JSON.parse(savedCache));
+
+        const savedConfig = localStorage.getItem('lecturas_config');
+        if (savedConfig) setConfig(JSON.parse(savedConfig));
+
+        setSuccess('Cargados datos de caché local (Modo Offline).');
+      }
     } catch (err: any) {
-      setError('Error al cargar datos desde Supabase: ' + err.message);
+      setError('Error al cargar datos: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -297,27 +350,31 @@ export default function LecturasPage() {
    * Obtiene las casas disponibles para vincular lecturas
    */
   const fetchCasas = async () => {
-    const { createClient } = await import('@/lib/client');
-    const supabase = createClient();
-    const { data, error } = await supabase.from('casas').select('*');
-    if (error) throw error;
-    
-    // Ordenar: Casas numéricas primero, puntos con texto al final
-    const sorted = (data || []).sort((a: any, b: any) => {
-      const isNumA = /^\d+$/.test(a.numero_casa);
-      const isNumB = /^\d+$/.test(b.numero_casa);
-
-      if (isNumA && !isNumB) return -1;
-      if (!isNumA && isNumB) return 1;
-
-      if (isNumA && isNumB) {
-        return parseInt(a.numero_casa) - parseInt(b.numero_casa);
+    try {
+      const { createClient } = await import('@/lib/client');
+      const supabase = createClient();
+      const { data, error } = await supabase.from('casas').select('*');
+      if (error) throw error;
+      
+      const sorted = (data || []).sort((a: any, b: any) => {
+        const isNumA = /^\d+$/.test(a.numero_casa);
+        const isNumB = /^\d+$/.test(b.numero_casa);
+        if (isNumA && !isNumB) return -1;
+        if (!isNumA && isNumB) return 1;
+        if (isNumA && isNumB) return parseInt(a.numero_casa) - parseInt(b.numero_casa);
+        return a.numero_casa.localeCompare(b.numero_casa);
+      });
+      
+      setCasas(sorted);
+      localStorage.setItem('lecturas_casas_cache', JSON.stringify(sorted));
+    } catch (err) {
+      const savedCasas = localStorage.getItem('lecturas_casas_cache');
+      if (savedCasas) {
+        setCasas(JSON.parse(savedCasas));
+      } else {
+        throw err;
       }
-
-      return a.numero_casa.localeCompare(b.numero_casa);
-    });
-    
-    setCasas(sorted);
+    }
   };
 
   /**
@@ -457,7 +514,9 @@ export default function LecturasPage() {
       }
 
       handleCancelEdit();
-      await fetchLecturas();
+      if (isOnline) {
+        await fetchLecturas();
+      }
     } catch (err: any) {
       setError('Error al procesar: ' + err.message);
     } finally {
