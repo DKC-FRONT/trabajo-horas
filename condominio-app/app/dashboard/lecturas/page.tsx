@@ -357,12 +357,19 @@ export default function LecturasPage() {
       if (error) throw error;
       
       const sorted = (data || []).sort((a: any, b: any) => {
-        const isNumA = /^\d+$/.test(a.numero_casa);
-        const isNumB = /^\d+$/.test(b.numero_casa);
-        if (isNumA && !isNumB) return -1;
-        if (!isNumA && isNumB) return 1;
-        if (isNumA && isNumB) return parseInt(a.numero_casa) - parseInt(b.numero_casa);
-        return a.numero_casa.localeCompare(b.numero_casa);
+        const strA = String(a.numero_casa || '').trim();
+        const strB = String(b.numero_casa || '').trim();
+        const numA = parseInt(strA.replace(/\D/g, ''));
+        const numB = parseInt(strB.replace(/\D/g, ''));
+        const hasNumA = !isNaN(numA);
+        const hasNumB = !isNaN(numB);
+        if (hasNumA && hasNumB) {
+          if (numA !== numB) return numA - numB;
+          return strA.localeCompare(strB);
+        }
+        if (hasNumA && !hasNumB) return -1;
+        if (!hasNumA && hasNumB) return 1;
+        return strA.localeCompare(strB);
       });
       
       setCasas(sorted);
@@ -648,7 +655,9 @@ export default function LecturasPage() {
       });
 
       // 4. DATOS (desde Fila 4)
-      lecturas.forEach((l: any) => {
+      const lecturasParaExportar = lecturas.filter((l: any) => Number(l.lectura_actual) > 0 || Number(l.consumo) > 0);
+      
+      lecturasParaExportar.forEach((l: any) => {
         const row = worksheet.addRow({
           casa: `Casa ${l.numero_casa}`,
           ant: Number(l.lectura_anterior) || 0,
@@ -684,9 +693,9 @@ export default function LecturasPage() {
       // 5. FILA DE TOTALES
       const totalRow = worksheet.addRow({
         casa: 'TOTAL',
-        con: lecturas.reduce((s, l) => s + (Number(l.consumo) || 0), 0),
-        exc: lecturas.reduce((s, l) => s + (Number(l.consumo_cobrar) || 0), 0),
-        val: lecturas.reduce((s, l) => s + (Number(l.valor) || 0), 0),
+        con: lecturasParaExportar.reduce((s, l) => s + (Number(l.consumo) || 0), 0),
+        exc: lecturasParaExportar.reduce((s, l) => s + (Number(l.consumo_cobrar) || 0), 0),
+        val: lecturasParaExportar.reduce((s, l) => s + (Number(l.valor) || 0), 0),
       });
 
       totalRow.height = 25;

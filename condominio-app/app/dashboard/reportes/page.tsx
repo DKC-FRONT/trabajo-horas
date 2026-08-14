@@ -124,11 +124,27 @@ export default function ReportesPage() {
         supabase.from('configuracion').select('clave, valor').eq('clave', 'limite_basico')
       ]);
       if (casasRes.error) throw casasRes.error;
-      const casasData = casasRes.data;
+      
+      const casasData = (casasRes.data || []).sort((a: any, b: any) => {
+        const strA = String(a.numero_casa || '').trim();
+        const strB = String(b.numero_casa || '').trim();
+        const numA = parseInt(strA.replace(/\D/g, ''));
+        const numB = parseInt(strB.replace(/\D/g, ''));
+        const hasNumA = !isNaN(numA);
+        const hasNumB = !isNaN(numB);
+        if (hasNumA && hasNumB) {
+          if (numA !== numB) return numA - numB;
+          return strA.localeCompare(strB);
+        }
+        if (hasNumA && !hasNumB) return -1;
+        if (!hasNumA && hasNumB) return 1;
+        return strA.localeCompare(strB);
+      });
+      
       if (configRes.data && configRes.data.length > 0) {
         setLimiteBasico(Number(configRes.data[0].valor) || 60);
       }
-      setCasas(casasData || []);
+      setCasas(casasData);
 
       // 2. Obtener lecturas del mes actual seleccionado
       const inicioMes = `${anioSeleccionado}-${String(mesSeleccionado).padStart(2, '0')}-01`;
@@ -167,9 +183,20 @@ export default function ReportesPage() {
           fecha: lectura?.fecha || ''
         };
       }).sort((a: any, b: any) => {
-        const numA = parseInt(a.numero_casa.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.numero_casa.replace(/\D/g, '')) || 0;
-        return numA - numB;
+        const strA = String(a.numero_casa || '').trim();
+        const strB = String(b.numero_casa || '').trim();
+        const numA = parseInt(strA.replace(/\D/g, ''));
+        const numB = parseInt(strB.replace(/\D/g, ''));
+        const hasNumA = !isNaN(numA);
+        const hasNumB = !isNaN(numB);
+        
+        if (hasNumA && hasNumB) {
+          if (numA !== numB) return numA - numB;
+          return strA.localeCompare(strB);
+        }
+        if (hasNumA && !hasNumB) return -1;
+        if (!hasNumA && hasNumB) return 1;
+        return strA.localeCompare(strB);
       });
 
       const excedidas = porCasa.filter((c: any) => c.consumo_cobrar > 0);
@@ -364,7 +391,8 @@ export default function ReportesPage() {
   const filteredPorCasa = data
     ? data.porCasa.filter((l) => {
         if (!filtroCasa.trim()) return true;
-        return l.numero_casa?.toString().toLowerCase().includes(filtroCasa.toLowerCase());
+        const str = filtroCasa.toLowerCase();
+        return `casa ${l.numero_casa}`.toLowerCase().includes(str) || l.numero_casa?.toString().toLowerCase().includes(str);
       })
     : [];
 
