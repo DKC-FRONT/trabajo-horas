@@ -26,7 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: CalendarCheck, label: 'Semana',        route: '/dashboard/semana',        roles: ['admin', 'trabajador'],  accent: '#38bdf8' },
   { icon: Clock,         label: 'Asistencia',    route: '/dashboard/asistencia',    roles: ['admin', 'trabajador'],  accent: '#60a5fa' },
   { icon: FileText,      label: 'Permisos',      route: '/dashboard/permisos',      roles: ['admin', 'trabajador'],  accent: '#a78bfa' },
-  { icon: Shield,        label: 'Dotación',      route: '/dashboard/dotacion',      roles: ['admin'],                accent: '#2b7a2b' },
+  { icon: Shield,        label: 'Dotación',      route: '/dashboard/dotacion',      roles: ['admin', 'trabajador'],  accent: '#2b7a2b' },
   { icon: PackageOpen,   label: 'Almacén',       route: '/dashboard/inventario',    roles: ['admin', 'trabajador'],  accent: '#a78bfa' },
   { icon: Megaphone,     label: 'Avisos',        route: '/dashboard/avisos',        roles: ['admin', 'residente', 'trabajador'],   accent: '#fbbf24' },
   { icon: CalendarCheck, label: 'Reservas',      route: '/dashboard/reservas',      roles: ['admin', 'residente', 'trabajador'],   accent: '#4ade80' },

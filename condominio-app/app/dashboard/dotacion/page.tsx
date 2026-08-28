@@ -144,7 +144,7 @@ export default function DotacionPage() {
                 type="text" 
                 value={cedula} 
                 onChange={e => setCedula(e.target.value)} 
-                placeholder="Ej. 1.193.092.270"
+                placeholder="Ej. 1.022.333.444"
                 style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               />
             </div>
@@ -155,7 +155,7 @@ export default function DotacionPage() {
                 type="text" 
                 value={cargo} 
                 onChange={e => setCargo(e.target.value.toUpperCase())} 
-                placeholder="Ej. ASISTENTE CONTABLE"
+                placeholder="Ej. OPERARIO DE MANTENIMIENTO"
                 style={{ width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', color: '#fdf5e6', padding: '0.75rem', outline: 'none', fontFamily: 'inherit' }}
               />
             </div>
