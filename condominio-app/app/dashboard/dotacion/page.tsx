@@ -234,25 +234,24 @@ export default function DotacionPage() {
           ======================================================== */}
       <div id="print-area">
         {/* Cabecera Tipo Excel */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '5px', fontFamily: 'Arial, sans-serif' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '6px', fontFamily: 'Arial, sans-serif' }}>
           <tbody>
             <tr>
-              <td style={{ width: '30%', border: '1px solid #000', padding: '10px', textAlign: 'center', verticalAlign: 'middle' }}>
-                {/* Asumimos que el logo principal puede ser texto estilizado para garantizar compatibilidad, o una imagen */}
-                <div style={{ color: MAIN_GREEN, fontWeight: 'bold', fontSize: '27px' }}>La Florida</div>
-                <div style={{ color: MAIN_GREEN, fontSize: '21px' }}>Condominio Campestre</div>
+              <td style={{ width: '30%', border: '1px solid #000', padding: '6px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
+                <div style={{ color: MAIN_GREEN, fontWeight: 'bold', fontSize: '22px' }}>La Florida</div>
+                <div style={{ color: MAIN_GREEN, fontSize: '16px' }}>Condominio Campestre</div>
               </td>
-              <td style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '27px' }}>
+              <td style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 8px', textAlign: 'center', fontWeight: 'bold', fontSize: '22px' }}>
                 CONDOMINIO CAMPESTRE LA FLORIDA
               </td>
             </tr>
             <tr>
-              <td colSpan={2} style={{ border: '1px solid #000', background: '#e8f5e9', color: MAIN_GREEN, padding: '5px', textAlign: 'center', fontStyle: 'italic', fontWeight: 'bold' }}>
+              <td colSpan={2} style={{ border: '1px solid #000', background: '#e8f5e9', color: MAIN_GREEN, padding: '4px', textAlign: 'center', fontStyle: 'italic', fontWeight: 'bold', fontSize: '13px' }}>
                 KILÓMETRO 5 VÍA RESTREPO VEREDA LA POVATA
               </td>
             </tr>
             <tr>
-              <td colSpan={2} style={{ border: '1px solid #000', background: '#e8f5e9', color: MAIN_GREEN, padding: '5px', textAlign: 'center', fontWeight: 'bold' }}>
+              <td colSpan={2} style={{ border: '1px solid #000', background: '#e8f5e9', color: MAIN_GREEN, padding: '4px', textAlign: 'center', fontWeight: 'bold', fontSize: '13px' }}>
                 NIT: 900.858.163-1
               </td>
             </tr>
@@ -260,7 +259,7 @@ export default function DotacionPage() {
         </table>
 
         {/* Información del Trabajador */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '5px', fontFamily: 'Arial, sans-serif', fontSize: '20px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '6px', fontFamily: 'Arial, sans-serif', fontSize: '16px' }}>
           <tbody>
             <tr>
               <td style={{ border: '1px solid #000', padding: '4px 6px', color: MAIN_GREEN, fontWeight: 'bold', width: '35%' }}>Nombre y Apellido del Trabajador:</td>
@@ -282,33 +281,33 @@ export default function DotacionPage() {
         </table>
 
         {/* Subtítulo Descriptivo */}
-        <div style={{ fontStyle: 'italic', fontFamily: 'Arial, sans-serif', fontSize: '18px', color: '#555', marginBottom: '5px', paddingLeft: '5px' }}>
+        <div style={{ fontStyle: 'italic', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#555', marginBottom: '6px', paddingLeft: '5px' }}>
           Elementos de protección personal, necesarios para el trabajador, según el puesto de trabajo.
         </div>
 
         {/* Tabla Recticular de Productos */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', fontFamily: 'Arial, sans-serif', fontSize: '20px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #000', fontFamily: 'Arial, sans-serif', fontSize: '15px' }}>
           <thead>
             <tr>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '5%' }}>N°</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '30%' }}>Producto</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '8%' }}>Talla</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '15%' }}>Marca</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '10%' }}>Cantidad</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '15%' }}>Fecha de<br/>entrega</th>
-              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '6px 4px', width: '17%' }}>Firma del<br/>trabajador</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '5%' }}>N°</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '30%' }}>Producto</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '8%' }}>Talla</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '15%' }}>Marca</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '10%' }}>Cantidad</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '15%' }}>Fecha de<br/>entrega</th>
+              <th style={{ border: '1px solid #000', background: MAIN_GREEN, color: '#fdf5e6', padding: '5px 4px', width: '17%' }}>Firma del<br/>trabajador</th>
             </tr>
           </thead>
           <tbody>
             {printableItems.map((item, index) => (
-              <tr key={item.id} style={{ height: '24px' }}>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{index + 1}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px 8px' }}>{item.producto}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.talla}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.marca}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center' }}>{item.cantidad > 0 ? item.cantidad : ''}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px', textAlign: 'center', fontSize: '17px' }}>{item.fechaEntrega}</td>
-                <td style={{ border: '1px solid #ccc', padding: '4px' }}>{/* Vacio para la firma */}</td>
+              <tr key={item.id} style={{ height: '25px' }}>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px', textAlign: 'center' }}>{index + 1}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 6px' }}>{item.producto}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px', textAlign: 'center' }}>{item.talla}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px', textAlign: 'center' }}>{item.marca}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px', textAlign: 'center' }}>{item.cantidad > 0 ? item.cantidad : ''}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px', textAlign: 'center', fontSize: '14px' }}>{item.fechaEntrega}</td>
+                <td style={{ border: '1px solid #ccc', padding: '3px 5px' }}>{/* Vacio para la firma */}</td>
               </tr>
             ))}
           </tbody>
@@ -330,10 +329,14 @@ export default function DotacionPage() {
         @media print {
           @page {
             size: landscape;
-            margin: 0; /* Elimina encabezados y pies de página molestos del navegador (Localhost, Fecha) */
+            margin: 5mm;
           }
           
-          /* Ocultar toda la interfaz de la aplicación, sidebar incluida */
+          aside, nav, header, .no-print {
+            display: none !important;
+          }
+          
+          /* Ocultar toda la interfaz de la aplicación */
           body * {
             visibility: hidden;
           }
@@ -343,36 +346,38 @@ export default function DotacionPage() {
             visibility: visible;
           }
           
-          /* Usar position fixed fuerza al navegador a ignorar el tamaño del dashboard oculto 
-             y garantiza matemáticamente que siempre se genere 1 sola hoja perfecta */
+          /* Posicionar desde la esquina 0 de la página impresa */
           #print-area {
             display: block !important;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
             background: white !important;
             color: black !important;
-            padding: 15mm 20mm; /* Le devolvemos el margen interno para que no quede pegado al corte del papel */
-            box-sizing: border-box;
           }
 
-          /* Desactivamos las animaciones y transformaciones de todo el Dashboard (Layout) 
-             porque el 'transform' secuestra el 'position: fixed' causando que se imprima desplazado a la derecha */
-          * {
+          /* Resetear contenedores del dashboard para evitar márgenes fantasmas */
+          html, body, main, div {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
             transform: none !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+          }
+
+          * {
             animation: none !important;
             transition: none !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-          }
-
-          /* Anular explícitamente el margen del sidebar en caso de que su contenedor principal persista */
-          main {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100vw !important;
           }
         }
       `}</style>
