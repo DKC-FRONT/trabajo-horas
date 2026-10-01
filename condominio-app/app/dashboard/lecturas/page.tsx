@@ -46,6 +46,15 @@ export default function LecturasPage() {
   const [isPreparingOffline, setIsPreparingOffline] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const getFechaDefectoMesAnterior = () => {
+    const hoy = new Date();
+    const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+    const y = ultimoDiaMesAnterior.getFullYear();
+    const m = String(ultimoDiaMesAnterior.getMonth() + 1).padStart(2, '0');
+    const d = String(ultimoDiaMesAnterior.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   interface ReadingForm {
     casa_id: string;
     lectura_anterior: string;
@@ -57,7 +66,7 @@ export default function LecturasPage() {
     casa_id: '',
     lectura_anterior: '',
     lectura_actual: '',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: getFechaDefectoMesAnterior(),
   });
   const { role: userRole, loading: roleLoading } = useUserRole();
   const canExportExcel = !roleLoading && userRole === 'admin';
@@ -189,22 +198,22 @@ export default function LecturasPage() {
   };
 
   /**
-   * Automatización: Cargar lectura anterior al seleccionar una casa
+   * Automatización: Cargar lectura anterior al seleccionar una casa o cambiar fecha
    */
   useEffect(() => {
-    if (form.casa_id) {
+    if (form.casa_id && !editId) {
       const houseId = Number(form.casa_id);
       
       // Intentar primero desde el caché offline si no hay internet
       if (!isOnline && offlineCache[houseId]) {
         setForm(prev => ({ ...prev, lectura_anterior: offlineCache[houseId] }));
       } else {
-        fetchUltimaLectura(houseId);
+        fetchUltimaLectura(houseId, form.fecha);
       }
-    } else {
+    } else if (!form.casa_id) {
       setForm(prev => ({ ...prev, lectura_anterior: '' }));
     }
-  }, [form.casa_id, isOnline, offlineCache]);
+  }, [form.casa_id, form.fecha, editId, isOnline, offlineCache]);
 
   /**
    * Descarga las últimas lecturas de TODAS las casas para el modo offline
@@ -267,26 +276,36 @@ export default function LecturasPage() {
     }
   };
 
-  const fetchUltimaLectura = async (id: number) => {
+  const fetchUltimaLectura = async (id: number, fechaReferencia?: string) => {
     try {
       const { createClient } = await import('@/lib/client');
       const supabase = createClient();
-      const { data } = await supabase
+      
+      let query = supabase
         .from('lecturas_agua')
         .select('lectura_actual')
-        .eq('casa_id', id)
+        .eq('casa_id', id);
+
+      if (fechaReferencia) {
+        query = query.lt('fecha', fechaReferencia);
+      }
+
+      if (editId) {
+        query = query.neq('id', editId);
+      }
+
+      const { data } = await query
         .order('fecha', { ascending: false })
+        .order('id', { ascending: false })
         .limit(1)
         .maybeSingle();
       
       if (data) {
         setForm(prev => ({ ...prev, lectura_anterior: String(data.lectura_actual) }));
       } else {
-        // Si no hay lecturas previas, dejar en 0 o vacío
         setForm(prev => ({ ...prev, lectura_anterior: '0' }));
       }
     } catch {
-      // Generalmente significa que no hay lecturas previas
       setForm(prev => ({ ...prev, lectura_anterior: '0' }));
     }
   };
@@ -313,7 +332,7 @@ export default function LecturasPage() {
       casa_id: '',
       lectura_anterior: '',
       lectura_actual: '',
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: getFechaDefectoMesAnterior(),
     });
     setFormErrors({});
   };
