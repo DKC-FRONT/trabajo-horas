@@ -58,7 +58,8 @@ const AREAS = [
   'RESTAURANTE',
   'CAPILLA Y SALON DE EVENTOS',
   'CAPILLA Y RESTAURANTE',
-  'CANCHA DE FUTBOL'
+  'CANCHA DE FUTBOL',
+  'BBQ'
 ];
 
 const ESTADO_META: Record<EstadoReserva, { color: string; label: string }> = {
@@ -103,6 +104,9 @@ function calcularValor(area: string, fecha: string, iniVal: number, finVal: numb
   }
   if (area === 'CANCHA DE FUTBOL') {
       return isWeekend(fecha) ? 210109 : 157581;
+  }
+  if (area === 'BBQ' || area === 'ZONA BBQ') {
+      return 100000;
   }
   return 0;
 }
@@ -1032,6 +1036,31 @@ export default function ReservasPage() {
                 alt="Valores Tarifa U Otros Zona Social" 
                 style={{ maxWidth: '100%', height: 'auto', maxHeight: '68vh', objectFit: 'contain' }} 
               />
+            </div>
+            {/* Tarifa BBQ */}
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.85rem 1.1rem',
+              background: 'rgba(74, 222, 128, 0.08)',
+              border: '1px solid rgba(74, 222, 128, 0.25)',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap'
+            }}>
+              <div>
+                <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fdf5e6', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  🍖 BBQ (Nueva Zona Social)
+                </span>
+                <span style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)', display: 'block', marginTop: '0.15rem' }}>
+                  Tarifa única por servicio: <strong>$100.000 COP</strong> (independiente de si se usa 1 hora o 5 horas).
+                </span>
+              </div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#4ade80', whiteSpace: 'nowrap' }}>
+                $ 100.000
+              </div>
             </div>
             <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <p style={{ fontSize: '0.93rem', color: 'rgba(255,255,255,0.4)', margin: 0, fontStyle: 'italic' }}>
