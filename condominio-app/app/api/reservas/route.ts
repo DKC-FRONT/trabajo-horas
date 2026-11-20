@@ -1,58 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 import { verifyRole } from '@/lib/verifyRole';
+import { handleAPIError } from '@/lib/security';
+import { addSecurityHeaders, addCORSHeaders } from '@/lib/cors';
 
 export async function GET(req: NextRequest) {
   try {
+    // ✅ VERIFICACIÓN DE AUTENTICACIÓN
+    const auth = await verifyRole(['admin', 'trabajador', 'residente']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
-    const casa_id = searchParams.get('casa_id');
+    const casa_id = searchParams.get('casa_id') ? Number(searchParams.get('casa_id')) : null;
+
+    // ✅ VERIFICAR PROPIEDAD: Residentes solo ven sus reservas
+    if (auth.profile.rol === 'residente' && casa_id && casa_id !== auth.profile.casa_id) {
+      return NextResponse.json(
+        { error: 'No tienes permiso para ver reservas de otras casas.', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
 
     let query = supabase
       .from('reservas')
       .select(`
-        id, 
-        casa_id, 
-        area, 
-        fecha, 
-        hora_inicio, 
-        hora_fin, 
-        estado, 
+        id,
+        casa_id,
+        area,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
         valor,
+        creado_el,
         casas (numero_casa)
       `);
 
-    if (casa_id) {
-      query = query.eq('casa_id', Number(casa_id));
+    // ✅ RESIDENTES SOLO VEN SUS RESERVAS
+    if (auth.profile.rol === 'residente') {
+      query = query.eq('casa_id', auth.profile.casa_id);
+    } else if (casa_id) {
+      // Admin y trabajadores pueden filtrar por casa_id
+      query = query.eq('casa_id', casa_id);
     }
 
     const { data, error } = await query
       .order('creado_el', { ascending: false })
-      .order('fecha', { ascending: false })
-      .order('hora_inicio', { ascending: false });
+      .order('fecha', { ascending: false });
 
     if (error) throw error;
 
     const formattedData = data.map((item: any) => ({
-      ...item,
+      id: item.id,
+      casa_id: item.casa_id,
+      area: item.area,
+      fecha: item.fecha,
       fecha_reserva: item.fecha,
+      hora_inicio: item.hora_inicio,
+      hora_fin: item.hora_fin,
+      estado: item.estado,
+      valor: item.valor,
       numero_casa: item.casas?.numero_casa
     }));
 
-    return NextResponse.json(formattedData, { status: 200 });
+    const response = NextResponse.json(formattedData, { status: 200 });
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[GET /api/reservas]', error);
-    return NextResponse.json({ error: 'Error al obtener reservas.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    // ✅ VERIFICACIÓN DE AUTENTICACIÓN
+    const auth = await verifyRole(['admin', 'trabajador', 'residente']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { casa_id, area, fecha_reserva, hora_inicio, hora_fin, valor } = await req.json();
 
     if (!casa_id || !area || !fecha_reserva || !hora_inicio || !hora_fin || valor === undefined) {
-      return NextResponse.json({ error: 'Todos los campos son requeridos.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Todos los campos son requeridos.', code: 'MISSING_FIELDS' },
+        { status: 400 }
+      );
+    }
+
+    // ✅ VALIDAR QUE EL USUARIO TIENE PERMISO PARA ESTA CASA
+    // Residentes solo pueden crear reservas en su propia casa
+    if (auth.profile.rol === 'residente' && Number(casa_id) !== auth.profile.casa_id) {
+      return NextResponse.json(
+        { error: 'No tienes permiso para crear reservas en otra casa.', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
     }
 
     const parseDateTime = (dateStr: string, timeStr: string) => {
@@ -120,34 +161,49 @@ export async function POST(req: NextRequest) {
     const { error: insertError } = await supabase
       .from('reservas')
       .insert([{
-        casa_id,
-        area,
+        casa_id: Number(casa_id),
+        area: String(area).trim(),
         fecha: fecha_reserva,
         hora_inicio,
         hora_fin,
         estado: 'pendiente',
-        valor
+        valor: Number(valor)
       }]);
 
     if (insertError) throw insertError;
 
-    return NextResponse.json({ message: 'Reserva solicitada correctamente.' }, { status: 201 });
+    const response = NextResponse.json(
+      { message: 'Reserva solicitada correctamente.' },
+      { status: 201 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error: any) {
-    console.error('[POST /api/reservas]', error);
-    return NextResponse.json({ error: 'Error al solicitar reserva.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = await verifyRole(['admin']);
-  if (auth.error) return auth.error;
-
   try {
+    // ✅ SOLO ADMIN
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { id, estado } = await req.json();
 
     if (!id || !estado) {
-      return NextResponse.json({ error: 'ID y estado son requeridos.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'ID y estado son requeridos.', code: 'MISSING_FIELDS' },
+        { status: 400 }
+      );
+    }
+
+    const allowedStates = ['pendiente', 'aprobada', 'rechazada'];
+    if (!allowedStates.includes(estado)) {
+      return NextResponse.json(
+        { error: 'Estado inválido.', code: 'INVALID_ESTADO' },
+        { status: 400 }
+      );
     }
 
     const { error: updateError } = await supabase
@@ -157,22 +213,31 @@ export async function PUT(req: NextRequest) {
 
     if (updateError) throw updateError;
 
-    return NextResponse.json({ message: 'Estado actualizado correctamente.' }, { status: 200 });
+    const response = NextResponse.json(
+      { message: 'Estado actualizado correctamente.' },
+      { status: 200 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[PUT /api/reservas]', error);
-    return NextResponse.json({ error: 'Error al actualizar reserva.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const auth = await verifyRole(['admin']);
-  if (auth.error) return auth.error;
-
   try {
+    // ✅ SOLO ADMIN
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { id } = await req.json();
 
-    if (!id) return NextResponse.json({ error: 'ID inválido.' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID inválido.', code: 'INVALID_ID' },
+        { status: 400 }
+      );
+    }
 
     const { error: deleteError } = await supabase
       .from('reservas')
@@ -181,9 +246,12 @@ export async function DELETE(req: NextRequest) {
 
     if (deleteError) throw deleteError;
 
-    return NextResponse.json({ message: 'Reserva eliminada.' }, { status: 200 });
+    const response = NextResponse.json(
+      { message: 'Reserva eliminada.' },
+      { status: 200 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[DELETE /api/reservas]', error);
-    return NextResponse.json({ error: 'Error al eliminar reserva.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }

@@ -1,7 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { addSecurityHeaders, corsMiddleware, addCORSHeaders } from './cors'
 
 export async function updateSession(request: NextRequest) {
+  // Manejar CORS
+  const corsResponse = corsMiddleware(request);
+  if (corsResponse) return corsResponse;
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -10,7 +15,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse;
+    return addSecurityHeaders(supabaseResponse);
   }
 
   const supabase = createServerClient(
@@ -37,7 +42,14 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+  const isRegisterPage = request.nextUrl.pathname.startsWith('/register')
   const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard')
+  const isAPIPage = request.nextUrl.pathname.startsWith('/api')
+
+  // No validar autenticación en API (cada endpoint se encarga)
+  if (isAPIPage) {
+    return addSecurityHeaders(addCORSHeaders(supabaseResponse, request));
+  }
 
   // Redirigir si no hay sesión y trata de entrar al dashboard
   if (!user && isDashboardPage) {
@@ -46,19 +58,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirigir al dashboard si ya tiene sesión y trata de entrar al login
-  if (user && isLoginPage) {
+  // Redirigir al dashboard si ya tiene sesión y trata de entrar al login/registro
+  if (user && (isLoginPage || isRegisterPage)) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
-  // Lógica de protección por roles simplificada para el dashboard
-  if (user && isDashboardPage) {
-     // Aquí podríamos consultar el perfil para mayores restricciones, 
-     // pero por ahora dejamos pasar al dashboard base.
-  }
-
-  return supabaseResponse
+  return addSecurityHeaders(addCORSHeaders(supabaseResponse, request))
 }
 

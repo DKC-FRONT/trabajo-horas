@@ -1,110 +1,144 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 import { verifyRole } from '@/lib/verifyRole';
+import { handleAPIError } from '@/lib/security';
+import { addSecurityHeaders, addCORSHeaders } from '@/lib/cors';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // ✅ VERIFICACIÓN DE AUTENTICACIÓN Y ROLES
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('usuarios')
       .select(`
-        id, 
-        nombre_completo, 
-        email, 
-        rol, 
-        casa_id, 
+        id,
+        nombre_completo,
+        email,
+        rol,
+        casa_id,
         casas (numero_casa)
       `)
-      .order('creado_el', { ascending: false });
+      .order('nombre_completo', { ascending: true });
 
     if (error) throw error;
 
-    // Aplanar el resultado para mantener compatibilidad con el frontend
     const formattedData = data.map((item: any) => ({
-      ...item,
-      nombre: item.nombre_completo,
+      id: item.id,
+      nombre_completo: item.nombre_completo,
+      email: item.email,
+      rol: item.rol,
+      casa_id: item.casa_id,
       numero_casa: item.casas?.numero_casa
     }));
 
-    return NextResponse.json(formattedData, { status: 200 });
+    const response = NextResponse.json(formattedData, { status: 200 });
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[GET /api/usuarios]', error);
-    return NextResponse.json({ error: 'Error al obtener usuarios.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
-// Nota: El registro se recomienda hacer vía Supabase Auth (RegisterPage). 
-// Este POST es para crear perfiles manualmente o por admin.
 export async function POST(req: NextRequest) {
-  // Solo admin puede crear perfiles manualmente
-  const auth = await verifyRole(['admin']);
-  if (auth.error) return auth.error;
-
   try {
+    // ✅ SOLO ADMIN
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { nombre, correo, rol, casa_id } = await req.json();
 
     if (!nombre || !correo || !rol) {
-      return NextResponse.json({ error: 'Todos los campos excepto la casa son requeridos.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Todos los campos excepto la casa son requeridos.', code: 'MISSING_FIELDS' },
+        { status: 400 }
+      );
     }
 
-    // Validaciones básicas
     const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
     if (!allowedRoles.includes(rol)) {
-      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Rol inválido.', code: 'INVALID_ROLE' },
+        { status: 400 }
+      );
     }
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(String(correo))) {
-      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Correo inválido.', code: 'INVALID_EMAIL' },
+        { status: 400 }
+      );
     }
 
     const { error: insertError } = await supabase
       .from('usuarios')
       .insert([{
         nombre_completo: String(nombre).trim(),
-        email: String(correo).trim(),
+        email: String(correo).trim().toLowerCase(),
         rol: rol,
         casa_id: casa_id ? Number(casa_id) : null
       }]);
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      if (insertError.message.includes('UNIQUE')) {
+        return NextResponse.json(
+          { error: 'Este email ya existe.', code: 'EMAIL_EXISTS' },
+          { status: 409 }
+        );
+      }
+      throw insertError;
+    }
 
-    return NextResponse.json({ message: 'Usuario creado correctamente.' }, { status: 201 });
+    const response = NextResponse.json(
+      { message: 'Usuario creado correctamente.' },
+      { status: 201 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[POST /api/usuarios]', error);
-    return NextResponse.json({ error: 'Error al crear el usuario.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
 export async function PUT(req: NextRequest) {
-  // Solo admin puede actualizar perfiles
-  const auth = await verifyRole(['admin']);
-  if (auth.error) return auth.error;
-
   try {
+    // ✅ SOLO ADMIN
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { id, nombre, correo, rol, casa_id } = await req.json();
 
     if (!id || !nombre || !correo || !rol) {
-      return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Datos incompletos.', code: 'MISSING_FIELDS' },
+        { status: 400 }
+      );
     }
 
     const allowedRoles = ['admin', 'trabajador', 'residente', 'extras'];
     if (!allowedRoles.includes(rol)) {
-      return NextResponse.json({ error: 'Rol inválido.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Rol inválido.', code: 'INVALID_ROLE' },
+        { status: 400 }
+      );
     }
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(String(correo))) {
-      return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Correo inválido.', code: 'INVALID_EMAIL' },
+        { status: 400 }
+      );
     }
 
     const { error: updateError } = await supabase
       .from('usuarios')
       .update({
         nombre_completo: String(nombre).trim(),
-        email: String(correo).trim(),
+        email: String(correo).trim().toLowerCase(),
         rol: rol,
         casa_id: casa_id ? Number(casa_id) : null
       })
@@ -112,24 +146,30 @@ export async function PUT(req: NextRequest) {
 
     if (updateError) throw updateError;
 
-    return NextResponse.json({ message: 'Usuario actualizado correctamente.' }, { status: 200 });
+    const response = NextResponse.json(
+      { message: 'Usuario actualizado correctamente.' },
+      { status: 200 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[PUT /api/usuarios]', error);
-    return NextResponse.json({ error: 'Error al actualizar el usuario.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  // Solo admin puede eliminar usuarios
-  const auth = await verifyRole(['admin']);
-  if (auth.error) return auth.error;
-
   try {
+    // ✅ SOLO ADMIN
+    const auth = await verifyRole(['admin']);
+    if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { id } = await req.json();
 
     if (!id) {
-      return NextResponse.json({ error: 'ID inválido.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'ID inválido.', code: 'INVALID_ID' },
+        { status: 400 }
+      );
     }
 
     const { error: deleteError } = await supabase
@@ -139,9 +179,12 @@ export async function DELETE(req: NextRequest) {
 
     if (deleteError) throw deleteError;
 
-    return NextResponse.json({ message: 'Usuario eliminado.' }, { status: 200 });
+    const response = NextResponse.json(
+      { message: 'Usuario eliminado.' },
+      { status: 200 }
+    );
+    return addSecurityHeaders(addCORSHeaders(response, req));
   } catch (error) {
-    console.error('[DELETE /api/usuarios]', error);
-    return NextResponse.json({ error: 'Error al eliminar usuario.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }

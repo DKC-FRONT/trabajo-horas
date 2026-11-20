@@ -2,18 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/server';
 import { verifyRole } from '@/lib/verifyRole';
 
-export const dynamic = 'force-dynamic';
+import { handleAPIError } from '@/lib/security';
+import { addSecurityHeaders, addCORSHeaders } from '@/lib/cors';
+import { validateMesAnio } from '@/lib/security';
 
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    // ✅ SOLO ADMIN
     const auth = await verifyRole(['admin']);
     if (auth.error) return auth.error;
+
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const now = new Date();
-    const mes  = Number(searchParams.get('mes')  ?? now.getMonth() + 1);
+    const mes  = Number(searchParams.get('mes') ?? now.getMonth() + 1);
     const anio = Number(searchParams.get('anio') ?? now.getFullYear());
+
+    // ✅ VALIDAR PARÁMETROS
+    if (!validateMesAnio(mes, anio)) {
+      return NextResponse.json(
+        { error: 'Mes debe estar entre 1-12 y año entre 2000-2100.', code: 'INVALID_PARAMS' },
+        { status: 400 }
+      );
+    }
 
     // 1. Obtener consumos por casa en el mes
     const { data: rawPorCasa, error: err1 } = await supabase
@@ -76,22 +89,22 @@ export async function GET(req: NextRequest) {
 
     const comparativo = Object.values(agrupado).slice(0, 6).reverse();
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       mes,
       anio,
       porCasa,
       excedidas,
       resumen: {
-        total_casas:     porCasa.length,
+        total_casas: porCasa.length,
         casas_excedidas: excedidas.length,
-        consumo_total:   Math.round(totalConsumo),
-        valor_total:     Math.round(totalValor),
+        consumo_total: Math.round(totalConsumo),
+        valor_total: Math.round(totalValor),
       },
       comparativo,
     }, { status: 200 });
+    return addSecurityHeaders(addCORSHeaders(response, req));
 
   } catch (error) {
-    console.error('[GET /api/reportes]', error);
-    return NextResponse.json({ error: 'Error al generar el reporte.' }, { status: 500 });
+    return handleAPIError(error);
   }
 }
